@@ -50,9 +50,14 @@ export function GrowerPanel({ grower, onEdit }: GrowerPanelProps) {
             <p className="text-xs font-semibold uppercase tracking-wide text-emerald-800">
               Your grower context
             </p>
-            <h3 className="text-lg font-semibold text-slate-950">
-              {grower.name}
-            </h3>
+            <div className="flex items-center gap-2">
+              <h3 className="text-lg font-semibold text-slate-950">
+                {grower.name}
+              </h3>
+              <span className="rounded-full bg-slate-100 px-2 py-0.5 text-xs font-medium text-slate-600">
+                {grower.role}
+              </span>
+            </div>
             <p className="text-sm text-slate-500">
               {grower.operation} · {grower.region}
             </p>

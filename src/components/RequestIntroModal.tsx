@@ -70,6 +70,11 @@ export function RequestIntroModal({ solution, onClose }: RequestIntroModalProps)
             <p className="mt-1 text-sm text-slate-500">
               {solution.proposition}
             </p>
+            {solution.pilotOffer?.responseTime && (
+              <p className="mt-2 text-xs font-medium text-emerald-700">
+                {solution.pilotOffer.responseTime}
+              </p>
+            )}
           </div>
           <button
             type="button"

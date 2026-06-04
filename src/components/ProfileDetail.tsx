@@ -170,6 +170,24 @@ export function ProfileDetail({ solution, onRequestIntro }: ProfileDetailProps) 
                     : "No active pilot offer"}
                 </p>
               </div>
+              {solution.pilotOffer?.includes && solution.pilotOffer.includes.length > 0 && (
+                <div>
+                  <p className="text-xs text-slate-500">What&apos;s included</p>
+                  <ul className="mt-1 space-y-1 text-sm text-slate-700">
+                    {solution.pilotOffer.includes.map((item) => (
+                      <li key={item} className="flex gap-2">
+                        <CheckCircle2 size={15} className="mt-0.5 shrink-0 text-emerald-700" />
+                        {item}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+              {solution.pilotOffer?.responseTime && (
+                <div className="rounded-xl bg-emerald-50 px-3 py-2 text-sm font-medium text-emerald-900">
+                  {solution.pilotOffer.responseTime}
+                </div>
+              )}
               <div className="rounded-xl bg-amber-50 p-3 text-sm text-amber-900">
                 <div className="mb-1 flex items-center gap-2 font-medium">
                   <AlertTriangle size={15} /> Validation note

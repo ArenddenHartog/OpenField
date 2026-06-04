@@ -23,6 +23,15 @@ export type ChallengeId =
 
 export type PilotStatus = "Open" | "Closed";
 
+export type GrowerRole = "Grower" | "Researcher" | "Breeder" | "Other";
+
+export const GROWER_ROLES: GrowerRole[] = [
+  "Grower",
+  "Researcher",
+  "Breeder",
+  "Other",
+];
+
 // ─── Core domain records ──────────────────────────────────────────────────────
 
 export interface Challenge {
@@ -48,6 +57,7 @@ export interface Solution {
 export interface Grower {
   id: string;
   name: string;
+  role: GrowerRole;
   region: string;
   country: string;
   operation: string;
@@ -69,6 +79,8 @@ export interface PilotOffer {
   status: PilotStatus;
   availability: string;
   duration: string;
+  includes: string[];
+  responseTime: string;
   requiredContext: string[];
   requiredSystems: string[];
   requiredData: string[];
@@ -127,7 +139,7 @@ export interface InnovatorFormValues {
   challengeIds: ChallengeId[];
   stage: Stage;
   contexts: string;
-  crops: string;
+  crops: string[];
   requiredSystems: string;
   requiredData: string;
   geography: string;
@@ -136,6 +148,8 @@ export interface InnovatorFormValues {
   pilotType: string;
   pilotDuration: string;
   pilotAvailability: string;
+  pilotIncludes: string;
+  pilotResponseTime: string;
   evidenceType: string;
   evidenceTested: string;
   evidenceImpact: string;
@@ -144,11 +158,12 @@ export interface InnovatorFormValues {
 
 export interface GrowerFormValues {
   name: string;
+  role: GrowerRole;
   operation: string;
   region: string;
   country: string;
   contexts: string;
-  crops: string;
+  crops: string[];
   openness: string;
   challengeIds: ChallengeId[];
   constraints: string;

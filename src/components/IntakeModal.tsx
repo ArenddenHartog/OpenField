@@ -5,12 +5,9 @@ import { motion } from "framer-motion";
 import { X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ChallengePicker } from "@/components/ChallengePicker";
-import { STAGES } from "@/data/types";
-import {
-  EMPTY_GROWER_FORM,
-  EMPTY_INNOVATOR_FORM,
-  SEED_SOLUTIONS,
-} from "@/data/seed";
+import { CropPicker } from "@/components/CropPicker";
+import { STAGES, GROWER_ROLES } from "@/data/types";
+import { EMPTY_GROWER_FORM, EMPTY_INNOVATOR_FORM } from "@/data/seed";
 import type {
   EvidenceRecord,
   Grower,
@@ -48,10 +45,7 @@ export function IntakeModal({
     isInnovator ? EMPTY_INNOVATOR_FORM : EMPTY_GROWER_FORM
   );
 
-  function field<T extends InnovatorFormValues | GrowerFormValues>(
-    key: keyof T,
-    value: T[keyof T]
-  ) {
+  function setField(key: string, value: unknown) {
     setForm((current) => ({ ...current, [key]: value }));
   }
 
@@ -69,7 +63,7 @@ export function IntakeModal({
         stage: f.stage,
         challengeIds: f.challengeIds,
         contexts: listFromText(f.contexts),
-        crops: listFromText(f.crops),
+        crops: f.crops,
         requiredSystems: listFromText(f.requiredSystems),
         requiredData: listFromText(f.requiredData),
         geography: listFromText(f.geography),
@@ -83,6 +77,8 @@ export function IntakeModal({
         status: "Open",
         availability: f.pilotAvailability || "Open for pilot locations",
         duration: f.pilotDuration,
+        includes: listFromText(f.pilotIncludes),
+        responseTime: f.pilotResponseTime,
         requiredContext: solution.contexts,
         requiredSystems: solution.requiredSystems,
         requiredData: solution.requiredData,
@@ -104,11 +100,12 @@ export function IntakeModal({
     const grower: Grower = {
       id: makeId("grower", f.name || f.operation),
       name: f.name || "New grower",
+      role: f.role,
       region: f.region || "Region not specified",
       country: f.country || "NL",
       operation: f.operation || "Agricultural operation",
       contexts: listFromText(f.contexts),
-      crops: listFromText(f.crops),
+      crops: f.crops,
       openness: f.openness,
       challengeIds: f.challengeIds,
       constraints: listFromText(f.constraints),
@@ -133,11 +130,12 @@ export function IntakeModal({
               OpenField intake
             </p>
             <h2 className="text-xl font-semibold text-slate-950">
-              Create {isInnovator ? "a solution" : "a grower"} profile
+              Create {isInnovator ? "a solution" : "your"} profile
             </h2>
             <p className="mt-1 text-sm text-slate-600">
-              New records are converted into the same data structure used by the
-              matching layer.
+              {isInnovator
+                ? "Your solution will be matched against growers, researchers, and breeders by practical fit."
+                : "Your profile drives the match ranking — the more context, the better."}
             </p>
           </div>
           <button
@@ -151,12 +149,9 @@ export function IntakeModal({
         </div>
 
         {isInnovator ? (
-          <InnovatorFields
-            form={form as InnovatorFormValues}
-            onChange={field}
-          />
+          <InnovatorFields form={form as InnovatorFormValues} onChange={setField} />
         ) : (
-          <GrowerFields form={form as GrowerFormValues} onChange={field} />
+          <GrowerFields form={form as GrowerFormValues} onChange={setField} />
         )}
 
         <div className="mt-6 flex justify-end gap-3">
@@ -164,7 +159,7 @@ export function IntakeModal({
             Cancel
           </Button>
           <Button type="submit" className="rounded-xl bg-emerald-800 hover:bg-emerald-900">
-            {isInnovator ? "Create solution" : "Create grower"}
+            {isInnovator ? "Create solution" : "Create profile"}
           </Button>
         </div>
       </motion.form>
@@ -179,72 +174,96 @@ function InnovatorFields({
   onChange,
 }: {
   form: InnovatorFormValues;
-  onChange: (key: keyof InnovatorFormValues, value: InnovatorFormValues[keyof InnovatorFormValues]) => void;
+  onChange: (key: string, value: unknown) => void;
 }) {
   return (
-    <div className="grid gap-4 md:grid-cols-2">
-      <Field label="Solution name">
-        <input value={form.solutionName} onChange={(e) => onChange("solutionName", e.target.value)} className={INPUT_CLASS} placeholder="e.g. MildewSense" />
-      </Field>
-      <Field label="Solution type">
-        <input value={form.solutionType} onChange={(e) => onChange("solutionType", e.target.value)} className={INPUT_CLASS} />
-      </Field>
-      <Field label="One-line proposition" full>
-        <input value={form.proposition} onChange={(e) => onChange("proposition", e.target.value)} className={INPUT_CLASS} placeholder="What problem does it solve?" />
-      </Field>
-      <div className="space-y-2 md:col-span-2">
-        <span className="text-xs font-medium text-slate-600">Challenges solved</span>
-        <ChallengePicker selectedIds={form.challengeIds} onChange={(ids) => onChange("challengeIds", ids)} />
-      </div>
-      <Field label="Validation stage">
-        <select value={form.stage} onChange={(e) => onChange("stage", e.target.value as InnovatorFormValues["stage"])} className={INPUT_CLASS}>
-          {STAGES.map((s) => <option key={s}>{s}</option>)}
-        </select>
-      </Field>
-      <Field label="Geography">
-        <input value={form.geography} onChange={(e) => onChange("geography", e.target.value)} className={INPUT_CLASS} placeholder="NL, BE" />
-      </Field>
-      <Field label="Contexts">
-        <input value={form.contexts} onChange={(e) => onChange("contexts", e.target.value)} className={INPUT_CLASS} placeholder="Greenhouse, Open field" />
-      </Field>
-      <Field label="Crops">
-        <input value={form.crops} onChange={(e) => onChange("crops", e.target.value)} className={INPUT_CLASS} placeholder="Tomato, Cucumber" />
-      </Field>
-      <Field label="Required systems">
-        <input value={form.requiredSystems} onChange={(e) => onChange("requiredSystems", e.target.value)} className={INPUT_CLASS} placeholder="Stable internet, Sprayer" />
-      </Field>
-      <Field label="Required data">
-        <input value={form.requiredData} onChange={(e) => onChange("requiredData", e.target.value)} className={INPUT_CLASS} placeholder="Disease observations" />
-      </Field>
-      <Field label="Looking for">
-        <input value={form.lookingFor} onChange={(e) => onChange("lookingFor", e.target.value)} className={INPUT_CLASS} />
-      </Field>
-      <Field label="Pilot title">
-        <input value={form.pilotTitle} onChange={(e) => onChange("pilotTitle", e.target.value)} className={INPUT_CLASS} placeholder="Greenhouse disease detection pilot" />
-      </Field>
-      <Field label="Pilot type">
-        <input value={form.pilotType} onChange={(e) => onChange("pilotType", e.target.value)} className={INPUT_CLASS} />
-      </Field>
-      <Field label="Pilot duration">
-        <input value={form.pilotDuration} onChange={(e) => onChange("pilotDuration", e.target.value)} className={INPUT_CLASS} />
-      </Field>
-      <Field label="Pilot availability" full>
-        <input value={form.pilotAvailability} onChange={(e) => onChange("pilotAvailability", e.target.value)} className={INPUT_CLASS} />
-      </Field>
-      <Field label="Evidence type">
-        <input value={form.evidenceType} onChange={(e) => onChange("evidenceType", e.target.value)} className={INPUT_CLASS} />
-      </Field>
-      <Field label="Evidence quality">
-        <select value={form.evidenceQuality} onChange={(e) => onChange("evidenceQuality", e.target.value as InnovatorFormValues["evidenceQuality"])} className={INPUT_CLASS}>
-          {(["Early", "Medium", "High"] as const).map((q) => <option key={q}>{q}</option>)}
-        </select>
-      </Field>
-      <Field label="Evidence tested">
-        <input value={form.evidenceTested} onChange={(e) => onChange("evidenceTested", e.target.value)} className={INPUT_CLASS} placeholder="2 pilots, 4 demo plots" />
-      </Field>
-      <Field label="Observed impact">
-        <input value={form.evidenceImpact} onChange={(e) => onChange("evidenceImpact", e.target.value)} className={INPUT_CLASS} placeholder="Earlier detection, lower input use" />
-      </Field>
+    <div className="space-y-6">
+      {/* Solution basics */}
+      <Section label="Solution">
+        <div className="grid gap-4 md:grid-cols-2">
+          <Field label="Solution name">
+            <input value={form.solutionName} onChange={(e) => onChange("solutionName", e.target.value)} className={INPUT_CLASS} placeholder="e.g. MildewSense" />
+          </Field>
+          <Field label="Solution type">
+            <input value={form.solutionType} onChange={(e) => onChange("solutionType", e.target.value)} className={INPUT_CLASS} placeholder="AI / Software, Biological, Machinery…" />
+          </Field>
+          <Field label="One-line proposition" full>
+            <input value={form.proposition} onChange={(e) => onChange("proposition", e.target.value)} className={INPUT_CLASS} placeholder="What problem does it solve?" />
+          </Field>
+          <div className="space-y-2 md:col-span-2">
+            <span className="text-xs font-medium text-slate-600">Challenges addressed</span>
+            <ChallengePicker selectedIds={form.challengeIds} onChange={(ids) => onChange("challengeIds", ids)} />
+          </div>
+          <Field label="Validation stage">
+            <select value={form.stage} onChange={(e) => onChange("stage", e.target.value)} className={INPUT_CLASS}>
+              {STAGES.map((s) => <option key={s}>{s}</option>)}
+            </select>
+          </Field>
+          <Field label="Geography (comma-separated)">
+            <input value={form.geography} onChange={(e) => onChange("geography", e.target.value)} className={INPUT_CLASS} placeholder="NL, BE, DE" />
+          </Field>
+          <Field label="Contexts (comma-separated)">
+            <input value={form.contexts} onChange={(e) => onChange("contexts", e.target.value)} className={INPUT_CLASS} placeholder="Greenhouse, Open field" />
+          </Field>
+          <Field label="Looking for (comma-separated)">
+            <input value={form.lookingFor} onChange={(e) => onChange("lookingFor", e.target.value)} className={INPUT_CLASS} placeholder="Pilot growers, Researchers…" />
+          </Field>
+        </div>
+        <div className="mt-4 space-y-2">
+          <span className="text-xs font-medium text-slate-600">Crops</span>
+          <CropPicker selectedCrops={form.crops} onChange={(crops) => onChange("crops", crops)} />
+        </div>
+      </Section>
+
+      {/* Pilot offer */}
+      <Section label="Pilot offer">
+        <div className="grid gap-4 md:grid-cols-2">
+          <Field label="Pilot title" full>
+            <input value={form.pilotTitle} onChange={(e) => onChange("pilotTitle", e.target.value)} className={INPUT_CLASS} placeholder="Greenhouse disease detection pilot" />
+          </Field>
+          <Field label="Pilot type">
+            <input value={form.pilotType} onChange={(e) => onChange("pilotType", e.target.value)} className={INPUT_CLASS} placeholder="Free pilot, Paid pilot…" />
+          </Field>
+          <Field label="Duration">
+            <input value={form.pilotDuration} onChange={(e) => onChange("pilotDuration", e.target.value)} className={INPUT_CLASS} placeholder="8–12 weeks" />
+          </Field>
+          <Field label="Availability" full>
+            <input value={form.pilotAvailability} onChange={(e) => onChange("pilotAvailability", e.target.value)} className={INPUT_CLASS} placeholder="Looking for 3 pilot locations for next season" />
+          </Field>
+          <Field label="What's included (comma-separated)" full>
+            <input value={form.pilotIncludes} onChange={(e) => onChange("pilotIncludes", e.target.value)} className={INPUT_CLASS} placeholder="Sensor kit, Platform access, Weekly review…" />
+          </Field>
+          <Field label="Response time commitment">
+            <input value={form.pilotResponseTime} onChange={(e) => onChange("pilotResponseTime", e.target.value)} className={INPUT_CLASS} placeholder="Reply within 3 working days" />
+          </Field>
+          <Field label="Required systems (comma-separated)">
+            <input value={form.requiredSystems} onChange={(e) => onChange("requiredSystems", e.target.value)} className={INPUT_CLASS} placeholder="Stable internet, Sprayer…" />
+          </Field>
+          <Field label="Required data (comma-separated)">
+            <input value={form.requiredData} onChange={(e) => onChange("requiredData", e.target.value)} className={INPUT_CLASS} placeholder="Disease observations, Soil samples…" />
+          </Field>
+        </div>
+      </Section>
+
+      {/* Evidence */}
+      <Section label="Evidence">
+        <div className="grid gap-4 md:grid-cols-2">
+          <Field label="Evidence type">
+            <input value={form.evidenceType} onChange={(e) => onChange("evidenceType", e.target.value)} className={INPUT_CLASS} placeholder="Field trial, Plot trial, Production use…" />
+          </Field>
+          <Field label="Evidence quality">
+            <select value={form.evidenceQuality} onChange={(e) => onChange("evidenceQuality", e.target.value)} className={INPUT_CLASS}>
+              {(["Early", "Medium", "High"] as const).map((q) => <option key={q}>{q}</option>)}
+            </select>
+          </Field>
+          <Field label="Tested on">
+            <input value={form.evidenceTested} onChange={(e) => onChange("evidenceTested", e.target.value)} className={INPUT_CLASS} placeholder="2 pilots, 4 demo plots…" />
+          </Field>
+          <Field label="Observed impact">
+            <input value={form.evidenceImpact} onChange={(e) => onChange("evidenceImpact", e.target.value)} className={INPUT_CLASS} placeholder="Earlier detection, lower input use…" />
+          </Field>
+        </div>
+      </Section>
     </div>
   );
 }
@@ -254,47 +273,87 @@ function GrowerFields({
   onChange,
 }: {
   form: GrowerFormValues;
-  onChange: (key: keyof GrowerFormValues, value: GrowerFormValues[keyof GrowerFormValues]) => void;
+  onChange: (key: string, value: unknown) => void;
 }) {
   return (
-    <div className="grid gap-4 md:grid-cols-2">
-      <Field label="Grower name">
-        <input value={form.name} onChange={(e) => onChange("name", e.target.value)} className={INPUT_CLASS} placeholder="e.g. Greenhouse grower" />
-      </Field>
-      <Field label="Operation">
-        <input value={form.operation} onChange={(e) => onChange("operation", e.target.value)} className={INPUT_CLASS} placeholder="Greenhouse vegetables" />
-      </Field>
-      <Field label="Region">
-        <input value={form.region} onChange={(e) => onChange("region", e.target.value)} className={INPUT_CLASS} placeholder="Westland, NL" />
-      </Field>
-      <Field label="Country code">
-        <input value={form.country} onChange={(e) => onChange("country", e.target.value.toUpperCase())} className={INPUT_CLASS} placeholder="NL" />
-      </Field>
-      <div className="space-y-2 md:col-span-2">
-        <span className="text-xs font-medium text-slate-600">Current challenges</span>
-        <ChallengePicker selectedIds={form.challengeIds} onChange={(ids) => onChange("challengeIds", ids)} />
+    <div className="space-y-6">
+      {/* Identity */}
+      <Section label="About you">
+        <div className="grid gap-4 md:grid-cols-2">
+          <Field label="Your name or organisation">
+            <input value={form.name} onChange={(e) => onChange("name", e.target.value)} className={INPUT_CLASS} placeholder="e.g. Greenhouse grower / Wageningen UR" />
+          </Field>
+          <Field label="Role">
+            <select value={form.role} onChange={(e) => onChange("role", e.target.value)} className={INPUT_CLASS}>
+              {GROWER_ROLES.map((r) => <option key={r}>{r}</option>)}
+            </select>
+          </Field>
+          <Field label="Operation">
+            <input value={form.operation} onChange={(e) => onChange("operation", e.target.value)} className={INPUT_CLASS} placeholder="Greenhouse vegetables, Research institute…" />
+          </Field>
+          <Field label="Region">
+            <input value={form.region} onChange={(e) => onChange("region", e.target.value)} className={INPUT_CLASS} placeholder="Westland, NL" />
+          </Field>
+          <Field label="Country">
+            <select value={form.country} onChange={(e) => onChange("country", e.target.value)} className={INPUT_CLASS}>
+              {["NL", "BE", "DE", "FR", "DK", "ES", "Other"].map((c) => (
+                <option key={c}>{c}</option>
+              ))}
+            </select>
+          </Field>
+          <Field label="Openness">
+            <select value={form.openness} onChange={(e) => onChange("openness", e.target.value)} className={INPUT_CLASS}>
+              {["Open to pilots", "Active innovation partner", "Exploratory only"].map((o) => (
+                <option key={o}>{o}</option>
+              ))}
+            </select>
+          </Field>
+        </div>
+      </Section>
+
+      {/* Operation */}
+      <Section label="Your operation">
+        <div className="space-y-2 mb-4">
+          <span className="text-xs font-medium text-slate-600">Current challenges</span>
+          <ChallengePicker selectedIds={form.challengeIds} onChange={(ids) => onChange("challengeIds", ids)} />
+        </div>
+        <div className="space-y-2">
+          <span className="text-xs font-medium text-slate-600">Crops</span>
+          <CropPicker selectedCrops={form.crops} onChange={(crops) => onChange("crops", crops)} />
+        </div>
+        <div className="mt-4 grid gap-4 md:grid-cols-2">
+          <Field label="Contexts (comma-separated)">
+            <input value={form.contexts} onChange={(e) => onChange("contexts", e.target.value)} className={INPUT_CLASS} placeholder="Greenhouse, Open field" />
+          </Field>
+          <Field label="Pilot types accepted">
+            <input value={form.pilotTypes} onChange={(e) => onChange("pilotTypes", e.target.value)} className={INPUT_CLASS} placeholder="Paid pilot, Co-development…" />
+          </Field>
+          <Field label="Existing systems (comma-separated)">
+            <input value={form.systems} onChange={(e) => onChange("systems", e.target.value)} className={INPUT_CLASS} placeholder="Scouting rounds, Stable internet…" />
+          </Field>
+          <Field label="Available data (comma-separated)">
+            <input value={form.availableData} onChange={(e) => onChange("availableData", e.target.value)} className={INPUT_CLASS} placeholder="Disease observations, Soil samples…" />
+          </Field>
+          <Field label="Pilot constraints" full>
+            <input value={form.constraints} onChange={(e) => onChange("constraints", e.target.value)} className={INPUT_CLASS} placeholder="Low disruption, Seasonal window…" />
+          </Field>
+        </div>
+      </Section>
+    </div>
+  );
+}
+
+// ─── Layout helpers ───────────────────────────────────────────────────────────
+
+function Section({ label, children }: { label: string; children: React.ReactNode }) {
+  return (
+    <div>
+      <h3 className="mb-3 text-xs font-semibold uppercase tracking-wide text-slate-400">
+        {label}
+      </h3>
+      <div className="rounded-2xl border border-slate-100 p-4">
+        {children}
       </div>
-      <Field label="Contexts">
-        <input value={form.contexts} onChange={(e) => onChange("contexts", e.target.value)} className={INPUT_CLASS} placeholder="Greenhouse, Open field" />
-      </Field>
-      <Field label="Crops">
-        <input value={form.crops} onChange={(e) => onChange("crops", e.target.value)} className={INPUT_CLASS} placeholder="Tomato, Pepper" />
-      </Field>
-      <Field label="Openness">
-        <input value={form.openness} onChange={(e) => onChange("openness", e.target.value)} className={INPUT_CLASS} />
-      </Field>
-      <Field label="Pilot types">
-        <input value={form.pilotTypes} onChange={(e) => onChange("pilotTypes", e.target.value)} className={INPUT_CLASS} placeholder="Paid pilot, Co-development" />
-      </Field>
-      <Field label="Systems">
-        <input value={form.systems} onChange={(e) => onChange("systems", e.target.value)} className={INPUT_CLASS} placeholder="Scouting rounds, Stable internet" />
-      </Field>
-      <Field label="Available data">
-        <input value={form.availableData} onChange={(e) => onChange("availableData", e.target.value)} className={INPUT_CLASS} placeholder="Disease observations" />
-      </Field>
-      <Field label="Pilot constraints" full>
-        <input value={form.constraints} onChange={(e) => onChange("constraints", e.target.value)} className={INPUT_CLASS} placeholder="Low disruption, Seasonal window" />
-      </Field>
     </div>
   );
 }
@@ -309,7 +368,7 @@ function Field({
   children: React.ReactNode;
 }) {
   return (
-    <label className={`space-y-1${full ? " md:col-span-2" : ""}`}>
+    <label className={`block space-y-1${full ? " md:col-span-2" : ""}`}>
       <span className="text-xs font-medium text-slate-600">{label}</span>
       {children}
     </label>
