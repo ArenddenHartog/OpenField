@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { Search, Leaf, Filter, Plus } from "lucide-react";
+import { Search, Leaf, Filter } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { SolutionCard } from "@/components/SolutionCard";
@@ -14,6 +14,7 @@ import {
   SEED_EVIDENCE_RECORDS,
   SEED_PILOT_OFFERS,
   SEED_SOLUTIONS,
+  SOLUTION_TYPES,
 } from "@/data/seed";
 import type {
   EvidenceRecord,
@@ -35,6 +36,7 @@ export default function OpenFieldPage() {
   // null = anonymous visitor; set when grower completes their profile
   const [activeGrower, setActiveGrower] = useState<Grower | null>(null);
   const [selectedTag, setSelectedTag] = useState("All");
+  const [selectedType, setSelectedType] = useState("All");
   const [query, setQuery] = useState("");
   const [selectedId, setSelectedId] = useState("sol-sporesight-ai");
   const [modalRole, setModalRole] = useState<ModalRole>(null);
@@ -61,6 +63,7 @@ export default function OpenFieldPage() {
     return enrichedSolutions
       .filter((s) => {
         const tagMatch = selectedTag === "All" || s.tags.includes(selectedTag);
+        const typeMatch = selectedType === "All" || s.type === selectedType;
         const text = [
           s.name,
           s.proposition,
@@ -79,10 +82,10 @@ export default function OpenFieldPage() {
           .filter(Boolean)
           .join(" ")
           .toLowerCase();
-        return tagMatch && (!q || text.includes(q));
+        return tagMatch && typeMatch && (!q || text.includes(q));
       })
       .sort((a, b) => (b.match?.score ?? 0) - (a.match?.score ?? 0));
-  }, [selectedTag, query, enrichedSolutions]);
+  }, [selectedTag, selectedType, query, enrichedSolutions]);
 
   const selected =
     filtered.find((s) => s.id === selectedId) ?? filtered[0] ?? null;
@@ -93,8 +96,8 @@ export default function OpenFieldPage() {
       : [];
   const matchLabel =
     selected && bestMatch?.id === selected.id
-      ? "Best current match"
-      : "Selected match";
+      ? "Worth exploring for your operation"
+      : "Currently viewing";
 
   function handleCreateSolution(payload: {
     solution: Solution;
@@ -146,9 +149,9 @@ export default function OpenFieldPage() {
         {/* Hero + grower sidebar */}
         <section
           id="challenges"
-          className="mb-8 grid gap-6 lg:grid-cols-[1.15fr_0.85fr]"
+          className="mb-8 grid items-stretch gap-6 lg:grid-cols-[1.15fr_0.85fr]"
         >
-          <div className="rounded-3xl bg-slate-950 p-8 text-white shadow-sm">
+          <div className="flex flex-col rounded-3xl bg-slate-950 p-8 text-white shadow-sm">
             <h2 className="max-w-3xl text-4xl font-semibold leading-tight tracking-tight md:text-5xl">
               Find field-ready crop protection innovations — and the growers to
               validate them.
@@ -174,7 +177,7 @@ export default function OpenFieldPage() {
             </ul>
           </div>
 
-          <div id="grower-context">
+          <div id="grower-context" className="h-full">
             <GrowerPanel
               grower={activeGrower}
               onEdit={() => setModalRole("grower")}
@@ -183,11 +186,9 @@ export default function OpenFieldPage() {
         </section>
 
         {/* Search + filter bar */}
-        <section
-          id="solutions"
-          className="mb-6 flex flex-col gap-4 rounded-3xl bg-white p-4 shadow-sm md:flex-row md:items-center md:justify-between"
-        >
-          <div className="flex flex-1 items-center gap-3 rounded-2xl border border-slate-200 px-4 py-3">
+        <section id="solutions" className="mb-6 space-y-3 rounded-3xl bg-white p-4 shadow-sm">
+          {/* Search */}
+          <div className="flex items-center gap-3 rounded-2xl border border-slate-200 px-4 py-3">
             <Search size={18} className="text-slate-400" />
             <input
               value={query}
@@ -196,21 +197,47 @@ export default function OpenFieldPage() {
               className="w-full bg-transparent text-sm outline-none"
             />
           </div>
-          <div className="flex items-center gap-2 overflow-x-auto">
-            <Filter size={16} className="text-slate-400" />
+
+          {/* Challenge filter */}
+          <div className="flex items-center gap-2 overflow-x-auto scrollbar-hide pb-0.5">
+            <span className="shrink-0 text-[11px] font-semibold uppercase tracking-wide text-slate-400 pr-1">
+              Challenge
+            </span>
             {["All", ...CHALLENGES.map((c) => c.name)].map((tag) => (
               <button
                 key={tag}
                 type="button"
                 onClick={() => setSelectedTag(tag)}
                 className={cn(
-                  "whitespace-nowrap rounded-full border px-3 py-2 text-xs font-medium",
+                  "shrink-0 rounded-full border px-3 py-1.5 text-xs font-medium transition-colors",
                   selectedTag === tag
                     ? "border-emerald-700 bg-emerald-50 text-emerald-900"
-                    : "border-slate-200 bg-white text-slate-600"
+                    : "border-slate-200 bg-white text-slate-600 hover:border-slate-300"
                 )}
               >
                 {tag}
+              </button>
+            ))}
+          </div>
+
+          {/* Solution type filter */}
+          <div className="flex items-center gap-2 overflow-x-auto scrollbar-hide pb-0.5">
+            <span className="shrink-0 text-[11px] font-semibold uppercase tracking-wide text-slate-400 pr-1">
+              <Filter size={12} className="inline mr-1" />Type
+            </span>
+            {["All", ...SOLUTION_TYPES].map((type) => (
+              <button
+                key={type}
+                type="button"
+                onClick={() => setSelectedType(type)}
+                className={cn(
+                  "shrink-0 rounded-full border px-3 py-1.5 text-xs font-medium transition-colors",
+                  selectedType === type
+                    ? "border-slate-900 bg-slate-900 text-white"
+                    : "border-slate-200 bg-white text-slate-600 hover:border-slate-300"
+                )}
+              >
+                {type}
               </button>
             ))}
           </div>
@@ -219,22 +246,13 @@ export default function OpenFieldPage() {
         {/* Solution list + detail panel */}
         <section id="pilots" className="grid gap-6 lg:grid-cols-[0.9fr_1.1fr]">
           <div className="space-y-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <h2 className="text-xl font-semibold text-slate-950">
-                  Crop protection solutions
-                </h2>
-                <p className="text-sm text-slate-500">
-                  Filtered and ranked by calculated practical fit.
-                </p>
-              </div>
-              <Button
-                variant="outline"
-                className="rounded-xl"
-                onClick={() => setModalRole("innovator")}
-              >
-                <Plus size={16} className="mr-2" /> Add
-              </Button>
+            <div>
+              <h2 className="text-xl font-semibold text-slate-950">
+                Crop protection solutions
+              </h2>
+              <p className="text-sm text-slate-500">
+                Filtered and ranked by calculated practical fit.
+              </p>
             </div>
 
             {filtered.length > 0 ? (
@@ -276,7 +294,7 @@ export default function OpenFieldPage() {
                   <p className="mt-1 text-sm text-emerald-50">
                     {activeGrower
                       ? `Shared challenges: ${sharedTags.length > 0 ? sharedTags.join(", ") : "none yet"}`
-                      : "Fill in your grower context to see personalised scores"}
+                      : "Add your operational details to unlock personalised fit scores"}
                   </p>
                 </div>
                 <div className="rounded-xl bg-white px-3 py-2 text-center text-emerald-950">

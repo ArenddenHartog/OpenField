@@ -79,13 +79,32 @@ export const CROP_GROUPS: { label: string; crops: string[] }[] = [
 
 export const ALL_CROPS = CROP_GROUPS.flatMap((g) => g.crops);
 
+// ─── Solution type catalogue ──────────────────────────────────────────────────
+
+export const SOLUTION_TYPES = [
+  "AI / Software",
+  "Biological / Biostimulants",
+  "Precision machinery",
+  "Sensor / Hardware",
+  "Data platform",
+  "Robotics / Automation",
+  "IPM / Scouting tools",
+  "Genetics / Breeding support",
+  "Monitoring / Remote sensing",
+  "Decision support",
+  "Crop nutrition",
+  "Other",
+] as const;
+
+export type SolutionType = (typeof SOLUTION_TYPES)[number];
+
 // ─── Seed solutions ───────────────────────────────────────────────────────────
 
 export const SEED_SOLUTIONS: Solution[] = [
   {
     id: "sol-sporesight-ai",
     name: "SporeSight AI",
-    type: "AI / Computer vision",
+    type: "AI / Software",
     proposition:
       "Early mildew and fungal disease detection from greenhouse imagery.",
     stage: "Active pilots",
@@ -100,7 +119,7 @@ export const SEED_SOLUTIONS: Solution[] = [
   {
     id: "sol-bioshield-labs",
     name: "BioShield Labs",
-    type: "Biological crop protection",
+    type: "Biological / Biostimulants",
     proposition:
       "Beneficial microbe treatment to suppress soil-borne pathogens.",
     stage: "First field test",
@@ -263,6 +282,7 @@ export const SEED_EVIDENCE_RECORDS: EvidenceRecord[] = [
 
 export const EMPTY_INNOVATOR_FORM: InnovatorFormValues = {
   solutionName: "",
+  imageUrl: "",
   proposition: "",
   solutionType: "AI / Software",
   challengeIds: ["disease-detection"],
@@ -287,6 +307,7 @@ export const EMPTY_INNOVATOR_FORM: InnovatorFormValues = {
 
 export const EMPTY_GROWER_FORM: GrowerFormValues = {
   name: "",
+  imageUrl: "",
   role: "Grower",
   operation: "",
   region: "",

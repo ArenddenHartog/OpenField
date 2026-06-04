@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { ChallengePicker } from "@/components/ChallengePicker";
 import { CropPicker } from "@/components/CropPicker";
 import { STAGES, GROWER_ROLES } from "@/data/types";
-import { EMPTY_GROWER_FORM, EMPTY_INNOVATOR_FORM } from "@/data/seed";
+import { EMPTY_GROWER_FORM, EMPTY_INNOVATOR_FORM, SOLUTION_TYPES } from "@/data/seed";
 import type {
   EvidenceRecord,
   Grower,
@@ -59,6 +59,7 @@ export function IntakeModal({
         id: solutionId,
         name: f.solutionName || "New crop protection solution",
         type: f.solutionType,
+        imageUrl: f.imageUrl || undefined,
         proposition: f.proposition || "Crop protection solution ready for validation.",
         stage: f.stage,
         challengeIds: f.challengeIds,
@@ -101,6 +102,7 @@ export function IntakeModal({
       id: makeId("grower", f.name || f.operation),
       name: f.name || "New grower",
       role: f.role,
+      imageUrl: f.imageUrl || undefined,
       region: f.region || "Region not specified",
       country: f.country || "NL",
       operation: f.operation || "Agricultural operation",
@@ -185,7 +187,12 @@ function InnovatorFields({
             <input value={form.solutionName} onChange={(e) => onChange("solutionName", e.target.value)} className={INPUT_CLASS} placeholder="e.g. MildewSense" />
           </Field>
           <Field label="Solution type">
-            <input value={form.solutionType} onChange={(e) => onChange("solutionType", e.target.value)} className={INPUT_CLASS} placeholder="AI / Software, Biological, Machinery…" />
+            <select value={form.solutionType} onChange={(e) => onChange("solutionType", e.target.value)} className={INPUT_CLASS}>
+              {SOLUTION_TYPES.map((t) => <option key={t}>{t}</option>)}
+            </select>
+          </Field>
+          <Field label="Image URL (optional)" full>
+            <input value={form.imageUrl} onChange={(e) => onChange("imageUrl", e.target.value)} className={INPUT_CLASS} placeholder="https://your-image-host.com/photo.jpg" />
           </Field>
           <Field label="One-line proposition" full>
             <input value={form.proposition} onChange={(e) => onChange("proposition", e.target.value)} className={INPUT_CLASS} placeholder="What problem does it solve?" />
@@ -307,6 +314,9 @@ function GrowerFields({
                 <option key={o}>{o}</option>
               ))}
             </select>
+          </Field>
+          <Field label="Image URL (optional)" full>
+            <input value={form.imageUrl} onChange={(e) => onChange("imageUrl", e.target.value)} className={INPUT_CLASS} placeholder="https://your-image-host.com/photo.jpg" />
           </Field>
         </div>
       </Section>

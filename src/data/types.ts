@@ -43,6 +43,7 @@ export interface Solution {
   id: string;
   name: string;
   type: string;
+  imageUrl?: string;
   proposition: string;
   stage: Stage;
   challengeIds: ChallengeId[];
@@ -58,6 +59,7 @@ export interface Grower {
   id: string;
   name: string;
   role: GrowerRole;
+  imageUrl?: string;
   region: string;
   country: string;
   operation: string;
@@ -134,6 +136,7 @@ export interface EnrichedSolution extends Solution {
 
 export interface InnovatorFormValues {
   solutionName: string;
+  imageUrl: string;
   proposition: string;
   solutionType: string;
   challengeIds: ChallengeId[];
@@ -159,6 +162,7 @@ export interface InnovatorFormValues {
 export interface GrowerFormValues {
   name: string;
   role: GrowerRole;
+  imageUrl: string;
   operation: string;
   region: string;
   country: string;

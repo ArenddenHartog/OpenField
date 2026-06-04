@@ -33,6 +33,16 @@ export function ProfileDetail({ solution, onRequestIntro }: ProfileDetailProps) 
   return (
     <Card className="rounded-2xl border-slate-200 bg-white shadow-sm">
       <CardContent className="p-6">
+        {solution.imageUrl && (
+          <div className="mb-5 overflow-hidden rounded-2xl">
+            <img
+              src={solution.imageUrl}
+              alt={solution.name}
+              className="h-44 w-full object-cover"
+            />
+          </div>
+        )}
+
         <div className="mb-6 flex items-start justify-between gap-4">
           <div>
             <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-emerald-800">
