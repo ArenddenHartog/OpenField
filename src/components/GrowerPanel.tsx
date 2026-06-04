@@ -35,7 +35,7 @@ export function GrowerPanel({ grower, onEdit }: GrowerPanelProps) {
             onClick={onEdit}
             className="rounded-xl bg-emerald-800 hover:bg-emerald-900"
           >
-            Add my context
+            Create OpenField profile
           </Button>
         </CardContent>
       </Card>
