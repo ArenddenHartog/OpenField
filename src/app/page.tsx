@@ -1,30 +1,24 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import {
-  Search,
-  Leaf,
-  Filter,
-  Radar,
-  BarChart3,
-  Plus,
-} from "lucide-react";
+import { Search, Leaf, Filter, Plus } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { SolutionCard } from "@/components/SolutionCard";
 import { ProfileDetail } from "@/components/ProfileDetail";
 import { GrowerPanel } from "@/components/GrowerPanel";
 import { IntakeModal } from "@/components/IntakeModal";
-import { CHALLENGES } from "@/data/seed";
+import { RequestIntroModal } from "@/components/RequestIntroModal";
 import {
+  CHALLENGES,
   SEED_EVIDENCE_RECORDS,
-  SEED_GROWERS,
   SEED_PILOT_OFFERS,
   SEED_SOLUTIONS,
 } from "@/data/seed";
 import type {
   EvidenceRecord,
   Grower,
+  Match,
   PilotOffer,
   Solution,
 } from "@/data/types";
@@ -35,22 +29,23 @@ type ModalRole = "innovator" | "grower" | null;
 
 export default function OpenFieldPage() {
   const [solutions, setSolutions] = useState<Solution[]>(SEED_SOLUTIONS);
-  const [growers, setGrowers] = useState<Grower[]>(SEED_GROWERS);
   const [pilotOffers, setPilotOffers] = useState<PilotOffer[]>(SEED_PILOT_OFFERS);
   const [evidenceRecords, setEvidenceRecords] = useState<EvidenceRecord[]>(SEED_EVIDENCE_RECORDS);
 
-  const [selectedGrowerId, setSelectedGrowerId] = useState(SEED_GROWERS[0].id);
+  // null = anonymous visitor; set when grower completes their profile
+  const [activeGrower, setActiveGrower] = useState<Grower | null>(null);
   const [selectedTag, setSelectedTag] = useState("All");
   const [query, setQuery] = useState("");
   const [selectedId, setSelectedId] = useState("sol-sporesight-ai");
   const [modalRole, setModalRole] = useState<ModalRole>(null);
+  const [requestIntroOpen, setRequestIntroOpen] = useState(false);
 
-  const grower =
-    growers.find((g) => g.id === selectedGrowerId) ?? growers[0];
-
-  const matches = useMemo(
-    () => buildMatches(grower, solutions, pilotOffers, evidenceRecords),
-    [grower, solutions, pilotOffers, evidenceRecords]
+  const matches = useMemo<Match[]>(
+    () =>
+      activeGrower
+        ? buildMatches(activeGrower, solutions, pilotOffers, evidenceRecords)
+        : [],
+    [activeGrower, solutions, pilotOffers, evidenceRecords]
   );
 
   const enrichedSolutions = useMemo(
@@ -92,9 +87,10 @@ export default function OpenFieldPage() {
   const selected =
     filtered.find((s) => s.id === selectedId) ?? filtered[0] ?? null;
   const bestMatch = filtered[0] ?? null;
-  const sharedTags = selected
-    ? namesFromIds(selected.match?.sharedChallengeIds ?? [], CHALLENGES)
-    : [];
+  const sharedTags =
+    activeGrower && selected
+      ? namesFromIds(selected.match?.sharedChallengeIds ?? [], CHALLENGES)
+      : [];
   const matchLabel =
     selected && bestMatch?.id === selected.id
       ? "Best current match"
@@ -113,8 +109,7 @@ export default function OpenFieldPage() {
   }
 
   function handleCreateGrower(grower: Grower) {
-    setGrowers((prev) => [...prev, grower]);
-    setSelectedGrowerId(grower.id);
+    setActiveGrower(grower);
     setModalRole(null);
   }
 
@@ -127,32 +122,21 @@ export default function OpenFieldPage() {
             <div className="rounded-2xl bg-emerald-800 p-2 text-white">
               <Leaf size={22} />
             </div>
-            <div>
-              <h1 className="text-lg font-semibold tracking-tight">OpenField</h1>
-              <p className="text-xs text-slate-500">
-                Crop protection innovation matching
-              </p>
-            </div>
+            <h1 className="text-lg font-semibold tracking-tight">OpenField</h1>
           </div>
-          <nav className="hidden items-center gap-6 text-sm text-slate-600 md:flex">
-            <a href="#challenges">Challenges</a>
-            <a href="#solutions">Solutions</a>
-            <a href="#pilots">Pilots</a>
-            <a href="#grower-network">Grower network</a>
-          </nav>
           <div className="flex gap-2">
             <Button
               variant="outline"
               onClick={() => setModalRole("grower")}
               className="rounded-xl border-slate-300"
             >
-              Add grower
+              I am a grower
             </Button>
             <Button
               onClick={() => setModalRole("innovator")}
               className="rounded-xl bg-emerald-800 hover:bg-emerald-900"
             >
-              Add solution
+              I am an innovator
             </Button>
           </div>
         </div>
@@ -165,9 +149,6 @@ export default function OpenFieldPage() {
           className="mb-8 grid gap-6 lg:grid-cols-[1.15fr_0.85fr]"
         >
           <div className="rounded-3xl bg-slate-950 p-8 text-white shadow-sm">
-            <div className="mb-4 inline-flex items-center gap-2 rounded-full bg-white/10 px-3 py-1 text-xs text-emerald-100">
-              <Radar size={14} /> MVP wedge: Crop Protection
-            </div>
             <h2 className="max-w-3xl text-4xl font-semibold leading-tight tracking-tight md:text-5xl">
               Find field-ready crop protection innovations — and the growers to
               validate them.
@@ -177,80 +158,27 @@ export default function OpenFieldPage() {
               innovators who are ready to test, prove, or scale their solutions
               in real agricultural conditions.
             </p>
-            <div className="mt-6 flex flex-wrap gap-3">
-              <Button
-                onClick={() => setModalRole("grower")}
-                className="rounded-xl bg-white text-slate-950 hover:bg-slate-100"
-              >
-                I am a grower
-              </Button>
-              <Button
-                onClick={() => setModalRole("innovator")}
-                variant="outline"
-                className="rounded-xl border-white/30 bg-transparent text-white hover:bg-white/10 hover:text-white"
-              >
-                I am an innovator
-              </Button>
-            </div>
+            <ul className="mt-6 space-y-2 text-sm text-slate-400">
+              <li className="flex items-center gap-2">
+                <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
+                Tell us your context — crops, challenges, systems
+              </li>
+              <li className="flex items-center gap-2">
+                <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
+                We rank and match solutions to your situation
+              </li>
+              <li className="flex items-center gap-2">
+                <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
+                Request an intro to start a pilot
+              </li>
+            </ul>
           </div>
 
-          <div id="grower-network" className="grid gap-4">
-            <Card className="rounded-3xl border-slate-200 bg-white shadow-sm">
-              <CardContent className="p-6">
-                <div className="mb-4 flex items-center gap-3">
-                  <div className="rounded-2xl bg-emerald-50 p-3 text-emerald-800">
-                    <BarChart3 size={22} />
-                  </div>
-                  <div>
-                    <h3 className="font-semibold text-slate-950">MVP signal</h3>
-                    <p className="text-sm text-slate-500">
-                      Measure calculated matches, not traffic.
-                    </p>
-                  </div>
-                </div>
-                <div className="grid grid-cols-3 gap-3 text-center">
-                  <div className="rounded-2xl bg-slate-50 p-3">
-                    <div className="text-2xl font-semibold">
-                      {solutions.length}
-                    </div>
-                    <div className="text-xs text-slate-500">solutions</div>
-                  </div>
-                  <div className="rounded-2xl bg-slate-50 p-3">
-                    <div className="text-2xl font-semibold">
-                      {growers.length}
-                    </div>
-                    <div className="text-xs text-slate-500">growers</div>
-                  </div>
-                  <div className="rounded-2xl bg-slate-50 p-3">
-                    <div className="text-2xl font-semibold">
-                      {matches.length}
-                    </div>
-                    <div className="text-xs text-slate-500">matches</div>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            <div className="rounded-2xl bg-white p-4 shadow-sm">
-              <label className="space-y-1">
-                <span className="text-xs font-medium text-slate-600">
-                  Active grower context
-                </span>
-                <select
-                  value={selectedGrowerId}
-                  onChange={(e) => setSelectedGrowerId(e.target.value)}
-                  className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm outline-none focus:border-emerald-700"
-                >
-                  {growers.map((g) => (
-                    <option key={g.id} value={g.id}>
-                      {g.name}
-                    </option>
-                  ))}
-                </select>
-              </label>
-            </div>
-
-            <GrowerPanel grower={grower} />
+          <div id="grower-context">
+            <GrowerPanel
+              grower={activeGrower}
+              onEdit={() => setModalRole("grower")}
+            />
           </div>
         </section>
 
@@ -342,14 +270,13 @@ export default function OpenFieldPage() {
                   </p>
                   <h3 className="mt-1 text-lg font-semibold">
                     {selected
-                      ? `${grower.name} × ${selected.name}`
-                      : `${grower.name} × no solution selected`}
+                      ? `${activeGrower?.name ?? "Your context"} × ${selected.name}`
+                      : "Select a solution to see your match"}
                   </h3>
                   <p className="mt-1 text-sm text-emerald-50">
-                    Shared challenge tags:{" "}
-                    {sharedTags.length > 0
-                      ? sharedTags.join(", ")
-                      : "needs review"}
+                    {activeGrower
+                      ? `Shared challenges: ${sharedTags.length > 0 ? sharedTags.join(", ") : "none yet"}`
+                      : "Fill in your grower context to see personalised scores"}
                   </p>
                 </div>
                 <div className="rounded-xl bg-white px-3 py-2 text-center text-emerald-950">
@@ -362,7 +289,10 @@ export default function OpenFieldPage() {
                 </div>
               </div>
             </div>
-            <ProfileDetail solution={selected} />
+            <ProfileDetail
+              solution={selected}
+              onRequestIntro={() => setRequestIntroOpen(true)}
+            />
           </div>
         </section>
       </main>
@@ -373,6 +303,13 @@ export default function OpenFieldPage() {
           onClose={() => setModalRole(null)}
           onCreateSolution={handleCreateSolution}
           onCreateGrower={handleCreateGrower}
+        />
+      )}
+
+      {requestIntroOpen && selected && (
+        <RequestIntroModal
+          solution={selected}
+          onClose={() => setRequestIntroOpen(false)}
         />
       )}
     </div>
