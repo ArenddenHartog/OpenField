@@ -9,9 +9,10 @@ import { unique } from "@/lib/utils";
 
 interface ProfileDetailProps {
   solution: EnrichedSolution | null;
+  onRequestIntro: () => void;
 }
 
-export function ProfileDetail({ solution }: ProfileDetailProps) {
+export function ProfileDetail({ solution, onRequestIntro }: ProfileDetailProps) {
   if (!solution) {
     return (
       <Card className="rounded-2xl border-slate-200 bg-white shadow-sm">
@@ -44,7 +45,10 @@ export function ProfileDetail({ solution }: ProfileDetailProps) {
               {solution.proposition}
             </p>
           </div>
-          <Button className="rounded-xl bg-emerald-800 hover:bg-emerald-900">
+          <Button
+            onClick={onRequestIntro}
+            className="rounded-xl bg-emerald-800 hover:bg-emerald-900"
+          >
             Request intro
           </Button>
         </div>

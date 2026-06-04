@@ -42,7 +42,10 @@ export function SolutionCard({ solution, selected, onClick }: SolutionCardProps)
                 {solution.proposition}
               </p>
             </div>
-            <div className="rounded-xl bg-slate-950 px-3 py-2 text-center text-white">
+            <div
+              title="Match score out of 100 — based on challenge, context, crop, pilot readiness, geography, and validation fit"
+              className="rounded-xl bg-slate-950 px-3 py-2 text-center text-white"
+            >
               <div className="text-lg font-semibold">
                 {solution.match?.score ?? "—"}
               </div>
