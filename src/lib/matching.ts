@@ -63,7 +63,9 @@ export function calculateMatch(
   const matchedSystems = overlap(requiredSystems, grower.systems);
   const matchedData = overlap(requiredData, grower.availableData);
 
-  const geographyFitScore = solution.geography.includes(grower.country)
+  const geographyFitScore = solution.geography.some((c) =>
+    grower.countries.includes(c)
+  )
     ? 100
     : 0;
   const pilotTypeFitScore =

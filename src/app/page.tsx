@@ -8,6 +8,7 @@ import { SolutionCard } from "@/components/SolutionCard";
 import { ProfileDetail } from "@/components/ProfileDetail";
 import { GrowerPanel } from "@/components/GrowerPanel";
 import { IntakeModal } from "@/components/IntakeModal";
+import { ProfilePickerModal } from "@/components/ProfilePickerModal";
 import { RequestIntroModal } from "@/components/RequestIntroModal";
 import {
   CHALLENGES,
@@ -19,6 +20,7 @@ import {
 import type {
   EvidenceRecord,
   Grower,
+  GrowerRole,
   Match,
   PilotOffer,
   Solution,
@@ -33,13 +35,14 @@ export default function OpenFieldPage() {
   const [pilotOffers, setPilotOffers] = useState<PilotOffer[]>(SEED_PILOT_OFFERS);
   const [evidenceRecords, setEvidenceRecords] = useState<EvidenceRecord[]>(SEED_EVIDENCE_RECORDS);
 
-  // null = anonymous visitor; set when grower completes their profile
   const [activeGrower, setActiveGrower] = useState<Grower | null>(null);
   const [selectedTag, setSelectedTag] = useState("All");
   const [selectedType, setSelectedType] = useState("All");
   const [query, setQuery] = useState("");
   const [selectedId, setSelectedId] = useState("sol-sporesight-ai");
+  const [profilePickerOpen, setProfilePickerOpen] = useState(false);
   const [modalRole, setModalRole] = useState<ModalRole>(null);
+  const [presetGrowerRole, setPresetGrowerRole] = useState<GrowerRole | undefined>(undefined);
   const [requestIntroOpen, setRequestIntroOpen] = useState(false);
 
   const matches = useMemo<Match[]>(
@@ -99,6 +102,12 @@ export default function OpenFieldPage() {
       ? "Worth exploring for your operation"
       : "Currently viewing";
 
+  function handleProfileSelect(profileType: "innovator" | "grower", growerRole?: GrowerRole) {
+    setProfilePickerOpen(false);
+    setPresetGrowerRole(growerRole);
+    setModalRole(profileType);
+  }
+
   function handleCreateSolution(payload: {
     solution: Solution;
     pilotOffer: PilotOffer;
@@ -130,16 +139,16 @@ export default function OpenFieldPage() {
           <div className="flex gap-2">
             <Button
               variant="outline"
-              onClick={() => setModalRole("grower")}
+              onClick={() => setProfilePickerOpen(true)}
               className="rounded-xl border-slate-300"
             >
-              I am a grower
+              Create profile
             </Button>
             <Button
-              onClick={() => setModalRole("innovator")}
+              onClick={() => setProfilePickerOpen(true)}
               className="rounded-xl bg-emerald-800 hover:bg-emerald-900"
             >
-              I am an innovator
+              List your solution
             </Button>
           </div>
         </div>
@@ -151,28 +160,29 @@ export default function OpenFieldPage() {
           id="challenges"
           className="mb-8 grid items-stretch gap-6 lg:grid-cols-[1.15fr_0.85fr]"
         >
-          <div className="flex flex-col rounded-3xl bg-slate-950 p-8 text-white shadow-sm">
-            <h2 className="max-w-3xl text-4xl font-semibold leading-tight tracking-tight md:text-5xl">
-              Find field-ready crop protection innovations — and the growers to
-              validate them.
-            </h2>
-            <p className="mt-5 max-w-2xl text-base leading-relaxed text-slate-300">
-              OpenField connects practical crop protection challenges with
-              innovators who are ready to test, prove, or scale their solutions
-              in real agricultural conditions.
+          <div className="flex flex-col rounded-3xl border border-slate-200 bg-white p-8 shadow-sm">
+            <p className="mb-3 text-xs font-semibold uppercase tracking-wide text-emerald-800">
+              OpenField
             </p>
-            <ul className="mt-6 space-y-2 text-sm text-slate-400">
+            <h2 className="max-w-3xl text-4xl font-semibold leading-tight tracking-tight text-slate-950 md:text-5xl">
+              Find field-ready innovations — and the growers to validate them.
+            </h2>
+            <p className="mt-5 max-w-2xl text-base leading-relaxed text-slate-600">
+              OpenField brings together growers&rsquo; real challenges and the people
+              building solutions to solve them. Practical fit, not marketing.
+            </p>
+            <ul className="mt-6 space-y-2 text-sm text-slate-500">
               <li className="flex items-center gap-2">
                 <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
-                Tell us your context — crops, challenges, systems
+                Share your operation — crops, challenges, systems
               </li>
               <li className="flex items-center gap-2">
                 <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
-                We rank and match solutions to your situation
+                We surface the most relevant solutions for your context
               </li>
               <li className="flex items-center gap-2">
                 <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
-                Request an intro to start a pilot
+                Request an intro and start a pilot this season
               </li>
             </ul>
           </div>
@@ -187,18 +197,16 @@ export default function OpenFieldPage() {
 
         {/* Search + filter bar */}
         <section id="solutions" className="mb-6 space-y-3 rounded-3xl bg-white p-4 shadow-sm">
-          {/* Search */}
           <div className="flex items-center gap-3 rounded-2xl border border-slate-200 px-4 py-3">
             <Search size={18} className="text-slate-400" />
             <input
               value={query}
               onChange={(e) => setQuery(e.target.value)}
-              placeholder="Search by disease, crop, solution type or requirement..."
+              placeholder="Search by challenge, crop, solution type or requirement..."
               className="w-full bg-transparent text-sm outline-none"
             />
           </div>
 
-          {/* Challenge filter */}
           <div className="flex items-center gap-2 overflow-x-auto scrollbar-hide pb-0.5">
             <span className="shrink-0 text-[11px] font-semibold uppercase tracking-wide text-slate-400 pr-1">
               Challenge
@@ -220,7 +228,6 @@ export default function OpenFieldPage() {
             ))}
           </div>
 
-          {/* Solution type filter */}
           <div className="flex items-center gap-2 overflow-x-auto scrollbar-hide pb-0.5">
             <span className="shrink-0 text-[11px] font-semibold uppercase tracking-wide text-slate-400 pr-1">
               <Filter size={12} className="inline mr-1" />Type
@@ -243,18 +250,19 @@ export default function OpenFieldPage() {
           </div>
         </section>
 
+        {/* Section header above the two-column grid */}
+        <div className="mb-4">
+          <h2 className="text-xl font-semibold text-slate-950">
+            Innovations on OpenField
+          </h2>
+          <p className="text-sm text-slate-500">
+            Ranked by operational relevance to your context.
+          </p>
+        </div>
+
         {/* Solution list + detail panel */}
         <section id="pilots" className="grid gap-6 lg:grid-cols-[0.9fr_1.1fr]">
           <div className="space-y-4">
-            <div>
-              <h2 className="text-xl font-semibold text-slate-950">
-                Crop protection solutions
-              </h2>
-              <p className="text-sm text-slate-500">
-                Filtered and ranked by calculated practical fit.
-              </p>
-            </div>
-
             {filtered.length > 0 ? (
               filtered.map((s) => (
                 <SolutionCard
@@ -289,12 +297,12 @@ export default function OpenFieldPage() {
                   <h3 className="mt-1 text-lg font-semibold">
                     {selected
                       ? `${activeGrower?.name ?? "Your context"} × ${selected.name}`
-                      : "Select a solution to see your match"}
+                      : "Select a solution to see your score"}
                   </h3>
                   <p className="mt-1 text-sm text-emerald-50">
                     {activeGrower
                       ? `Shared challenges: ${sharedTags.length > 0 ? sharedTags.join(", ") : "none yet"}`
-                      : "Add your operational details to unlock personalised fit scores"}
+                      : "Add your profile to unlock operational relevance scores"}
                   </p>
                 </div>
                 <div className="rounded-xl bg-white px-3 py-2 text-center text-emerald-950">
@@ -315,10 +323,30 @@ export default function OpenFieldPage() {
         </section>
       </main>
 
+      <footer className="mt-16 border-t border-slate-200 py-8 text-center text-sm text-slate-400">
+        Initiated with love by{" "}
+        <a
+          href="https://www.linkedin.com/in/arenddenhartog/"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="text-slate-600 underline underline-offset-2 hover:text-slate-900"
+        >
+          Arend den Hartog
+        </a>
+      </footer>
+
+      {profilePickerOpen && (
+        <ProfilePickerModal
+          onClose={() => setProfilePickerOpen(false)}
+          onSelect={handleProfileSelect}
+        />
+      )}
+
       {modalRole && (
         <IntakeModal
           role={modalRole}
-          onClose={() => setModalRole(null)}
+          presetGrowerRole={presetGrowerRole}
+          onClose={() => { setModalRole(null); setPresetGrowerRole(undefined); }}
           onCreateSolution={handleCreateSolution}
           onCreateGrower={handleCreateGrower}
         />

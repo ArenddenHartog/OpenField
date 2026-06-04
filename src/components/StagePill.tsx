@@ -22,7 +22,11 @@ export function StagePill({ stage }: StagePillProps) {
             key={stageName}
             className={cn(
               "h-2 rounded-full",
-              stageIndex <= safeIndex ? "bg-emerald-700" : "bg-slate-200"
+              stageIndex < safeIndex
+                ? "bg-emerald-700"
+                : stageIndex === safeIndex
+                  ? "bg-emerald-400"
+                  : "bg-slate-200"
             )}
             title={stageName}
           />

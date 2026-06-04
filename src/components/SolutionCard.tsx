@@ -59,7 +59,7 @@ export function SolutionCard({ solution, selected, onClick }: SolutionCardProps)
                 {solution.match?.score ?? "—"}
               </div>
               <div className="text-[10px] uppercase tracking-wide text-slate-300">
-                match
+                score
               </div>
             </div>
           </div>

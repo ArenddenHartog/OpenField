@@ -45,9 +45,6 @@ export function ProfileDetail({ solution, onRequestIntro }: ProfileDetailProps) 
 
         <div className="mb-6 flex items-start justify-between gap-4">
           <div>
-            <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-emerald-800">
-              Solution profile
-            </p>
             <h2 className="text-2xl font-semibold text-slate-950">
               {solution.name}
             </h2>
@@ -95,7 +92,7 @@ export function ProfileDetail({ solution, onRequestIntro }: ProfileDetailProps) 
         <div className="mb-6 rounded-2xl border border-slate-100 p-4">
           <div className="mb-3 flex items-center justify-between">
             <h4 className="text-sm font-semibold text-slate-950">
-              Calculated match breakdown
+              Score breakdown
             </h4>
             <span className="rounded-full bg-slate-950 px-3 py-1 text-xs font-semibold text-white">
               {solution.match?.score ?? "—"} score

@@ -23,12 +23,18 @@ export type ChallengeId =
 
 export type PilotStatus = "Open" | "Closed";
 
-export type GrowerRole = "Grower" | "Researcher" | "Breeder" | "Other";
+export type GrowerRole =
+  | "Grower"
+  | "Researcher"
+  | "Breeder"
+  | "Technology partner"
+  | "Other";
 
 export const GROWER_ROLES: GrowerRole[] = [
   "Grower",
   "Researcher",
   "Breeder",
+  "Technology partner",
   "Other",
 ];
 
@@ -61,7 +67,7 @@ export interface Grower {
   role: GrowerRole;
   imageUrl?: string;
   region: string;
-  country: string;
+  countries: string[];
   operation: string;
   contexts: string[];
   crops: string[];
@@ -165,7 +171,7 @@ export interface GrowerFormValues {
   imageUrl: string;
   operation: string;
   region: string;
-  country: string;
+  countries: string[];
   contexts: string;
   crops: string[];
   openness: string;

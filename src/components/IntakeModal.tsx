@@ -12,16 +12,20 @@ import type {
   EvidenceRecord,
   Grower,
   GrowerFormValues,
+  GrowerRole,
   InnovatorFormValues,
   PilotOffer,
   Solution,
 } from "@/data/types";
-import { listFromText, makeId } from "@/lib/utils";
+import { cn, listFromText, makeId } from "@/lib/utils";
+
+const COUNTRIES = ["NL", "BE", "DE", "FR", "DK", "ES", "PL", "UK", "IE", "IT", "PT", "Other"];
 
 type Role = "innovator" | "grower";
 
 interface IntakeModalProps {
   role: Role;
+  presetGrowerRole?: GrowerRole;
   onClose: () => void;
   onCreateSolution: (payload: {
     solution: Solution;
@@ -36,13 +40,18 @@ const INPUT_CLASS =
 
 export function IntakeModal({
   role,
+  presetGrowerRole,
   onClose,
   onCreateSolution,
   onCreateGrower,
 }: IntakeModalProps) {
   const isInnovator = role === "innovator";
   const [form, setForm] = useState<InnovatorFormValues | GrowerFormValues>(
-    isInnovator ? EMPTY_INNOVATOR_FORM : EMPTY_GROWER_FORM
+    isInnovator
+      ? EMPTY_INNOVATOR_FORM
+      : presetGrowerRole
+        ? { ...EMPTY_GROWER_FORM, role: presetGrowerRole }
+        : EMPTY_GROWER_FORM
   );
 
   function setField(key: string, value: unknown) {
@@ -104,7 +113,7 @@ export function IntakeModal({
       role: f.role,
       imageUrl: f.imageUrl || undefined,
       region: f.region || "Region not specified",
-      country: f.country || "NL",
+      countries: f.countries.length > 0 ? f.countries : ["NL"],
       operation: f.operation || "Agricultural operation",
       contexts: listFromText(f.contexts),
       crops: f.crops,
@@ -301,13 +310,29 @@ function GrowerFields({
           <Field label="Region">
             <input value={form.region} onChange={(e) => onChange("region", e.target.value)} className={INPUT_CLASS} placeholder="Westland, NL" />
           </Field>
-          <Field label="Country">
-            <select value={form.country} onChange={(e) => onChange("country", e.target.value)} className={INPUT_CLASS}>
-              {["NL", "BE", "DE", "FR", "DK", "ES", "Other"].map((c) => (
-                <option key={c}>{c}</option>
+          <label className="block space-y-1 md:col-span-2">
+            <span className="text-xs font-medium text-slate-600">Countries active in</span>
+            <div className="flex flex-wrap gap-2 pt-1">
+              {COUNTRIES.map((c) => (
+                <button
+                  key={c}
+                  type="button"
+                  onClick={() => {
+                    const current = form.countries;
+                    onChange("countries", current.includes(c) ? current.filter((x) => x !== c) : [...current, c]);
+                  }}
+                  className={cn(
+                    "rounded-full border px-3 py-1 text-xs font-medium transition-colors",
+                    form.countries.includes(c)
+                      ? "border-emerald-700 bg-emerald-50 text-emerald-900"
+                      : "border-slate-200 text-slate-600 hover:border-slate-300"
+                  )}
+                >
+                  {c}
+                </button>
               ))}
-            </select>
-          </Field>
+            </div>
+          </label>
           <Field label="Openness">
             <select value={form.openness} onChange={(e) => onChange("openness", e.target.value)} className={INPUT_CLASS}>
               {["Open to pilots", "Active innovation partner", "Exploratory only"].map((o) => (
