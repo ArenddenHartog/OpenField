@@ -14,7 +14,9 @@ export function StagePill({ stage }: StagePillProps) {
     <div className="space-y-2">
       <div className="flex items-center justify-between text-xs text-slate-500">
         <span>Validation stage</span>
-        <span className="font-medium text-slate-700">{stage}</span>
+        <span className="rounded-md bg-emerald-50 px-1.5 py-0.5 font-medium text-emerald-800">
+          {stage}
+        </span>
       </div>
       <div className="grid grid-cols-6 gap-1">
         {STAGES.map((stageName, stageIndex) => (
@@ -22,11 +24,7 @@ export function StagePill({ stage }: StagePillProps) {
             key={stageName}
             className={cn(
               "h-2 rounded-full",
-              stageIndex < safeIndex
-                ? "bg-emerald-700"
-                : stageIndex === safeIndex
-                  ? "bg-emerald-400"
-                  : "bg-slate-200"
+              stageIndex <= safeIndex ? "bg-emerald-700" : "bg-slate-200"
             )}
             title={stageName}
           />

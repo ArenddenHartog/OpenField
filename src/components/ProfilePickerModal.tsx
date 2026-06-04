@@ -18,14 +18,14 @@ interface ProfileChoice {
 const PROFILES: ProfileChoice[] = [
   {
     label: "Innovator",
-    description: "I have a solution ready to test or scale.",
+    description: "",
     icon: <Lightbulb size={22} />,
     profileType: "innovator",
-    accent: "bg-amber-50 text-amber-700",
+    accent: "bg-emerald-50 text-emerald-700",
   },
   {
     label: "Grower",
-    description: "I run a farming or horticultural operation.",
+    description: "",
     icon: <Sprout size={22} />,
     profileType: "grower",
     growerRole: "Grower",
@@ -33,35 +33,35 @@ const PROFILES: ProfileChoice[] = [
   },
   {
     label: "Breeder",
-    description: "I work on variety development and genetics.",
+    description: "",
     icon: <FlaskConical size={22} />,
     profileType: "grower",
     growerRole: "Breeder",
-    accent: "bg-purple-50 text-purple-700",
+    accent: "bg-emerald-50 text-emerald-700",
   },
   {
     label: "Researcher",
-    description: "I conduct trials, studies, or applied research.",
+    description: "",
     icon: <BookOpen size={22} />,
     profileType: "grower",
     growerRole: "Researcher",
-    accent: "bg-blue-50 text-blue-700",
+    accent: "bg-emerald-50 text-emerald-700",
   },
   {
     label: "Technology partner",
-    description: "I supply equipment, data, or digital services.",
+    description: "",
     icon: <Cpu size={22} />,
     profileType: "grower",
     growerRole: "Technology partner",
-    accent: "bg-slate-100 text-slate-700",
+    accent: "bg-emerald-50 text-emerald-700",
   },
   {
     label: "Other",
-    description: "I have another role in the agri-food chain.",
+    description: "",
     icon: <Users size={22} />,
     profileType: "grower",
     growerRole: "Other",
-    accent: "bg-slate-100 text-slate-600",
+    accent: "bg-emerald-50 text-emerald-700",
   },
 ];
 
@@ -104,15 +104,12 @@ export function ProfilePickerModal({ onClose, onSelect }: ProfilePickerModalProp
               key={profile.label}
               type="button"
               onClick={() => onSelect(profile.profileType, profile.growerRole)}
-              className="flex flex-col items-start gap-3 rounded-2xl border border-slate-200 p-4 text-left transition hover:border-emerald-300 hover:shadow-sm"
+              className="flex flex-col items-center gap-3 rounded-2xl border border-slate-200 p-5 text-center transition hover:border-emerald-300 hover:shadow-sm"
             >
-              <div className={`rounded-xl p-2 ${profile.accent}`}>
+              <div className={`rounded-xl p-2.5 ${profile.accent}`}>
                 {profile.icon}
               </div>
-              <div>
-                <p className="text-sm font-semibold text-slate-950">{profile.label}</p>
-                <p className="mt-0.5 text-xs leading-snug text-slate-500">{profile.description}</p>
-              </div>
+              <p className="text-sm font-semibold text-slate-950">{profile.label}</p>
             </button>
           ))}
         </div>

@@ -139,16 +139,16 @@ export default function OpenFieldPage() {
           <div className="flex gap-2">
             <Button
               variant="outline"
-              onClick={() => setProfilePickerOpen(true)}
+              onClick={() => setModalRole("grower")}
               className="rounded-xl border-slate-300"
             >
-              Create profile
+              I am a grower
             </Button>
             <Button
-              onClick={() => setProfilePickerOpen(true)}
+              onClick={() => setModalRole("innovator")}
               className="rounded-xl bg-emerald-800 hover:bg-emerald-900"
             >
-              List your solution
+              I am an innovator
             </Button>
           </div>
         </div>
@@ -160,15 +160,12 @@ export default function OpenFieldPage() {
           id="challenges"
           className="mb-8 grid items-stretch gap-6 lg:grid-cols-[1.15fr_0.85fr]"
         >
-          <div className="flex flex-col rounded-3xl border border-slate-200 bg-white p-8 shadow-sm">
-            <p className="mb-3 text-xs font-semibold uppercase tracking-wide text-emerald-800">
-              OpenField
-            </p>
+          <div className="flex flex-col justify-center py-4">
             <h2 className="max-w-3xl text-4xl font-semibold leading-tight tracking-tight text-slate-950 md:text-5xl">
-              Find field-ready innovations — and the growers to validate them.
+              Find field-ready innovations and the growers to validate them.
             </h2>
             <p className="mt-5 max-w-2xl text-base leading-relaxed text-slate-600">
-              OpenField brings together growers&rsquo; real challenges and the people
+              OpenField brings together growers&rsquo; real challenges and the innovators
               building solutions to solve them. Practical fit, not marketing.
             </p>
             <ul className="mt-6 space-y-2 text-sm text-slate-500">
@@ -178,7 +175,7 @@ export default function OpenFieldPage() {
               </li>
               <li className="flex items-center gap-2">
                 <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
-                We surface the most relevant solutions for your context
+                We surface the most operationally relevant solutions
               </li>
               <li className="flex items-center gap-2">
                 <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
@@ -190,6 +187,7 @@ export default function OpenFieldPage() {
           <div id="grower-context" className="h-full">
             <GrowerPanel
               grower={activeGrower}
+              onCreateProfile={() => setProfilePickerOpen(true)}
               onEdit={() => setModalRole("grower")}
             />
           </div>
@@ -256,7 +254,7 @@ export default function OpenFieldPage() {
             Innovations on OpenField
           </h2>
           <p className="text-sm text-slate-500">
-            Ranked by operational relevance to your context.
+            Ranked by operational relevance.
           </p>
         </div>
 
@@ -297,7 +295,7 @@ export default function OpenFieldPage() {
                   <h3 className="mt-1 text-lg font-semibold">
                     {selected
                       ? `${activeGrower?.name ?? "Your context"} × ${selected.name}`
-                      : "Select a solution to see your score"}
+                      : "Select a solution to see its score"}
                   </h3>
                   <p className="mt-1 text-sm text-emerald-50">
                     {activeGrower

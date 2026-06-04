@@ -8,10 +8,11 @@ import { namesFromIds } from "@/lib/utils";
 
 interface GrowerPanelProps {
   grower: Grower | null;
+  onCreateProfile: () => void;
   onEdit: () => void;
 }
 
-export function GrowerPanel({ grower, onEdit }: GrowerPanelProps) {
+export function GrowerPanel({ grower, onCreateProfile, onEdit }: GrowerPanelProps) {
   if (!grower) {
     return (
       <Card className="h-full rounded-2xl border-dashed border-slate-300 bg-white shadow-sm">
@@ -28,11 +29,11 @@ export function GrowerPanel({ grower, onEdit }: GrowerPanelProps) {
             </h3>
             <p className="mt-1 text-sm text-slate-500">
               Solutions are ranked based on your crops, challenges, and existing
-              systems. Add your details to see personalised matches.
+              systems. Add your profile to unlock operational relevance.
             </p>
           </div>
           <Button
-            onClick={onEdit}
+            onClick={onCreateProfile}
             className="rounded-xl bg-emerald-800 hover:bg-emerald-900"
           >
             Create OpenField profile
@@ -45,7 +46,6 @@ export function GrowerPanel({ grower, onEdit }: GrowerPanelProps) {
   return (
     <Card className="h-full rounded-2xl border-slate-200 bg-white shadow-sm">
       <CardContent className="p-5">
-        {/* Image */}
         {grower.imageUrl && (
           <div className="mb-4 overflow-hidden rounded-xl">
             <img
