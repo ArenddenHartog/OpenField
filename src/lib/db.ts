@@ -117,29 +117,32 @@ export async function saveGrowerProfile(
 ): Promise<void> {
   if (!supabase) return;
 
-  await supabase.from("grower_profiles").upsert({
-    id: grower.id,
-    user_id: userId,
-    name: grower.name,
-    role: grower.role,
-    image_url: grower.imageUrl ?? null,
-    region: grower.region,
-    countries: grower.countries,
-    operation: grower.operation,
-    operation_scale: grower.operationScale ?? null,
-    contexts: grower.contexts,
-    crops: grower.crops,
-    openness: grower.openness,
-    challenge_ids: grower.challengeIds,
-    constraints: grower.constraints,
-    systems: grower.systems,
-    available_data: grower.availableData,
-    pilot_types: grower.pilotTypes,
-    website: grower.website ?? null,
-    contact_email: grower.contactEmail ?? null,
-    certifications: grower.certifications ?? [],
-    preferred_pilot_season: grower.preferredPilotSeason ?? null,
-  });
+  await supabase.from("grower_profiles").upsert(
+    {
+      id: grower.id,
+      user_id: userId,
+      name: grower.name,
+      role: grower.role,
+      image_url: grower.imageUrl ?? null,
+      region: grower.region,
+      countries: grower.countries,
+      operation: grower.operation,
+      operation_scale: grower.operationScale ?? null,
+      contexts: grower.contexts,
+      crops: grower.crops,
+      openness: grower.openness,
+      challenge_ids: grower.challengeIds,
+      constraints: grower.constraints,
+      systems: grower.systems,
+      available_data: grower.availableData,
+      pilot_types: grower.pilotTypes,
+      website: grower.website ?? null,
+      contact_email: grower.contactEmail ?? null,
+      certifications: grower.certifications ?? [],
+      preferred_pilot_season: grower.preferredPilotSeason ?? null,
+    },
+    { onConflict: "user_id" }
+  );
 }
 
 // ── Row → TypeScript mappers ──────────────────────────────────────────────────

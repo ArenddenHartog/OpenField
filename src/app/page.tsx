@@ -56,6 +56,20 @@ export default function OpenFieldPage() {
   const [authModalOpen, setAuthModalOpen] = useState(false);
   const [requestIntroOpen, setRequestIntroOpen] = useState(false);
 
+  // ── Persist grower profile in localStorage (survives page refresh without sign-in) ──
+  useEffect(() => {
+    try {
+      const stored = localStorage.getItem("openfield-grower");
+      if (stored) setActiveGrower(JSON.parse(stored));
+    } catch {}
+  }, []);
+
+  useEffect(() => {
+    if (activeGrower) {
+      localStorage.setItem("openfield-grower", JSON.stringify(activeGrower));
+    }
+  }, [activeGrower]);
+
   // ── Supabase: auth + data loading ──────────────────────────────────────────
   useEffect(() => {
     if (!supabase) return;
@@ -75,11 +89,23 @@ export default function OpenFieldPage() {
       async (event, session) => {
         setUser(session?.user ?? null);
         if (session?.user && event === "SIGNED_IN") {
-          const profile = await loadGrowerProfile(session.user.id);
-          if (profile) setActiveGrower(profile);
+          const dbProfile = await loadGrowerProfile(session.user.id);
+          if (dbProfile) {
+            setActiveGrower(dbProfile);
+          } else {
+            // Migrate any localStorage profile to Supabase on first sign-in
+            try {
+              const stored = localStorage.getItem("openfield-grower");
+              if (stored) {
+                const localProfile = JSON.parse(stored) as Grower;
+                await saveGrowerProfile(localProfile, session.user.id);
+              }
+            } catch {}
+          }
         }
         if (event === "SIGNED_OUT") {
           setActiveGrower(null);
+          localStorage.removeItem("openfield-grower");
         }
       }
     );
