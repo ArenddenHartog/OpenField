@@ -66,10 +66,10 @@ export function IntakeModal({
       const solutionId = makeId("sol", f.solutionName);
       const solution: Solution = {
         id: solutionId,
-        name: f.solutionName || "New crop protection solution",
+        name: f.solutionName || "New solution",
         type: f.solutionType,
         imageUrl: f.imageUrl || undefined,
-        proposition: f.proposition || "Crop protection solution ready for validation.",
+        proposition: f.proposition || "Solution ready for validation.",
         stage: f.stage,
         challengeIds: f.challengeIds,
         contexts: listFromText(f.contexts),
@@ -78,6 +78,9 @@ export function IntakeModal({
         requiredData: listFromText(f.requiredData),
         geography: listFromText(f.geography),
         lookingFor: listFromText(f.lookingFor),
+        website: f.website || undefined,
+        contactEmail: f.contactEmail || undefined,
+        pricingModel: f.pricingModel || undefined,
       };
       const pilotOffer: PilotOffer = {
         id: makeId("pilot", f.pilotTitle || f.solutionName),
@@ -123,6 +126,11 @@ export function IntakeModal({
       systems: listFromText(f.systems),
       availableData: listFromText(f.availableData),
       pilotTypes: listFromText(f.pilotTypes),
+      website: f.website || undefined,
+      contactEmail: f.contactEmail || undefined,
+      operationScale: f.operationScale || undefined,
+      certifications: f.certifications ? listFromText(f.certifications) : undefined,
+      preferredPilotSeason: f.preferredPilotSeason || undefined,
     };
     onCreateGrower(grower);
   }
@@ -133,7 +141,7 @@ export function IntakeModal({
         onSubmit={handleSubmit}
         initial={{ opacity: 0, scale: 0.97 }}
         animate={{ opacity: 1, scale: 1 }}
-        className="max-h-[90vh] w-full max-w-3xl overflow-y-auto rounded-3xl bg-white p-6 shadow-2xl"
+        className="scrollbar-thin max-h-[90vh] w-full max-w-3xl overflow-y-auto rounded-3xl bg-white p-6 shadow-2xl"
       >
         <div className="mb-5 flex items-start justify-between">
           <div>
@@ -143,10 +151,10 @@ export function IntakeModal({
             <h2 className="text-xl font-semibold text-slate-950">
               Create {isInnovator ? "a solution" : "your"} profile
             </h2>
-            <p className="mt-1 text-sm text-slate-600">
+            <p className="mt-1 text-sm text-slate-500">
               {isInnovator
-                ? "Your solution will be matched against growers, researchers, and breeders by practical fit."
-                : "Your profile drives the match ranking — the more context, the better."}
+                ? "Tell us about your innovation. The more context, the better the operational fit."
+                : "Your profile drives which innovations show up for you. Practical fit, not marketing."}
             </p>
           </div>
           <button
@@ -180,6 +188,17 @@ export function IntakeModal({
 
 // ─── Sub-forms ────────────────────────────────────────────────────────────────
 
+const PRICING_MODELS = [
+  "Free pilot",
+  "Co-funded pilot",
+  "Subscription",
+  "One-time licence",
+  "Pay-per-outcome",
+  "To be discussed",
+] as const;
+
+const PILOT_SEASONS = ["Spring", "Summer", "Autumn", "Winter", "Year-round"] as const;
+
 function InnovatorFields({
   form,
   onChange,
@@ -189,8 +208,7 @@ function InnovatorFields({
 }) {
   return (
     <div className="space-y-6">
-      {/* Solution basics */}
-      <Section label="Solution">
+      <Section label="About your solution">
         <div className="grid gap-4 md:grid-cols-2">
           <Field label="Solution name">
             <input value={form.solutionName} onChange={(e) => onChange("solutionName", e.target.value)} className={INPUT_CLASS} placeholder="e.g. MildewSense" />
@@ -200,11 +218,8 @@ function InnovatorFields({
               {SOLUTION_TYPES.map((t) => <option key={t}>{t}</option>)}
             </select>
           </Field>
-          <Field label="Image URL (optional)" full>
-            <input value={form.imageUrl} onChange={(e) => onChange("imageUrl", e.target.value)} className={INPUT_CLASS} placeholder="https://your-image-host.com/photo.jpg" />
-          </Field>
           <Field label="One-line proposition" full>
-            <input value={form.proposition} onChange={(e) => onChange("proposition", e.target.value)} className={INPUT_CLASS} placeholder="What problem does it solve?" />
+            <input value={form.proposition} onChange={(e) => onChange("proposition", e.target.value)} className={INPUT_CLASS} placeholder="What problem does it solve, and how?" />
           </Field>
           <div className="space-y-2 md:col-span-2">
             <span className="text-xs font-medium text-slate-600">Challenges addressed</span>
@@ -215,23 +230,37 @@ function InnovatorFields({
               {STAGES.map((s) => <option key={s}>{s}</option>)}
             </select>
           </Field>
+          <Field label="Pricing model">
+            <select value={form.pricingModel} onChange={(e) => onChange("pricingModel", e.target.value)} className={INPUT_CLASS}>
+              <option value="">Select…</option>
+              {PRICING_MODELS.map((p) => <option key={p}>{p}</option>)}
+            </select>
+          </Field>
           <Field label="Geography (comma-separated)">
             <input value={form.geography} onChange={(e) => onChange("geography", e.target.value)} className={INPUT_CLASS} placeholder="NL, BE, DE" />
           </Field>
-          <Field label="Contexts (comma-separated)">
+          <Field label="Operational contexts (comma-separated)">
             <input value={form.contexts} onChange={(e) => onChange("contexts", e.target.value)} className={INPUT_CLASS} placeholder="Greenhouse, Open field" />
           </Field>
           <Field label="Looking for (comma-separated)">
             <input value={form.lookingFor} onChange={(e) => onChange("lookingFor", e.target.value)} className={INPUT_CLASS} placeholder="Pilot growers, Researchers…" />
           </Field>
+          <Field label="Website (optional)">
+            <input value={form.website} onChange={(e) => onChange("website", e.target.value)} className={INPUT_CLASS} placeholder="https://yourproduct.com" />
+          </Field>
+          <Field label="Contact email" full>
+            <input type="email" value={form.contactEmail} onChange={(e) => onChange("contactEmail", e.target.value)} className={INPUT_CLASS} placeholder="hello@yourcompany.com" />
+          </Field>
+          <Field label="Photo URL (optional)" full>
+            <input value={form.imageUrl} onChange={(e) => onChange("imageUrl", e.target.value)} className={INPUT_CLASS} placeholder="https://your-image-host.com/photo.jpg" />
+          </Field>
         </div>
         <div className="mt-4 space-y-2">
-          <span className="text-xs font-medium text-slate-600">Crops</span>
+          <span className="text-xs font-medium text-slate-600">Relevant crops</span>
           <CropPicker selectedCrops={form.crops} onChange={(crops) => onChange("crops", crops)} />
         </div>
       </Section>
 
-      {/* Pilot offer */}
       <Section label="Pilot offer">
         <div className="grid gap-4 md:grid-cols-2">
           <Field label="Pilot title" full>
@@ -244,24 +273,23 @@ function InnovatorFields({
             <input value={form.pilotDuration} onChange={(e) => onChange("pilotDuration", e.target.value)} className={INPUT_CLASS} placeholder="8–12 weeks" />
           </Field>
           <Field label="Availability" full>
-            <input value={form.pilotAvailability} onChange={(e) => onChange("pilotAvailability", e.target.value)} className={INPUT_CLASS} placeholder="Looking for 3 pilot locations for next season" />
+            <input value={form.pilotAvailability} onChange={(e) => onChange("pilotAvailability", e.target.value)} className={INPUT_CLASS} placeholder="3 pilot locations available from March" />
           </Field>
           <Field label="What's included (comma-separated)" full>
             <input value={form.pilotIncludes} onChange={(e) => onChange("pilotIncludes", e.target.value)} className={INPUT_CLASS} placeholder="Sensor kit, Platform access, Weekly review…" />
           </Field>
-          <Field label="Response time commitment">
+          <Field label="Response time">
             <input value={form.pilotResponseTime} onChange={(e) => onChange("pilotResponseTime", e.target.value)} className={INPUT_CLASS} placeholder="Reply within 3 working days" />
           </Field>
-          <Field label="Required systems (comma-separated)">
+          <Field label="Systems required (comma-separated)">
             <input value={form.requiredSystems} onChange={(e) => onChange("requiredSystems", e.target.value)} className={INPUT_CLASS} placeholder="Stable internet, Sprayer…" />
           </Field>
-          <Field label="Required data (comma-separated)">
+          <Field label="Data required (comma-separated)">
             <input value={form.requiredData} onChange={(e) => onChange("requiredData", e.target.value)} className={INPUT_CLASS} placeholder="Disease observations, Soil samples…" />
           </Field>
         </div>
       </Section>
 
-      {/* Evidence */}
       <Section label="Evidence">
         <div className="grid gap-4 md:grid-cols-2">
           <Field label="Evidence type">
@@ -293,22 +321,31 @@ function GrowerFields({
 }) {
   return (
     <div className="space-y-6">
-      {/* Identity */}
       <Section label="About you">
         <div className="grid gap-4 md:grid-cols-2">
-          <Field label="Your name or organisation">
-            <input value={form.name} onChange={(e) => onChange("name", e.target.value)} className={INPUT_CLASS} placeholder="e.g. Greenhouse grower / Wageningen UR" />
+          <Field label="Name or organisation">
+            <input value={form.name} onChange={(e) => onChange("name", e.target.value)} className={INPUT_CLASS} placeholder="e.g. Jan de Vries / Wageningen UR" />
           </Field>
           <Field label="Role">
             <select value={form.role} onChange={(e) => onChange("role", e.target.value)} className={INPUT_CLASS}>
               {GROWER_ROLES.map((r) => <option key={r}>{r}</option>)}
             </select>
           </Field>
-          <Field label="Operation">
+          <Field label="Operation description">
             <input value={form.operation} onChange={(e) => onChange("operation", e.target.value)} className={INPUT_CLASS} placeholder="Greenhouse vegetables, Research institute…" />
+          </Field>
+          <Field label="Scale">
+            <input value={form.operationScale} onChange={(e) => onChange("operationScale", e.target.value)} className={INPUT_CLASS} placeholder="e.g. 4 ha greenhouse, 120 ha arable" />
           </Field>
           <Field label="Region">
             <input value={form.region} onChange={(e) => onChange("region", e.target.value)} className={INPUT_CLASS} placeholder="Westland, NL" />
+          </Field>
+          <Field label="Openness to pilots">
+            <select value={form.openness} onChange={(e) => onChange("openness", e.target.value)} className={INPUT_CLASS}>
+              {["Open to pilots", "Active innovation partner", "Exploratory only"].map((o) => (
+                <option key={o}>{o}</option>
+              ))}
+            </select>
           </Field>
           <label className="block space-y-1 md:col-span-2">
             <span className="text-xs font-medium text-slate-600">Countries active in</span>
@@ -333,43 +370,56 @@ function GrowerFields({
               ))}
             </div>
           </label>
-          <Field label="Openness">
-            <select value={form.openness} onChange={(e) => onChange("openness", e.target.value)} className={INPUT_CLASS}>
-              {["Open to pilots", "Active innovation partner", "Exploratory only"].map((o) => (
-                <option key={o}>{o}</option>
-              ))}
-            </select>
+          <Field label="Contact email">
+            <input type="email" value={form.contactEmail} onChange={(e) => onChange("contactEmail", e.target.value)} className={INPUT_CLASS} placeholder="you@operation.com" />
           </Field>
-          <Field label="Image URL (optional)" full>
+          <Field label="Website (optional)">
+            <input value={form.website} onChange={(e) => onChange("website", e.target.value)} className={INPUT_CLASS} placeholder="https://yourfarm.com" />
+          </Field>
+          <Field label="Certifications (optional, comma-separated)">
+            <input value={form.certifications} onChange={(e) => onChange("certifications", e.target.value)} className={INPUT_CLASS} placeholder="GlobalG.A.P., Organic, MPS…" />
+          </Field>
+          <Field label="Photo URL (optional)" full>
             <input value={form.imageUrl} onChange={(e) => onChange("imageUrl", e.target.value)} className={INPUT_CLASS} placeholder="https://your-image-host.com/photo.jpg" />
           </Field>
         </div>
       </Section>
 
-      {/* Operation */}
       <Section label="Your operation">
-        <div className="space-y-2 mb-4">
-          <span className="text-xs font-medium text-slate-600">Current challenges</span>
-          <ChallengePicker selectedIds={form.challengeIds} onChange={(ids) => onChange("challengeIds", ids)} />
+        <div className="space-y-3 mb-4">
+          <div>
+            <span className="text-xs font-medium text-slate-600">Current challenges</span>
+            <div className="mt-2">
+              <ChallengePicker selectedIds={form.challengeIds} onChange={(ids) => onChange("challengeIds", ids)} />
+            </div>
+          </div>
+          <div>
+            <span className="text-xs font-medium text-slate-600">Crops</span>
+            <div className="mt-2">
+              <CropPicker selectedCrops={form.crops} onChange={(crops) => onChange("crops", crops)} />
+            </div>
+          </div>
         </div>
-        <div className="space-y-2">
-          <span className="text-xs font-medium text-slate-600">Crops</span>
-          <CropPicker selectedCrops={form.crops} onChange={(crops) => onChange("crops", crops)} />
-        </div>
-        <div className="mt-4 grid gap-4 md:grid-cols-2">
-          <Field label="Contexts (comma-separated)">
+        <div className="grid gap-4 md:grid-cols-2">
+          <Field label="Operational contexts (comma-separated)">
             <input value={form.contexts} onChange={(e) => onChange("contexts", e.target.value)} className={INPUT_CLASS} placeholder="Greenhouse, Open field" />
           </Field>
+          <Field label="Preferred pilot season">
+            <select value={form.preferredPilotSeason} onChange={(e) => onChange("preferredPilotSeason", e.target.value)} className={INPUT_CLASS}>
+              <option value="">Select…</option>
+              {PILOT_SEASONS.map((s) => <option key={s}>{s}</option>)}
+            </select>
+          </Field>
           <Field label="Pilot types accepted">
-            <input value={form.pilotTypes} onChange={(e) => onChange("pilotTypes", e.target.value)} className={INPUT_CLASS} placeholder="Paid pilot, Co-development…" />
+            <input value={form.pilotTypes} onChange={(e) => onChange("pilotTypes", e.target.value)} className={INPUT_CLASS} placeholder="Free pilot, Paid pilot, Co-development…" />
           </Field>
           <Field label="Existing systems (comma-separated)">
-            <input value={form.systems} onChange={(e) => onChange("systems", e.target.value)} className={INPUT_CLASS} placeholder="Scouting rounds, Stable internet…" />
+            <input value={form.systems} onChange={(e) => onChange("systems", e.target.value)} className={INPUT_CLASS} placeholder="Climate computer, Scouting rounds…" />
           </Field>
           <Field label="Available data (comma-separated)">
-            <input value={form.availableData} onChange={(e) => onChange("availableData", e.target.value)} className={INPUT_CLASS} placeholder="Disease observations, Soil samples…" />
+            <input value={form.availableData} onChange={(e) => onChange("availableData", e.target.value)} className={INPUT_CLASS} placeholder="Disease records, Soil samples…" />
           </Field>
-          <Field label="Pilot constraints" full>
+          <Field label="Pilot constraints (comma-separated)">
             <input value={form.constraints} onChange={(e) => onChange("constraints", e.target.value)} className={INPUT_CLASS} placeholder="Low disruption, Seasonal window…" />
           </Field>
         </div>

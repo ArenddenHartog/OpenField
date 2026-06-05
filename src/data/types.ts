@@ -59,6 +59,9 @@ export interface Solution {
   requiredData: string[];
   geography: string[];
   lookingFor: string[];
+  website?: string;
+  contactEmail?: string;
+  pricingModel?: string;
 }
 
 export interface Grower {
@@ -77,6 +80,11 @@ export interface Grower {
   systems: string[];
   availableData: string[];
   pilotTypes: string[];
+  website?: string;
+  contactEmail?: string;
+  operationScale?: string;
+  certifications?: string[];
+  preferredPilotSeason?: string;
 }
 
 export interface PilotOffer {
@@ -153,6 +161,9 @@ export interface InnovatorFormValues {
   requiredData: string;
   geography: string;
   lookingFor: string;
+  website: string;
+  contactEmail: string;
+  pricingModel: string;
   pilotTitle: string;
   pilotType: string;
   pilotDuration: string;
@@ -180,4 +191,9 @@ export interface GrowerFormValues {
   systems: string;
   availableData: string;
   pilotTypes: string;
+  website: string;
+  contactEmail: string;
+  operationScale: string;
+  certifications: string;
+  preferredPilotSeason: string;
 }

@@ -168,19 +168,17 @@ export default function OpenFieldPage() {
               OpenField brings together growers&rsquo; real challenges and the innovators
               building solutions to solve them. Practical fit, not marketing.
             </p>
-            <ul className="mt-6 space-y-2 text-sm text-slate-500">
-              <li className="flex items-center gap-2">
-                <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
-                Share your operation — crops, challenges, systems
-              </li>
-              <li className="flex items-center gap-2">
-                <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
-                We surface the most operationally relevant solutions
-              </li>
-              <li className="flex items-center gap-2">
-                <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
-                Request an intro and start a pilot this season
-              </li>
+            <ul className="mt-6 divide-y divide-slate-200 border-t border-slate-200 text-sm text-slate-600">
+              {[
+                "Share your operational details",
+                "We surface the most operationally relevant innovations",
+                "Request an intro and start a pilot this season",
+              ].map((text) => (
+                <li key={text} className="flex items-center gap-3 py-3">
+                  <span className="h-2 w-2 shrink-0 bg-emerald-500" />
+                  {text}
+                </li>
+              ))}
             </ul>
           </div>
 
@@ -207,7 +205,7 @@ export default function OpenFieldPage() {
 
           <div className="flex items-center gap-2 overflow-x-auto scrollbar-hide pb-0.5">
             <span className="shrink-0 text-[11px] font-semibold uppercase tracking-wide text-slate-400 pr-1">
-              Challenge
+              Solution
             </span>
             {["All", ...CHALLENGES.map((c) => c.name)].map((tag) => (
               <button
