@@ -17,6 +17,7 @@ import type {
   PilotOffer,
   Solution,
 } from "@/data/types";
+import { ImageUpload } from "@/components/ImageUpload";
 import { cn, listFromText, makeId } from "@/lib/utils";
 
 const COUNTRIES = ["NL", "BE", "DE", "FR", "DK", "ES", "PL", "UK", "IE", "IT", "PT", "Other"];
@@ -251,9 +252,12 @@ function InnovatorFields({
           <Field label="Contact email" full>
             <input type="email" value={form.contactEmail} onChange={(e) => onChange("contactEmail", e.target.value)} className={INPUT_CLASS} placeholder="hello@yourcompany.com" />
           </Field>
-          <Field label="Photo URL (optional)" full>
-            <input value={form.imageUrl} onChange={(e) => onChange("imageUrl", e.target.value)} className={INPUT_CLASS} placeholder="https://your-image-host.com/photo.jpg" />
-          </Field>
+          <div className="md:col-span-2">
+            <span className="text-xs font-medium text-slate-600">Photo (optional)</span>
+            <div className="mt-1">
+              <ImageUpload value={form.imageUrl} onChange={(url) => onChange("imageUrl", url)} />
+            </div>
+          </div>
         </div>
         <div className="mt-4 space-y-2">
           <span className="text-xs font-medium text-slate-600">Relevant crops</span>
@@ -379,9 +383,12 @@ function GrowerFields({
           <Field label="Certifications (optional, comma-separated)">
             <input value={form.certifications} onChange={(e) => onChange("certifications", e.target.value)} className={INPUT_CLASS} placeholder="GlobalG.A.P., Organic, MPS…" />
           </Field>
-          <Field label="Photo URL (optional)" full>
-            <input value={form.imageUrl} onChange={(e) => onChange("imageUrl", e.target.value)} className={INPUT_CLASS} placeholder="https://your-image-host.com/photo.jpg" />
-          </Field>
+          <div className="md:col-span-2">
+            <span className="text-xs font-medium text-slate-600">Photo (optional)</span>
+            <div className="mt-1">
+              <ImageUpload value={form.imageUrl} onChange={(url) => onChange("imageUrl", url)} />
+            </div>
+          </div>
         </div>
       </Section>
 

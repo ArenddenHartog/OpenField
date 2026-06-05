@@ -1,7 +1,8 @@
 "use client";
 
-import { useMemo, useState } from "react";
-import { Search, Leaf, Filter } from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
+import { Search, Leaf, Filter, LogIn, LogOut } from "lucide-react";
+import type { User } from "@supabase/supabase-js";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { SolutionCard } from "@/components/SolutionCard";
@@ -9,6 +10,7 @@ import { ProfileDetail } from "@/components/ProfileDetail";
 import { GrowerPanel } from "@/components/GrowerPanel";
 import { IntakeModal } from "@/components/IntakeModal";
 import { ProfilePickerModal } from "@/components/ProfilePickerModal";
+import { AuthModal } from "@/components/AuthModal";
 import { RequestIntroModal } from "@/components/RequestIntroModal";
 import {
   CHALLENGES,
@@ -25,6 +27,13 @@ import type {
   PilotOffer,
   Solution,
 } from "@/data/types";
+import { supabase, isSupabaseConfigured } from "@/lib/supabase";
+import {
+  loadAllSolutions,
+  loadGrowerProfile,
+  saveSolution,
+  saveGrowerProfile,
+} from "@/lib/db";
 import { buildMatches, enrichSolution } from "@/lib/matching";
 import { cn, namesFromIds } from "@/lib/utils";
 
@@ -36,6 +45,7 @@ export default function OpenFieldPage() {
   const [evidenceRecords, setEvidenceRecords] = useState<EvidenceRecord[]>(SEED_EVIDENCE_RECORDS);
 
   const [activeGrower, setActiveGrower] = useState<Grower | null>(null);
+  const [user, setUser] = useState<User | null>(null);
   const [selectedTag, setSelectedTag] = useState("All");
   const [selectedType, setSelectedType] = useState("All");
   const [query, setQuery] = useState("");
@@ -43,8 +53,50 @@ export default function OpenFieldPage() {
   const [profilePickerOpen, setProfilePickerOpen] = useState(false);
   const [modalRole, setModalRole] = useState<ModalRole>(null);
   const [presetGrowerRole, setPresetGrowerRole] = useState<GrowerRole | undefined>(undefined);
+  const [authModalOpen, setAuthModalOpen] = useState(false);
   const [requestIntroOpen, setRequestIntroOpen] = useState(false);
 
+  // ── Supabase: auth + data loading ──────────────────────────────────────────
+  useEffect(() => {
+    if (!supabase) return;
+
+    // Load existing session (handles magic link redirects too)
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setUser(session?.user ?? null);
+      if (session?.user) {
+        loadGrowerProfile(session.user.id).then((profile) => {
+          if (profile) setActiveGrower(profile);
+        });
+      }
+    });
+
+    // Listen for future auth changes
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      async (event, session) => {
+        setUser(session?.user ?? null);
+        if (session?.user && event === "SIGNED_IN") {
+          const profile = await loadGrowerProfile(session.user.id);
+          if (profile) setActiveGrower(profile);
+        }
+        if (event === "SIGNED_OUT") {
+          setActiveGrower(null);
+        }
+      }
+    );
+
+    // Load all solutions from Supabase (replaces seed data if successful)
+    loadAllSolutions().then((data) => {
+      if (data && data.solutions.length > 0) {
+        setSolutions(data.solutions);
+        setPilotOffers(data.pilotOffers);
+        setEvidenceRecords(data.evidenceRecords);
+      }
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
+
+  // ── Matching ───────────────────────────────────────────────────────────────
   const matches = useMemo<Match[]>(
     () =>
       activeGrower
@@ -102,13 +154,14 @@ export default function OpenFieldPage() {
       ? "Worth exploring for your operation"
       : "Currently viewing";
 
+  // ── Handlers ───────────────────────────────────────────────────────────────
   function handleProfileSelect(profileType: "innovator" | "grower", growerRole?: GrowerRole) {
     setProfilePickerOpen(false);
     setPresetGrowerRole(growerRole);
     setModalRole(profileType);
   }
 
-  function handleCreateSolution(payload: {
+  async function handleCreateSolution(payload: {
     solution: Solution;
     pilotOffer: PilotOffer;
     evidenceRecord: EvidenceRecord;
@@ -118,11 +171,20 @@ export default function OpenFieldPage() {
     setEvidenceRecords((prev) => [...prev, payload.evidenceRecord]);
     setSelectedId(payload.solution.id);
     setModalRole(null);
+    await saveSolution(
+      payload.solution,
+      payload.pilotOffer,
+      payload.evidenceRecord,
+      user?.id
+    );
   }
 
-  function handleCreateGrower(grower: Grower) {
+  async function handleCreateGrower(grower: Grower) {
     setActiveGrower(grower);
     setModalRole(null);
+    if (user) {
+      await saveGrowerProfile(grower, user.id);
+    }
   }
 
   return (
@@ -136,7 +198,7 @@ export default function OpenFieldPage() {
             </div>
             <h1 className="text-lg font-semibold tracking-tight">OpenField</h1>
           </div>
-          <div className="flex gap-2">
+          <div className="flex items-center gap-2">
             <Button
               variant="outline"
               onClick={() => setModalRole("grower")}
@@ -150,6 +212,26 @@ export default function OpenFieldPage() {
             >
               I am an innovator
             </Button>
+            {isSupabaseConfigured && (
+              user ? (
+                <button
+                  onClick={() => supabase?.auth.signOut()}
+                  title={`Signed in as ${user.email}`}
+                  className="flex items-center gap-1.5 rounded-xl border border-slate-200 px-3 py-2 text-xs text-slate-500 hover:bg-slate-50 hover:text-slate-900"
+                >
+                  <LogOut size={13} />
+                  Sign out
+                </button>
+              ) : (
+                <button
+                  onClick={() => setAuthModalOpen(true)}
+                  className="flex items-center gap-1.5 rounded-xl border border-slate-200 px-3 py-2 text-xs text-slate-500 hover:bg-slate-50 hover:text-slate-900"
+                >
+                  <LogIn size={13} />
+                  Sign in
+                </button>
+              )
+            )}
           </div>
         </div>
       </header>
@@ -246,7 +328,7 @@ export default function OpenFieldPage() {
           </div>
         </section>
 
-        {/* Section header above the two-column grid */}
+        {/* Section header above grid */}
         <div className="mb-4">
           <h2 className="text-xl font-semibold text-slate-950">
             Innovations on OpenField
@@ -342,10 +424,17 @@ export default function OpenFieldPage() {
         <IntakeModal
           role={modalRole}
           presetGrowerRole={presetGrowerRole}
-          onClose={() => { setModalRole(null); setPresetGrowerRole(undefined); }}
+          onClose={() => {
+            setModalRole(null);
+            setPresetGrowerRole(undefined);
+          }}
           onCreateSolution={handleCreateSolution}
           onCreateGrower={handleCreateGrower}
         />
+      )}
+
+      {authModalOpen && (
+        <AuthModal onClose={() => setAuthModalOpen(false)} />
       )}
 
       {requestIntroOpen && selected && (
