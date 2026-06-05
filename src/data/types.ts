@@ -23,6 +23,21 @@ export type ChallengeId =
 
 export type PilotStatus = "Open" | "Closed";
 
+export type GrowerRole =
+  | "Grower"
+  | "Researcher"
+  | "Breeder"
+  | "Technology partner"
+  | "Other";
+
+export const GROWER_ROLES: GrowerRole[] = [
+  "Grower",
+  "Researcher",
+  "Breeder",
+  "Technology partner",
+  "Other",
+];
+
 // ─── Core domain records ──────────────────────────────────────────────────────
 
 export interface Challenge {
@@ -34,6 +49,7 @@ export interface Solution {
   id: string;
   name: string;
   type: string;
+  imageUrl?: string;
   proposition: string;
   stage: Stage;
   challengeIds: ChallengeId[];
@@ -43,13 +59,18 @@ export interface Solution {
   requiredData: string[];
   geography: string[];
   lookingFor: string[];
+  website?: string;
+  contactEmail?: string;
+  pricingModel?: string;
 }
 
 export interface Grower {
   id: string;
   name: string;
+  role: GrowerRole;
+  imageUrl?: string;
   region: string;
-  country: string;
+  countries: string[];
   operation: string;
   contexts: string[];
   crops: string[];
@@ -59,6 +80,11 @@ export interface Grower {
   systems: string[];
   availableData: string[];
   pilotTypes: string[];
+  website?: string;
+  contactEmail?: string;
+  operationScale?: string;
+  certifications?: string[];
+  preferredPilotSeason?: string;
 }
 
 export interface PilotOffer {
@@ -69,6 +95,8 @@ export interface PilotOffer {
   status: PilotStatus;
   availability: string;
   duration: string;
+  includes: string[];
+  responseTime: string;
   requiredContext: string[];
   requiredSystems: string[];
   requiredData: string[];
@@ -122,20 +150,26 @@ export interface EnrichedSolution extends Solution {
 
 export interface InnovatorFormValues {
   solutionName: string;
+  imageUrl: string;
   proposition: string;
   solutionType: string;
   challengeIds: ChallengeId[];
   stage: Stage;
   contexts: string;
-  crops: string;
+  crops: string[];
   requiredSystems: string;
   requiredData: string;
   geography: string;
   lookingFor: string;
+  website: string;
+  contactEmail: string;
+  pricingModel: string;
   pilotTitle: string;
   pilotType: string;
   pilotDuration: string;
   pilotAvailability: string;
+  pilotIncludes: string;
+  pilotResponseTime: string;
   evidenceType: string;
   evidenceTested: string;
   evidenceImpact: string;
@@ -144,15 +178,22 @@ export interface InnovatorFormValues {
 
 export interface GrowerFormValues {
   name: string;
+  role: GrowerRole;
+  imageUrl: string;
   operation: string;
   region: string;
-  country: string;
+  countries: string[];
   contexts: string;
-  crops: string;
+  crops: string[];
   openness: string;
   challengeIds: ChallengeId[];
   constraints: string;
   systems: string;
   availableData: string;
   pilotTypes: string;
+  website: string;
+  contactEmail: string;
+  operationScale: string;
+  certifications: string;
+  preferredPilotSeason: string;
 }

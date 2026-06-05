@@ -19,13 +19,92 @@ export const CHALLENGES: Challenge[] = [
   { id: "crop-scouting", name: "Crop scouting" },
 ];
 
+// ─── Crop catalogue (grouped for the picker UI) ───────────────────────────────
+
+export const CROP_GROUPS: { label: string; crops: string[] }[] = [
+  {
+    label: "Greenhouse vegetables",
+    crops: [
+      "Tomato", "Cucumber", "Sweet pepper", "Aubergine", "Courgette",
+      "Lettuce", "Spinach", "Herbs", "Microgreens", "Radish", "Bok choy",
+    ],
+  },
+  {
+    label: "Open field vegetables",
+    crops: [
+      "Potato", "Onion", "Carrot", "Cabbage", "Broccoli", "Cauliflower",
+      "Leek", "Beetroot", "Asparagus", "Peas", "Beans", "Broad beans",
+      "Pumpkin", "Celery", "Garlic", "Fennel", "Kohlrabi", "Parsnip",
+      "Swede", "Turnip",
+    ],
+  },
+  {
+    label: "Soft fruit & berries",
+    crops: [
+      "Strawberry", "Blueberry", "Raspberry", "Blackberry",
+      "Redcurrant", "Blackcurrant", "Gooseberry", "Elderberry",
+    ],
+  },
+  {
+    label: "Orchard & vine",
+    crops: [
+      "Apple", "Pear", "Cherry", "Plum", "Peach", "Apricot",
+      "Grape", "Kiwi", "Citrus", "Fig", "Walnut", "Hazelnut", "Almond",
+    ],
+  },
+  {
+    label: "Arable & field crops",
+    crops: [
+      "Wheat", "Barley", "Oats", "Rye", "Triticale", "Maize",
+      "Sunflower", "Rapeseed", "Sugar beet", "Flaxseed",
+      "Soybean", "Field peas", "Field beans",
+    ],
+  },
+  {
+    label: "Nursery & ornamentals",
+    crops: [
+      "Ornamental trees", "Shrubs", "Roses", "Cut flowers",
+      "Potted plants", "Tree nursery", "Perennials",
+      "Bedding plants", "Bulbs", "Conifers",
+    ],
+  },
+  {
+    label: "Specialty",
+    crops: [
+      "Hemp", "Cannabis", "Mushrooms", "Hops", "Lavender",
+      "Tobacco", "Stevia", "Algae", "Chicory", "Artichoke",
+    ],
+  },
+];
+
+export const ALL_CROPS = CROP_GROUPS.flatMap((g) => g.crops);
+
+// ─── Solution type catalogue ──────────────────────────────────────────────────
+
+export const SOLUTION_TYPES = [
+  "AI / Software",
+  "Biological / Biostimulants",
+  "Precision machinery",
+  "Sensor / Hardware",
+  "Data platform",
+  "Robotics / Automation",
+  "IPM / Scouting tools",
+  "Genetics / Breeding support",
+  "Monitoring / Remote sensing",
+  "Decision support",
+  "Crop nutrition",
+  "Other",
+] as const;
+
+export type SolutionType = (typeof SOLUTION_TYPES)[number];
+
 // ─── Seed solutions ───────────────────────────────────────────────────────────
 
 export const SEED_SOLUTIONS: Solution[] = [
   {
     id: "sol-sporesight-ai",
     name: "SporeSight AI",
-    type: "AI / Computer vision",
+    type: "AI / Software",
     proposition:
       "Early mildew and fungal disease detection from greenhouse imagery.",
     stage: "Active pilots",
@@ -40,7 +119,7 @@ export const SEED_SOLUTIONS: Solution[] = [
   {
     id: "sol-bioshield-labs",
     name: "BioShield Labs",
-    type: "Biological crop protection",
+    type: "Biological / Biostimulants",
     proposition:
       "Beneficial microbe treatment to suppress soil-borne pathogens.",
     stage: "First field test",
@@ -50,7 +129,7 @@ export const SEED_SOLUTIONS: Solution[] = [
       "resistance-management",
     ],
     contexts: ["Open field", "Nursery", "Organic systems"],
-    crops: ["Strawberry", "Tree nursery", "Leafy greens", "Ornamental trees", "Shrubs"],
+    crops: ["Strawberry", "Tree nursery", "Lettuce", "Ornamental trees", "Shrubs"],
     requiredSystems: ["Manual scouting"],
     requiredData: ["Soil samples", "Control plot", "Disease observations"],
     geography: ["NL"],
@@ -65,7 +144,7 @@ export const SEED_SOLUTIONS: Solution[] = [
     stage: "Proven in production",
     challengeIds: ["precision-spraying", "pesticide-reduction", "crop-scouting"],
     contexts: ["Open field", "Orchard", "Nursery"],
-    crops: ["Potato", "Onion", "Fruit", "Tree nursery", "Ornamental trees", "Shrubs"],
+    crops: ["Potato", "Onion", "Apple", "Pear", "Tree nursery", "Ornamental trees", "Shrubs"],
     requiredSystems: ["Sprayer", "GPS guidance", "Field maps"],
     requiredData: ["Field boundary data"],
     geography: ["NL", "DE", "DK"],
@@ -79,8 +158,9 @@ export const SEED_GROWERS: Grower[] = [
   {
     id: "grower-greenhouse-westland",
     name: "Greenhouse grower",
+    role: "Grower",
     region: "Westland, NL",
-    country: "NL",
+    countries: ["NL"],
     operation: "Greenhouse vegetables",
     contexts: ["Greenhouse", "High-value crops"],
     crops: ["Tomato", "Sweet pepper"],
@@ -94,8 +174,9 @@ export const SEED_GROWERS: Grower[] = [
   {
     id: "grower-tree-nursery-boskoop",
     name: "Tree nursery",
+    role: "Grower",
     region: "Boskoop, NL",
-    country: "NL",
+    countries: ["NL"],
     operation: "Outdoor nursery",
     contexts: ["Open field", "Nursery"],
     crops: ["Ornamental trees", "Shrubs", "Tree nursery"],
@@ -128,6 +209,8 @@ export const SEED_PILOT_OFFERS: PilotOffer[] = [
     status: "Open",
     availability: "Looking for 3 pilot locations for next season",
     duration: "10–12 weeks",
+    includes: ["Camera kit (loan)", "Platform access", "Weekly agronomic review"],
+    responseTime: "Reply within 3 working days",
     requiredContext: ["Greenhouse"],
     requiredSystems: ["Stable internet", "Scouting rounds"],
     requiredData: ["Weekly image capture", "Disease observations"],
@@ -140,6 +223,8 @@ export const SEED_PILOT_OFFERS: PilotOffer[] = [
     status: "Open",
     availability: "Open for first commercial-scale trials",
     duration: "8–12 weeks",
+    includes: ["Product supply", "Application guidance", "Trial design support", "End-of-season report"],
+    responseTime: "Reply within 5 working days",
     requiredContext: ["Open field", "Nursery", "Organic systems"],
     requiredSystems: ["Manual scouting"],
     requiredData: ["Soil samples", "Control plot", "Disease observations"],
@@ -152,6 +237,8 @@ export const SEED_PILOT_OFFERS: PilotOffer[] = [
     status: "Open",
     availability: "Commercial rollout; pilots for new crops",
     duration: "One spraying season",
+    includes: ["Sprayer module installation", "Operator training", "Field data analysis"],
+    responseTime: "Reply within 2 working days",
     requiredContext: ["Open field", "Orchard", "Nursery"],
     requiredSystems: ["Sprayer", "GPS guidance", "Field maps"],
     requiredData: ["Field boundary data"],
@@ -195,20 +282,26 @@ export const SEED_EVIDENCE_RECORDS: EvidenceRecord[] = [
 
 export const EMPTY_INNOVATOR_FORM: InnovatorFormValues = {
   solutionName: "",
+  imageUrl: "",
   proposition: "",
   solutionType: "AI / Software",
   challengeIds: ["disease-detection"],
   stage: "Prototype",
   contexts: "Greenhouse",
-  crops: "",
+  crops: [],
   requiredSystems: "",
   requiredData: "",
   geography: "NL",
   lookingFor: "Pilot growers, Grower feedback",
+  website: "",
+  contactEmail: "",
+  pricingModel: "",
   pilotTitle: "",
   pilotType: "Paid pilot",
   pilotDuration: "8–12 weeks",
   pilotAvailability: "Open for pilot locations",
+  pilotIncludes: "",
+  pilotResponseTime: "Reply within 5 working days",
   evidenceType: "Field trial",
   evidenceTested: "",
   evidenceImpact: "",
@@ -217,15 +310,22 @@ export const EMPTY_INNOVATOR_FORM: InnovatorFormValues = {
 
 export const EMPTY_GROWER_FORM: GrowerFormValues = {
   name: "",
+  imageUrl: "",
+  role: "Grower",
   operation: "",
   region: "",
-  country: "NL",
+  countries: ["NL"],
   contexts: "Greenhouse",
-  crops: "",
+  crops: [],
   openness: "Open to pilots",
   challengeIds: ["disease-detection"],
-  constraints: "Low disruption",
+  constraints: "",
   systems: "",
   availableData: "",
-  pilotTypes: "Paid pilot, Co-development",
+  pilotTypes: "",
+  website: "",
+  contactEmail: "",
+  operationScale: "",
+  certifications: "",
+  preferredPilotSeason: "",
 };

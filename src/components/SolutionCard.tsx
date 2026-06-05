@@ -25,6 +25,15 @@ export function SolutionCard({ solution, selected, onClick }: SolutionCardProps)
         )}
       >
         <CardContent className="p-5">
+          {solution.imageUrl && (
+            <div className="mb-4 overflow-hidden rounded-xl">
+              <img
+                src={solution.imageUrl}
+                alt={solution.name}
+                className="h-32 w-full object-cover"
+              />
+            </div>
+          )}
           <div className="flex items-start justify-between gap-4">
             <div>
               <div className="mb-2 flex items-center gap-2">
@@ -50,7 +59,7 @@ export function SolutionCard({ solution, selected, onClick }: SolutionCardProps)
                 {solution.match?.score ?? "—"}
               </div>
               <div className="text-[10px] uppercase tracking-wide text-slate-300">
-                match
+                score
               </div>
             </div>
           </div>
