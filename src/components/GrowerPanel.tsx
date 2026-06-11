@@ -91,30 +91,59 @@ export function GrowerPanel({ grower, onCreateProfile, onEdit }: GrowerPanelProp
             </p>
           </div>
           <div className="rounded-xl bg-slate-50 p-3">
-            <p className="text-xs text-slate-500">Existing systems</p>
+            <p className="text-xs text-slate-500">Pilot types</p>
             <p className="text-sm font-medium text-slate-900">
-              {grower.systems.slice(0, 2).join(", ") || "—"}
+              {grower.pilotTypes.length > 0 ? grower.pilotTypes.slice(0, 2).join(", ") : "—"}
             </p>
           </div>
         </div>
 
-        <div className="space-y-3">
-          <div>
-            <p className="mb-2 text-xs text-slate-500">Current challenges</p>
-            <div className="flex flex-wrap gap-2">
-              {namesFromIds(grower.challengeIds, CHALLENGES).map((challenge) => (
-                <Tag key={challenge} active>
-                  {challenge}
-                </Tag>
-              ))}
-            </div>
+        {grower.operationScale && (
+          <div className="mb-3 rounded-xl bg-slate-50 p-3">
+            <p className="text-xs text-slate-500">Scale</p>
+            <p className="text-sm font-medium text-slate-900">{grower.operationScale}</p>
           </div>
+        )}
+
+        <div className="space-y-3">
+          {namesFromIds(grower.challengeIds, CHALLENGES).length > 0 && (
+            <div>
+              <p className="mb-2 text-xs text-slate-500">Current challenges</p>
+              <div className="flex flex-wrap gap-2">
+                {namesFromIds(grower.challengeIds, CHALLENGES).map((challenge) => (
+                  <Tag key={challenge} active>
+                    {challenge}
+                  </Tag>
+                ))}
+              </div>
+            </div>
+          )}
+          {grower.crops.length > 0 && (
+            <div>
+              <p className="mb-2 text-xs text-slate-500">Crops</p>
+              <div className="flex flex-wrap gap-2">
+                {grower.crops.map((crop) => (
+                  <Tag key={crop}>{crop}</Tag>
+                ))}
+              </div>
+            </div>
+          )}
           {grower.constraints.length > 0 && (
             <div>
               <p className="mb-2 text-xs text-slate-500">Pilot constraints</p>
               <div className="flex flex-wrap gap-2">
                 {grower.constraints.map((constraint) => (
                   <Tag key={constraint}>{constraint}</Tag>
+                ))}
+              </div>
+            </div>
+          )}
+          {grower.systems.length > 0 && (
+            <div>
+              <p className="mb-2 text-xs text-slate-500">Existing systems</p>
+              <div className="flex flex-wrap gap-2">
+                {grower.systems.map((s) => (
+                  <Tag key={s}>{s}</Tag>
                 ))}
               </div>
             </div>

@@ -373,70 +373,121 @@ export default function OpenFieldPage() {
         </div>
 
         {/* Solution list + detail panel */}
-        <section id="pilots" className="grid gap-6 lg:grid-cols-[0.9fr_1.1fr]">
-          <div className="space-y-4">
-            {filtered.length > 0 ? (
-              filtered.map((s) => (
-                <SolutionCard
-                  key={s.id}
-                  solution={s}
-                  selected={selected?.id === s.id}
-                  onClick={() => setSelectedId(s.id)}
-                />
-              ))
-            ) : (
-              <Card className="rounded-2xl border-slate-200 bg-white shadow-sm">
-                <CardContent className="p-6">
-                  <p className="text-sm font-medium text-slate-900">
-                    No solutions found
-                  </p>
-                  <p className="mt-1 text-sm text-slate-600">
-                    Try another challenge tag or search term.
-                  </p>
-                </CardContent>
-              </Card>
-            )}
-          </div>
-
-          {/* Sticky detail panel */}
-          <div className="sticky top-6 h-fit space-y-4">
-            <div className="rounded-2xl bg-emerald-900 p-4 text-white">
-              <div className="flex items-start justify-between gap-4">
-                <div>
-                  <p className="text-xs uppercase tracking-wide text-emerald-100">
-                    {matchLabel}
-                  </p>
-                  <h3 className="mt-1 text-lg font-semibold">
-                    {selected
-                      ? `${activeGrower?.name ?? "Your context"} × ${selected.name}`
-                      : "Select a solution to see its score"}
-                  </h3>
-                  <p className="mt-1 text-sm text-emerald-50">
-                    {activeGrower
-                      ? sharedTags.length > 0
-                        ? `Shared challenges: ${sharedTags.join(", ")}`
-                        : selected?.match?.score
-                          ? `Ranked on context, crops & geography fit`
-                          : "Add a profile to see ranked matches"
-                      : "Add your profile to unlock operational relevance scores"}
-                  </p>
+        {!activeGrower ? (
+          /* ── Visitor preview: 3 cards + locked 4th ── */
+          <section id="pilots">
+            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+              {filtered.slice(0, 3).map((s) => (
+                <Card key={s.id} className="rounded-2xl border-slate-200 bg-white shadow-sm">
+                  <CardContent className="p-4">
+                    {s.imageUrl && (
+                      <div className="mb-3 overflow-hidden rounded-xl">
+                        <img src={s.imageUrl} alt={s.name} className="h-24 w-full object-cover" />
+                      </div>
+                    )}
+                    <p className="text-[10px] font-medium uppercase tracking-wide text-slate-400">{s.type}</p>
+                    <h3 className="mt-0.5 text-sm font-semibold text-slate-950">{s.name}</h3>
+                    <p className="mt-1 text-xs leading-relaxed text-slate-600 line-clamp-3">{s.proposition}</p>
+                    <div className="mt-3 flex flex-wrap gap-1">
+                      {s.tags.slice(0, 2).map((t) => (
+                        <span key={t} className="rounded-full bg-slate-100 px-2 py-0.5 text-[10px] text-slate-600">{t}</span>
+                      ))}
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+              {/* Locked 4th card */}
+              <div className="relative">
+                <div className="pointer-events-none select-none rounded-2xl border border-slate-200 bg-white shadow-sm blur-[2px] opacity-40 overflow-hidden">
+                  <div className="p-4">
+                    <p className="text-[10px] font-medium uppercase tracking-wide text-slate-400">Sensor</p>
+                    <h3 className="mt-0.5 text-sm font-semibold text-slate-950">Solution preview</h3>
+                    <p className="mt-1 text-xs text-slate-600">Ranked by your challenges, crops, and context fit.</p>
+                    <div className="mt-3 flex gap-1">
+                      <span className="rounded-full bg-slate-100 px-2 py-0.5 text-[10px] text-slate-600">Water</span>
+                      <span className="rounded-full bg-slate-100 px-2 py-0.5 text-[10px] text-slate-600">Labour</span>
+                    </div>
+                  </div>
                 </div>
-                <div className="rounded-xl bg-white px-3 py-2 text-center text-emerald-950">
-                  <div className="text-xl font-semibold">
-                    {selected?.match?.score ?? "—"}
-                  </div>
-                  <div className="text-[10px] uppercase tracking-wide">
-                    score
-                  </div>
+                <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 rounded-2xl bg-white/70 p-4 text-center">
+                  <p className="text-sm font-semibold text-slate-950">
+                    {filtered.length > 3 ? `+${filtered.length - 3} more` : "Unlock matches"}
+                  </p>
+                  <p className="text-xs text-slate-500">Create a profile to see all solutions ranked by operational fit.</p>
+                  <Button
+                    onClick={() => setProfilePickerOpen(true)}
+                    className="rounded-xl bg-emerald-800 hover:bg-emerald-900 text-xs px-4 py-2"
+                  >
+                    Create a profile
+                  </Button>
                 </div>
               </div>
             </div>
-            <ProfileDetail
-              solution={selected}
-              onRequestIntro={() => setRequestIntroOpen(true)}
-            />
-          </div>
-        </section>
+          </section>
+        ) : (
+          <section id="pilots" className="grid gap-6 lg:grid-cols-[0.9fr_1.1fr]">
+            <div className="space-y-4">
+              {filtered.length > 0 ? (
+                filtered.map((s) => (
+                  <SolutionCard
+                    key={s.id}
+                    solution={s}
+                    selected={selected?.id === s.id}
+                    onClick={() => setSelectedId(s.id)}
+                  />
+                ))
+              ) : (
+                <Card className="rounded-2xl border-slate-200 bg-white shadow-sm">
+                  <CardContent className="p-6">
+                    <p className="text-sm font-medium text-slate-900">
+                      No solutions found
+                    </p>
+                    <p className="mt-1 text-sm text-slate-600">
+                      Try another challenge tag or search term.
+                    </p>
+                  </CardContent>
+                </Card>
+              )}
+            </div>
+
+            {/* Sticky detail panel */}
+            <div className="sticky top-6 h-fit space-y-4">
+              <div className="rounded-2xl bg-emerald-900 p-4 text-white">
+                <div className="flex items-start justify-between gap-4">
+                  <div>
+                    <p className="text-xs uppercase tracking-wide text-emerald-100">
+                      {matchLabel}
+                    </p>
+                    <h3 className="mt-1 text-lg font-semibold">
+                      {selected
+                        ? `${activeGrower?.name ?? "Your context"} × ${selected.name}`
+                        : "Select a solution to see its score"}
+                    </h3>
+                    <p className="mt-1 text-sm text-emerald-50">
+                      {sharedTags.length > 0
+                        ? `Shared challenges: ${sharedTags.join(", ")}`
+                        : selected?.match?.score
+                          ? `Ranked on context, crops & geography fit`
+                          : "Add a profile to see ranked matches"}
+                    </p>
+                  </div>
+                  <div className="rounded-xl bg-white px-3 py-2 text-center text-emerald-950">
+                    <div className="text-xl font-semibold">
+                      {selected?.match?.score ?? "—"}
+                    </div>
+                    <div className="text-[10px] uppercase tracking-wide">
+                      score
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <ProfileDetail
+                solution={selected}
+                onRequestIntro={() => setRequestIntroOpen(true)}
+              />
+            </div>
+          </section>
+        )}
       </main>
 
       <footer className="mt-16 border-t border-slate-200 py-8 text-center text-sm text-slate-400">

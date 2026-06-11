@@ -181,10 +181,10 @@ export interface GrowerFormValues {
   crops: string[];
   openness: string;
   challengeIds: ChallengeId[];
-  constraints: string;
-  systems: string;
-  availableData: string;
-  pilotTypes: string;
+  constraints: string[];
+  systems: string[];
+  availableData: string[];
+  pilotTypes: string[];
   website: string;
   contactEmail: string;
   operationScale: string;

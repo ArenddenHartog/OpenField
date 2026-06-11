@@ -123,10 +123,10 @@ export function IntakeModal({
       crops: f.crops,
       openness: f.openness,
       challengeIds: f.challengeIds,
-      constraints: listFromText(f.constraints),
-      systems: listFromText(f.systems),
-      availableData: listFromText(f.availableData),
-      pilotTypes: listFromText(f.pilotTypes),
+      constraints: f.constraints,
+      systems: f.systems,
+      availableData: f.availableData,
+      pilotTypes: f.pilotTypes,
       website: f.website || undefined,
       contactEmail: f.contactEmail || undefined,
       operationScale: f.operationScale || undefined,
@@ -412,20 +412,132 @@ function GrowerFields({
               {PILOT_SEASONS.map((s) => <option key={s}>{s}</option>)}
             </select>
           </Field>
-          <Field label="Pilot types accepted">
-            <input value={form.pilotTypes} onChange={(e) => onChange("pilotTypes", e.target.value)} className={INPUT_CLASS} placeholder="Free pilot, Paid pilot, Co-development…" />
-          </Field>
-          <Field label="Existing systems (comma-separated)">
-            <input value={form.systems} onChange={(e) => onChange("systems", e.target.value)} className={INPUT_CLASS} placeholder="Climate computer, Scouting rounds…" />
-          </Field>
-          <Field label="Available data (comma-separated)">
-            <input value={form.availableData} onChange={(e) => onChange("availableData", e.target.value)} className={INPUT_CLASS} placeholder="Disease records, Soil samples…" />
-          </Field>
-          <Field label="Pilot constraints (comma-separated)">
-            <input value={form.constraints} onChange={(e) => onChange("constraints", e.target.value)} className={INPUT_CLASS} placeholder="Low disruption, Seasonal window…" />
-          </Field>
+          <div className="space-y-2 md:col-span-2">
+            <span className="text-xs font-medium text-slate-600">Pilot types accepted (multiple options possible)</span>
+            <ChipMultiSelect options={PILOT_TYPES_OPTIONS} value={form.pilotTypes} onChange={(v) => onChange("pilotTypes", v)} />
+          </div>
+          <div className="space-y-2 md:col-span-2">
+            <span className="text-xs font-medium text-slate-600">Pilot constraints (multiple options possible)</span>
+            <ChipMultiSelect options={PILOT_CONSTRAINTS_OPTIONS} value={form.constraints} onChange={(v) => onChange("constraints", v)} />
+          </div>
+          <div className="space-y-2 md:col-span-2">
+            <span className="text-xs font-medium text-slate-600">Existing systems (multiple options possible)</span>
+            <ChipMultiSelect options={SYSTEMS_OPTIONS} value={form.systems} onChange={(v) => onChange("systems", v)} withOther />
+          </div>
+          <div className="space-y-2 md:col-span-2">
+            <span className="text-xs font-medium text-slate-600">Available data (multiple options possible)</span>
+            <ChipMultiSelect options={AVAILABLE_DATA_OPTIONS} value={form.availableData} onChange={(v) => onChange("availableData", v)} withOther />
+          </div>
         </div>
       </Section>
+    </div>
+  );
+}
+
+// ─── Chip multi-select ────────────────────────────────────────────────────────
+
+const PILOT_TYPES_OPTIONS = [
+  "Free pilot",
+  "Paid pilot",
+  "Co-development",
+  "Data partnership",
+  "Observational",
+] as const;
+
+const PILOT_CONSTRAINTS_OPTIONS = [
+  "Low disruption",
+  "Seasonal windows",
+  "Weather dependent",
+  "Limited extra labour",
+  "Data privacy important",
+  "Practical setup only",
+  "No chemical changes",
+  "Certified operation restrictions",
+] as const;
+
+const SYSTEMS_OPTIONS = [
+  "Climate computer",
+  "Scouting rounds",
+  "Sprayer",
+  "GPS guidance",
+  "Field maps",
+  "Stable internet",
+  "Basic sensor setup",
+  "Manual scouting",
+  "Camera system",
+  "Weather station",
+  "Irrigation system",
+  "ERP / farm management software",
+] as const;
+
+const AVAILABLE_DATA_OPTIONS = [
+  "Weekly image capture",
+  "Disease observations",
+  "Soil samples",
+  "Control plot",
+  "Field boundary data",
+  "Weather data",
+  "Yield records",
+  "Spray logs",
+  "Scouting reports",
+  "Lab results",
+] as const;
+
+function ChipMultiSelect({
+  options,
+  value,
+  onChange,
+  withOther = false,
+}: {
+  options: readonly string[];
+  value: string[];
+  onChange: (v: string[]) => void;
+  withOther?: boolean;
+}) {
+  const knownSet = new Set(options);
+  const otherValues = value.filter((v) => !knownSet.has(v));
+  const [otherText, setOtherText] = useState(otherValues.join(", "));
+
+  function toggle(opt: string) {
+    onChange(value.includes(opt) ? value.filter((v) => v !== opt) : [...value, opt]);
+  }
+
+  function applyOther(text: string) {
+    const extra = text.split(",").map((s) => s.trim()).filter(Boolean);
+    const known = value.filter((v) => knownSet.has(v));
+    onChange([...known, ...extra]);
+  }
+
+  return (
+    <div className="space-y-2">
+      <div className="flex flex-wrap gap-2">
+        {options.map((opt) => (
+          <button
+            key={opt}
+            type="button"
+            onClick={() => toggle(opt)}
+            className={cn(
+              "rounded-full border px-3 py-1 text-xs font-medium transition-colors",
+              value.includes(opt)
+                ? "border-emerald-700 bg-emerald-50 text-emerald-900"
+                : "border-slate-200 text-slate-600 hover:border-slate-300"
+            )}
+          >
+            {opt}
+          </button>
+        ))}
+      </div>
+      {withOther && (
+        <input
+          value={otherText}
+          onChange={(e) => {
+            setOtherText(e.target.value);
+            applyOther(e.target.value);
+          }}
+          className={INPUT_CLASS}
+          placeholder="+ Other (comma-separated)"
+        />
+      )}
     </div>
   );
 }
