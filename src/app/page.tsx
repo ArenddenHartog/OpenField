@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { Search, Leaf, Filter, LogIn, LogOut } from "lucide-react";
+import { Search, LogIn, LogOut } from "lucide-react";
 import type { User } from "@supabase/supabase-js";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -14,6 +14,7 @@ import { AuthModal } from "@/components/AuthModal";
 import { RequestIntroModal } from "@/components/RequestIntroModal";
 import {
   CHALLENGES,
+  CHALLENGE_GROUPS,
   SEED_EVIDENCE_RECORDS,
   SEED_PILOT_OFFERS,
   SEED_SOLUTIONS,
@@ -143,7 +144,10 @@ export default function OpenFieldPage() {
     const q = query.trim().toLowerCase();
     return enrichedSolutions
       .filter((s) => {
-        const tagMatch = selectedTag === "All" || s.tags.includes(selectedTag);
+        const tagMatch = selectedTag === "All" || s.challengeIds.some((id) => {
+          const group = CHALLENGE_GROUPS.find((g) => g.subgroups.some((sg) => sg.items.includes(id)));
+          return group?.label === selectedTag;
+        });
         const typeMatch = selectedType === "All" || s.type === selectedType;
         const text = [
           s.name,
@@ -219,10 +223,7 @@ export default function OpenFieldPage() {
       <header className="border-b border-slate-200 bg-[#fbfaf5]/90 backdrop-blur">
         <div className="mx-auto flex max-w-7xl flex-col gap-4 px-6 py-4 md:flex-row md:items-center md:justify-between">
           <div className="flex items-center gap-3">
-            <div className="rounded-2xl bg-emerald-800 p-2 text-white">
-              <Leaf size={22} />
-            </div>
-            <h1 className="text-lg font-semibold tracking-tight">OpenField</h1>
+            <h1 className="font-logo text-2xl font-bold tracking-tight text-slate-950">Aggy</h1>
           </div>
           <div className="flex items-center gap-2">
             <Button
@@ -270,21 +271,28 @@ export default function OpenFieldPage() {
         >
           <div className="flex flex-col justify-center py-4">
             <h2 className="max-w-3xl text-4xl font-semibold leading-tight tracking-tight text-slate-950 md:text-5xl">
-              Find field-ready innovations and the growers to validate them.
+              Field-ready innovations, tackling operational challenges.
             </h2>
             <p className="mt-5 max-w-2xl text-base leading-relaxed text-slate-600">
-              OpenField brings together growers&rsquo; real challenges and the innovators
-              building solutions to solve them. Practical fit, not marketing.
+              Aggy connects growers with innovators solving real operational challenges.
             </p>
-            <ul className="mt-6 divide-y divide-slate-200 border-t border-slate-200 text-sm text-slate-600">
+            <p className="text-base leading-relaxed text-slate-600">
+              Practical fit, not marketing.
+            </p>
+            <ul className="mt-4">
               {[
-                "Share your operational details",
-                "We surface the most operationally relevant innovations",
-                "Request an intro and start a pilot this season",
-              ].map((text) => (
-                <li key={text} className="flex items-center gap-3 py-3">
-                  <span className="h-2 w-2 shrink-0 bg-emerald-500" />
-                  {text}
+                "Share your operational challenges.",
+                "Discover the most relevant innovations.",
+                "Connect and get a pilot running this season.",
+              ].map((text, i, arr) => (
+                <li key={text} className="flex items-start gap-3">
+                  <div className="flex flex-col items-center">
+                    <span className="mt-[7px] h-2 w-2 shrink-0 bg-emerald-500" />
+                    {i < arr.length - 1 && (
+                      <span className="my-0.5 w-px flex-1 bg-slate-200" style={{ minHeight: 16 }} />
+                    )}
+                  </div>
+                  <p className="pb-3 text-sm text-slate-600">{text}</p>
                 </li>
               ))}
             </ul>
@@ -300,8 +308,8 @@ export default function OpenFieldPage() {
         </section>
 
         {/* Search + filter bar */}
-        <section id="solutions" className="mb-6 space-y-3 rounded-3xl bg-white p-4 shadow-sm">
-          <div className="flex items-center gap-3 rounded-2xl border border-slate-200 px-4 py-3">
+        <section id="solutions" className="mb-6 rounded-3xl bg-white p-4 shadow-sm">
+          <div className="mb-3 flex items-center gap-3 rounded-2xl border border-slate-200 px-4 py-3">
             <Search size={18} className="text-slate-400" />
             <input
               value={query}
@@ -310,54 +318,54 @@ export default function OpenFieldPage() {
               className="w-full bg-transparent text-sm outline-none"
             />
           </div>
-
-          <div className="flex items-center gap-2 overflow-x-auto scrollbar-hide pb-0.5">
-            <span className="shrink-0 text-[11px] font-semibold uppercase tracking-wide text-slate-400 pr-1">
-              Solution
-            </span>
-            {["All", ...CHALLENGES.map((c) => c.name)].map((tag) => (
-              <button
-                key={tag}
-                type="button"
-                onClick={() => setSelectedTag(tag)}
-                className={cn(
-                  "shrink-0 rounded-full border px-3 py-1.5 text-xs font-medium transition-colors",
-                  selectedTag === tag
-                    ? "border-emerald-700 bg-emerald-50 text-emerald-900"
-                    : "border-slate-200 bg-white text-slate-600 hover:border-slate-300"
-                )}
-              >
-                {tag}
-              </button>
-            ))}
-          </div>
-
-          <div className="flex items-center gap-2 overflow-x-auto scrollbar-hide pb-0.5">
-            <span className="shrink-0 text-[11px] font-semibold uppercase tracking-wide text-slate-400 pr-1">
-              <Filter size={12} className="inline mr-1" />Type
-            </span>
-            {["All", ...SOLUTION_TYPES].map((type) => (
-              <button
-                key={type}
-                type="button"
-                onClick={() => setSelectedType(type)}
-                className={cn(
-                  "shrink-0 rounded-full border px-3 py-1.5 text-xs font-medium transition-colors",
-                  selectedType === type
-                    ? "border-slate-900 bg-slate-900 text-white"
-                    : "border-slate-200 bg-white text-slate-600 hover:border-slate-300"
-                )}
-              >
-                {type}
-              </button>
-            ))}
+          <div className="space-y-1.5">
+            <div className="flex items-center gap-3 overflow-x-auto scrollbar-hide">
+              <span className="shrink-0 w-14 text-[10px] font-semibold uppercase tracking-widest text-slate-400">Challenge</span>
+              <div className="flex items-center gap-1">
+                {["All", ...CHALLENGE_GROUPS.map((g) => g.label)].map((tag) => (
+                  <button
+                    key={tag}
+                    type="button"
+                    onClick={() => setSelectedTag(tag)}
+                    className={cn(
+                      "shrink-0 rounded-full px-3 py-1 text-xs font-medium transition-colors whitespace-nowrap",
+                      selectedTag === tag
+                        ? "bg-emerald-800 text-white"
+                        : "text-slate-600 hover:bg-slate-100"
+                    )}
+                  >
+                    {tag}
+                  </button>
+                ))}
+              </div>
+            </div>
+            <div className="flex items-center gap-3 overflow-x-auto scrollbar-hide">
+              <span className="shrink-0 w-14 text-[10px] font-semibold uppercase tracking-widest text-slate-400">Type</span>
+              <div className="flex items-center gap-1">
+                {["All", ...SOLUTION_TYPES].map((type) => (
+                  <button
+                    key={type}
+                    type="button"
+                    onClick={() => setSelectedType(type)}
+                    className={cn(
+                      "shrink-0 rounded-full px-3 py-1 text-xs font-medium transition-colors whitespace-nowrap",
+                      selectedType === type
+                        ? "bg-slate-900 text-white"
+                        : "text-slate-600 hover:bg-slate-100"
+                    )}
+                  >
+                    {type}
+                  </button>
+                ))}
+              </div>
+            </div>
           </div>
         </section>
 
         {/* Section header above grid */}
         <div className="mb-4">
           <h2 className="text-xl font-semibold text-slate-950">
-            Innovations on OpenField
+            Innovations on Aggy
           </h2>
           <p className="text-sm text-slate-500">
             Ranked by operational relevance.
@@ -405,7 +413,11 @@ export default function OpenFieldPage() {
                   </h3>
                   <p className="mt-1 text-sm text-emerald-50">
                     {activeGrower
-                      ? `Shared challenges: ${sharedTags.length > 0 ? sharedTags.join(", ") : "none yet"}`
+                      ? sharedTags.length > 0
+                        ? `Shared challenges: ${sharedTags.join(", ")}`
+                        : selected?.match?.score
+                          ? `Ranked on context, crops & geography fit`
+                          : "Add a profile to see ranked matches"
                       : "Add your profile to unlock operational relevance scores"}
                   </p>
                 </div>

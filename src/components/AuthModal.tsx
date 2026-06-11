@@ -41,9 +41,6 @@ export function AuthModal({ onClose }: AuthModalProps) {
       >
         <div className="mb-5 flex items-start justify-between">
           <div>
-            <p className="text-xs font-semibold uppercase tracking-wide text-emerald-800">
-              OpenField
-            </p>
             <h2 className="text-xl font-semibold text-slate-950">Sign in</h2>
             <p className="mt-1 text-sm text-slate-500">
               We&apos;ll email you a sign-in link. No password needed.

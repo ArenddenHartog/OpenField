@@ -13,13 +13,7 @@ export type Stage = (typeof STAGES)[number];
 
 export type EvidenceQuality = "High" | "Medium" | "Early";
 
-export type ChallengeId =
-  | "disease-detection"
-  | "pesticide-reduction"
-  | "biological-control"
-  | "precision-spraying"
-  | "resistance-management"
-  | "crop-scouting";
+export type ChallengeId = string;
 
 export type PilotStatus = "Open" | "Closed";
 

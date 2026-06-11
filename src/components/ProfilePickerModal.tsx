@@ -80,12 +80,9 @@ export function ProfilePickerModal({ onClose, onSelect }: ProfilePickerModalProp
       >
         <div className="mb-5 flex items-start justify-between">
           <div>
-            <p className="text-xs font-semibold uppercase tracking-wide text-emerald-800">
-              OpenField
-            </p>
-            <h2 className="text-xl font-semibold text-slate-950">Who are you?</h2>
+            <h2 className="text-xl font-semibold text-slate-950">Create a profile.</h2>
             <p className="mt-1 text-sm text-slate-500">
-              Pick the profile that best describes your role.
+              Pick the type that fits your role.
             </p>
           </div>
           <button

@@ -20,7 +20,7 @@ import type {
 import { ImageUpload } from "@/components/ImageUpload";
 import { cn, listFromText, makeId } from "@/lib/utils";
 
-const COUNTRIES = ["NL", "BE", "DE", "FR", "DK", "ES", "PL", "UK", "IE", "IT", "PT", "Other"];
+const COUNTRIES = ["NL", "BE", "DE", "FR", "DK", "ES", "PL", "UK", "IE", "IT", "PT", "Global"];
 
 type Role = "innovator" | "grower";
 
@@ -146,16 +146,11 @@ export function IntakeModal({
       >
         <div className="mb-5 flex items-start justify-between">
           <div>
-            <p className="text-xs font-semibold uppercase tracking-wide text-emerald-800">
-              OpenField intake
-            </p>
             <h2 className="text-xl font-semibold text-slate-950">
-              Create {isInnovator ? "a solution" : "your"} profile
+              {isInnovator ? "Add a solution" : "Create profile"}
             </h2>
             <p className="mt-1 text-sm text-slate-500">
-              {isInnovator
-                ? "Tell us about your innovation. The more context, the better the operational fit."
-                : "Your profile drives which innovations show up for you. Practical fit, not marketing."}
+              More details means better recommendations.
             </p>
           </div>
           <button
@@ -223,7 +218,7 @@ function InnovatorFields({
             <input value={form.proposition} onChange={(e) => onChange("proposition", e.target.value)} className={INPUT_CLASS} placeholder="What problem does it solve, and how?" />
           </Field>
           <div className="space-y-2 md:col-span-2">
-            <span className="text-xs font-medium text-slate-600">Challenges addressed</span>
+            <span className="text-xs font-medium text-slate-600">Challenges addressed (multiple options possible)</span>
             <ChallengePicker selectedIds={form.challengeIds} onChange={(ids) => onChange("challengeIds", ids)} />
           </div>
           <Field label="Validation stage">
