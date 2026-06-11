@@ -1,7 +1,8 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { Search, LogIn, LogOut } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { Search, LogIn, LogOut, Pencil } from "lucide-react";
 import type { User } from "@supabase/supabase-js";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -51,6 +52,7 @@ export default function OpenFieldPage() {
   const [selectedType, setSelectedType] = useState("All");
   const [query, setQuery] = useState("");
   const [selectedId, setSelectedId] = useState("sol-sporesight-ai");
+  const router = useRouter();
   const [profilePickerOpen, setProfilePickerOpen] = useState(false);
   const [modalRole, setModalRole] = useState<ModalRole>(null);
   const [presetGrowerRole, setPresetGrowerRole] = useState<GrowerRole | undefined>(undefined);
@@ -226,38 +228,52 @@ export default function OpenFieldPage() {
             <h1 className="font-logo text-2xl font-bold tracking-tight text-slate-950">Aggy</h1>
           </div>
           <div className="flex items-center gap-2">
-            <Button
-              variant="outline"
-              onClick={() => setModalRole("grower")}
-              className="rounded-xl border-slate-300"
-            >
-              I am a grower
-            </Button>
-            <Button
-              onClick={() => setModalRole("innovator")}
-              className="rounded-xl bg-emerald-800 hover:bg-emerald-900"
-            >
-              I am an innovator
-            </Button>
-            {isSupabaseConfigured && (
-              user ? (
-                <button
-                  onClick={() => supabase?.auth.signOut()}
-                  title={`Signed in as ${user.email}`}
-                  className="flex items-center gap-1.5 rounded-xl border border-slate-200 px-3 py-2 text-xs text-slate-500 hover:bg-slate-50 hover:text-slate-900"
+            {activeGrower ? (
+              /* Profile chip — shown when a grower profile exists */
+              <button
+                onClick={() => router.push("/profile")}
+                className="flex items-center gap-2 rounded-xl border border-slate-200 px-3 py-2 text-sm hover:bg-slate-50"
+              >
+                <span className="flex h-7 w-7 items-center justify-center rounded-full bg-emerald-800 text-xs font-semibold text-white">
+                  {activeGrower.name.charAt(0).toUpperCase()}
+                </span>
+                <span className="font-medium text-slate-900">{activeGrower.name}</span>
+                <Pencil size={13} className="text-slate-400" />
+              </button>
+            ) : (
+              <>
+                <Button
+                  variant="outline"
+                  onClick={() => setProfilePickerOpen(true)}
+                  className="rounded-xl border-slate-300"
                 >
-                  <LogOut size={13} />
-                  Sign out
-                </button>
-              ) : (
-                <button
-                  onClick={() => setAuthModalOpen(true)}
-                  className="flex items-center gap-1.5 rounded-xl border border-slate-200 px-3 py-2 text-xs text-slate-500 hover:bg-slate-50 hover:text-slate-900"
+                  I am a grower
+                </Button>
+                <Button
+                  onClick={() => setModalRole("innovator")}
+                  className="rounded-xl bg-emerald-800 hover:bg-emerald-900"
                 >
-                  <LogIn size={13} />
-                  Sign in
-                </button>
-              )
+                  I am an innovator
+                </Button>
+              </>
+            )}
+            {user ? (
+              <button
+                onClick={() => supabase?.auth.signOut()}
+                title={`Signed in as ${user.email}`}
+                className="flex items-center gap-1.5 rounded-xl border border-slate-200 px-3 py-2 text-xs text-slate-500 hover:bg-slate-50 hover:text-slate-900"
+              >
+                <LogOut size={13} />
+                Sign out
+              </button>
+            ) : (
+              <button
+                onClick={() => setAuthModalOpen(true)}
+                className="flex items-center gap-1.5 rounded-xl border border-slate-200 px-3 py-2 text-xs text-slate-500 hover:bg-slate-50 hover:text-slate-900"
+              >
+                <LogIn size={13} />
+                Sign in
+              </button>
             )}
           </div>
         </div>
@@ -302,7 +318,7 @@ export default function OpenFieldPage() {
             <GrowerPanel
               grower={activeGrower}
               onCreateProfile={() => setProfilePickerOpen(true)}
-              onEdit={() => setModalRole("grower")}
+              onEdit={() => router.push("/profile")}
             />
           </div>
         </section>
