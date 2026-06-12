@@ -16,6 +16,7 @@ import { RequestIntroModal } from "@/components/RequestIntroModal";
 import {
   CHALLENGES,
   CHALLENGE_GROUPS,
+  CROP_GROUPS,
   SEED_EVIDENCE_RECORDS,
   SEED_PILOT_OFFERS,
   SEED_SOLUTIONS,
@@ -50,6 +51,8 @@ export default function OpenFieldPage() {
   const [user, setUser] = useState<User | null>(null);
   const [selectedTag, setSelectedTag] = useState("All");
   const [selectedType, setSelectedType] = useState("All");
+  const [selectedCropGroup, setSelectedCropGroup] = useState("All");
+  const [selectedCrop, setSelectedCrop] = useState("All");
   const [query, setQuery] = useState("");
   const [selectedId, setSelectedId] = useState("sol-sporesight-ai");
   const router = useRouter();
@@ -144,6 +147,9 @@ export default function OpenFieldPage() {
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
+    const cropGroupItems = selectedCropGroup !== "All"
+      ? (CROP_GROUPS.find((g) => g.label === selectedCropGroup)?.crops ?? [])
+      : [];
     return enrichedSolutions
       .filter((s) => {
         const tagMatch = selectedTag === "All" || s.challengeIds.some((id) => {
@@ -151,6 +157,10 @@ export default function OpenFieldPage() {
           return group?.label === selectedTag;
         });
         const typeMatch = selectedType === "All" || s.type === selectedType;
+        const cropMatch =
+          selectedCropGroup === "All" ? true :
+          selectedCrop !== "All" ? s.crops.includes(selectedCrop) :
+          s.crops.some((c) => cropGroupItems.includes(c));
         const text = [
           s.name,
           s.proposition,
@@ -169,10 +179,10 @@ export default function OpenFieldPage() {
           .filter(Boolean)
           .join(" ")
           .toLowerCase();
-        return tagMatch && typeMatch && (!q || text.includes(q));
+        return tagMatch && typeMatch && cropMatch && (!q || text.includes(q));
       })
       .sort((a, b) => (b.match?.score ?? 0) - (a.match?.score ?? 0));
-  }, [selectedTag, selectedType, query, enrichedSolutions]);
+  }, [selectedTag, selectedType, selectedCropGroup, selectedCrop, query, enrichedSolutions]);
 
   const selected =
     filtered.find((s) => s.id === selectedId) ?? filtered[0] ?? null;
@@ -229,16 +239,16 @@ export default function OpenFieldPage() {
           </div>
           <div className="flex items-center gap-2">
             {activeGrower ? (
-              /* Profile chip — shown when a grower profile exists */
+              /* Profile chip */
               <button
                 onClick={() => router.push("/profile")}
-                className="flex items-center gap-2 rounded-xl border border-slate-200 px-3 py-2 text-sm hover:bg-slate-50"
+                className="flex items-center gap-1.5 rounded-full border border-slate-200 bg-white px-2.5 py-1.5 hover:bg-slate-50"
               >
-                <span className="flex h-7 w-7 items-center justify-center rounded-full bg-emerald-800 text-xs font-semibold text-white">
+                <span className="flex h-6 w-6 items-center justify-center rounded-full bg-emerald-800 text-[11px] font-semibold text-white">
                   {activeGrower.name.charAt(0).toUpperCase()}
                 </span>
-                <span className="font-medium text-slate-900">{activeGrower.name}</span>
-                <Pencil size={13} className="text-slate-400" />
+                <span className="text-sm font-medium text-slate-800">{activeGrower.name}</span>
+                <Pencil size={12} className="text-slate-400" />
               </button>
             ) : (
               <>
@@ -280,48 +290,49 @@ export default function OpenFieldPage() {
       </header>
 
       <main className="mx-auto max-w-7xl px-6 py-8">
-        {/* Hero + grower sidebar */}
-        <section
-          id="challenges"
-          className="mb-8 grid items-stretch gap-6 lg:grid-cols-[1.15fr_0.85fr]"
-        >
-          <div className="flex flex-col justify-center py-4">
-            <h2 className="max-w-3xl text-4xl font-semibold leading-tight tracking-tight text-slate-950 md:text-5xl">
-              Field-ready innovations, tackling operational challenges.
-            </h2>
-            <p className="mt-5 max-w-2xl text-base leading-relaxed text-slate-600">
-              Aggy connects growers with innovators solving real operational challenges.
-            </p>
-            <p className="text-base leading-relaxed text-slate-600">
-              Practical fit, not marketing.
-            </p>
-            <ul className="mt-4">
-              {[
-                "Share your operational challenges.",
-                "Discover the most relevant innovations.",
-                "Connect and get a pilot running this season.",
-              ].map((text, i, arr) => (
-                <li key={text} className="flex items-start gap-3">
-                  <div className="flex flex-col items-center">
-                    <span className="mt-[7px] h-2 w-2 shrink-0 bg-emerald-500" />
-                    {i < arr.length - 1 && (
-                      <span className="my-0.5 w-px flex-1 bg-slate-200" style={{ minHeight: 16 }} />
-                    )}
-                  </div>
-                  <p className="pb-3 text-sm text-slate-600">{text}</p>
-                </li>
-              ))}
-            </ul>
-          </div>
-
-          <div id="grower-context" className="h-full">
-            <GrowerPanel
-              grower={activeGrower}
-              onCreateProfile={() => setProfilePickerOpen(true)}
-              onEdit={() => router.push("/profile")}
-            />
-          </div>
-        </section>
+        {/* Hero + grower sidebar — only shown to visitors without a profile */}
+        {!activeGrower && (
+          <section
+            id="challenges"
+            className="mb-8 grid items-stretch gap-6 lg:grid-cols-[1.15fr_0.85fr]"
+          >
+            <div className="flex flex-col justify-center py-4">
+              <h2 className="max-w-3xl text-4xl font-semibold leading-tight tracking-tight text-slate-950 md:text-5xl">
+                Field-ready innovations, tackling operational challenges.
+              </h2>
+              <p className="mt-5 max-w-2xl text-base leading-relaxed text-slate-600">
+                Aggy connects growers with innovators solving real operational challenges.
+              </p>
+              <p className="text-base leading-relaxed text-slate-600">
+                Practical fit, not marketing.
+              </p>
+              <ul className="mt-4">
+                {[
+                  "Share your operational challenges.",
+                  "Discover the most relevant innovations.",
+                  "Connect and get a pilot running this season.",
+                ].map((text, i, arr) => (
+                  <li key={text} className="flex items-start gap-3">
+                    <div className="flex flex-col items-center">
+                      <span className="mt-[7px] h-2 w-2 shrink-0 bg-emerald-500" />
+                      {i < arr.length - 1 && (
+                        <span className="my-0.5 w-px flex-1 bg-slate-200" style={{ minHeight: 16 }} />
+                      )}
+                    </div>
+                    <p className="pb-3 text-sm text-slate-600">{text}</p>
+                  </li>
+                ))}
+              </ul>
+            </div>
+            <div id="grower-context" className="h-full">
+              <GrowerPanel
+                grower={activeGrower}
+                onCreateProfile={() => setProfilePickerOpen(true)}
+                onEdit={() => router.push("/profile")}
+              />
+            </div>
+          </section>
+        )}
 
         {/* Search + filter bar */}
         <section id="solutions" className="mb-6 rounded-3xl bg-white p-4 shadow-sm">
@@ -355,6 +366,52 @@ export default function OpenFieldPage() {
                 ))}
               </div>
             </div>
+            {/* Crop filter — category row */}
+            <div className="flex items-center gap-3 overflow-x-auto scrollbar-hide">
+              <span className="shrink-0 w-14 text-[10px] font-semibold uppercase tracking-widest text-slate-400">Crop</span>
+              <div className="flex items-center gap-1">
+                {["All", ...CROP_GROUPS.map((g) => g.label)].map((grp) => (
+                  <button
+                    key={grp}
+                    type="button"
+                    onClick={() => {
+                      setSelectedCropGroup(grp);
+                      setSelectedCrop("All");
+                    }}
+                    className={cn(
+                      "shrink-0 rounded-full px-3 py-1 text-xs font-medium transition-colors whitespace-nowrap",
+                      selectedCropGroup === grp
+                        ? "bg-emerald-700 text-white"
+                        : "text-slate-600 hover:bg-slate-100"
+                    )}
+                  >
+                    {grp}
+                  </button>
+                ))}
+              </div>
+            </div>
+            {/* Crop filter — sub-crop row (appears when a group is selected) */}
+            {selectedCropGroup !== "All" && (
+              <div className="flex items-center gap-3 overflow-x-auto scrollbar-hide pl-[68px]">
+                <div className="flex items-center gap-1 border-l-2 border-emerald-200 pl-3">
+                  {["All", ...(CROP_GROUPS.find((g) => g.label === selectedCropGroup)?.crops ?? [])].map((crop) => (
+                    <button
+                      key={crop}
+                      type="button"
+                      onClick={() => setSelectedCrop(crop)}
+                      className={cn(
+                        "shrink-0 rounded-full px-3 py-1 text-xs font-medium transition-colors whitespace-nowrap",
+                        selectedCrop === crop
+                          ? "bg-emerald-100 text-emerald-900 ring-1 ring-emerald-600"
+                          : "text-slate-600 hover:bg-slate-100"
+                      )}
+                    >
+                      {crop === "All" ? `All ${selectedCropGroup}` : crop}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
             <div className="flex items-center gap-3 overflow-x-auto scrollbar-hide">
               <span className="shrink-0 w-14 text-[10px] font-semibold uppercase tracking-widest text-slate-400">Type</span>
               <div className="flex items-center gap-1">
