@@ -23,7 +23,7 @@ export function AuthModal({ onClose }: AuthModalProps) {
 
     const { error } = await supabase.auth.signInWithOtp({
       email,
-      options: { emailRedirectTo: window.location.origin },
+      options: { emailRedirectTo: `${window.location.origin}/auth/callback` },
     });
 
     setStatus(error ? "error" : "sent");
