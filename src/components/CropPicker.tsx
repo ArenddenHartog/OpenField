@@ -85,6 +85,15 @@ export function CropPicker({ selectedCrops, onChange }: CropPickerProps) {
           </div>
         </div>
       )}
+
+      {/* Summary line */}
+      {selectedCrops.length > 0 && !activeCategory && (
+        <p className="text-xs text-slate-500">
+          {selectedCrops.length} selected —{" "}
+          {selectedCrops.slice(0, 3).join(", ")}
+          {selectedCrops.length > 3 && ` +${selectedCrops.length - 3} more`}
+        </p>
+      )}
     </div>
   );
 }

@@ -196,6 +196,10 @@ export default function OpenFieldPage() {
   // ── Handlers ───────────────────────────────────────────────────────────────
   function handleProfileSelect(profileType: "innovator" | "grower", growerRole?: GrowerRole) {
     setProfilePickerOpen(false);
+    if (profileType === "grower") {
+      router.push("/profile");
+      return;
+    }
     setPresetGrowerRole(growerRole);
     setModalRole(profileType);
   }
@@ -251,7 +255,7 @@ export default function OpenFieldPage() {
               <>
                 <Button
                   variant="outline"
-                  onClick={() => setProfilePickerOpen(true)}
+                  onClick={() => router.push("/profile")}
                   className="rounded-xl border-slate-300"
                 >
                   I am a grower

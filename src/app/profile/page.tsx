@@ -9,7 +9,7 @@ import { CropPicker } from "@/components/CropPicker";
 import { ImageUpload } from "@/components/ImageUpload";
 import { GROWER_ROLES } from "@/data/types";
 import { EMPTY_GROWER_FORM } from "@/data/seed";
-import type { Grower, GrowerFormValues, GrowerRole } from "@/data/types";
+import type { Grower, GrowerFormValues } from "@/data/types";
 import { supabase } from "@/lib/supabase";
 import { saveGrowerProfile } from "@/lib/db";
 import { cn, listFromText, makeId } from "@/lib/utils";
@@ -17,6 +17,17 @@ import { cn, listFromText, makeId } from "@/lib/utils";
 // ─── Constants ────────────────────────────────────────────────────────────────
 
 const COUNTRIES = ["NL", "BE", "DE", "FR", "DK", "ES", "PL", "UK", "IE", "IT", "PT", "Global"];
+
+const GROWING_ENVIRONMENT_OPTIONS = [
+  "Greenhouse",
+  "Open field",
+  "Polytunnel",
+  "Nursery",
+  "Orchard",
+  "Vertical farming",
+  "Indoor",
+  "Aquaculture",
+] as const;
 
 const PILOT_TYPES_OPTIONS = [
   "Free pilot", "Paid pilot", "Co-development", "Data partnership", "Observational",
@@ -50,14 +61,14 @@ const INPUT_CLASS =
 function growerToForm(g: Grower): GrowerFormValues {
   return {
     name: g.name,
-    role: g.role,
+    role: g.role ? g.role.split(" / ").filter(Boolean) : [],
     imageUrl: g.imageUrl ?? "",
     operation: g.operation,
     region: g.region,
     countries: g.countries,
-    contexts: g.contexts.join(", "),
+    contexts: g.contexts,
     crops: g.crops,
-    openness: g.openness,
+    openness: g.openness ? g.openness.split(" / ").filter(Boolean) : [],
     challengeIds: g.challengeIds,
     constraints: g.constraints,
     systems: g.systems,
@@ -75,14 +86,14 @@ function formToGrower(f: GrowerFormValues, existingId?: string): Grower {
   return {
     id: existingId ?? makeId("grower", f.name || f.operation),
     name: f.name || "My profile",
-    role: f.role,
+    role: f.role.join(" / ") || "Grower",
     imageUrl: f.imageUrl || undefined,
     region: f.region || "Region not specified",
     countries: f.countries.length > 0 ? f.countries : ["NL"],
     operation: f.operation || "Agricultural operation",
-    contexts: listFromText(f.contexts),
+    contexts: f.contexts,
     crops: f.crops,
-    openness: f.openness,
+    openness: f.openness.join(" / ") || "Open to pilots",
     challengeIds: f.challengeIds,
     constraints: f.constraints,
     systems: f.systems,
@@ -143,18 +154,6 @@ function ChipMultiSelect({
         ))}
       </div>
       {withOther && (
-        <button
-          type="button"
-          className="rounded-full border border-dashed border-slate-300 px-3 py-1 text-xs text-slate-400 hover:border-slate-400"
-          onClick={() => {
-            const newText = otherText ? "" : "";
-            setOtherText(newText);
-          }}
-        >
-          + Other
-        </button>
-      )}
-      {withOther && (
         <input
           value={otherText}
           onChange={(e) => {
@@ -162,7 +161,7 @@ function ChipMultiSelect({
             applyOther(e.target.value);
           }}
           className={cn(INPUT_CLASS, "text-xs")}
-          placeholder="Type other values, comma-separated"
+          placeholder="+ Other (comma-separated)"
         />
       )}
     </div>
@@ -226,7 +225,7 @@ export default function ProfilePage() {
             disabled={saving}
             className="rounded-xl bg-emerald-800 hover:bg-emerald-900 disabled:opacity-60"
           >
-            {saving ? "Saving…" : "Save changes"}
+            {saving ? "Saving…" : existingId ? "Save changes" : "Create profile"}
           </Button>
         </div>
       </header>
@@ -235,9 +234,9 @@ export default function ProfilePage() {
         <p className="mb-1 text-[11px] font-semibold uppercase tracking-widest text-slate-400">
           Aggy profile
         </p>
-        <h2 className="mb-1 text-3xl font-semibold text-slate-950">Edit profile</h2>
+        <h2 className="mb-1 text-3xl font-semibold text-slate-950">{existingId ? "Edit profile" : "Create profile"}</h2>
         <p className="mb-8 text-sm text-slate-500">
-          Update your operational profile. This drives which innovations are most relevant for you.
+          {existingId ? "Update your operational profile. This drives which innovations are most relevant for you." : "Fill in your details to get matched with the most relevant innovations."}
         </p>
 
         <div className="space-y-8">
@@ -247,11 +246,10 @@ export default function ProfilePage() {
               <Field label="Name or organisation">
                 <input value={form.name} onChange={(e) => set("name", e.target.value)} className={INPUT_CLASS} placeholder="e.g. Jan de Vries / Wageningen UR" />
               </Field>
-              <Field label="Role">
-                <select value={form.role} onChange={(e) => set("role", e.target.value as GrowerRole)} className={INPUT_CLASS}>
-                  {GROWER_ROLES.map((r) => <option key={r}>{r}</option>)}
-                </select>
-              </Field>
+              <div className="space-y-1">
+                <span className="text-xs font-medium text-slate-600">Role (multiple options possible)</span>
+                <ChipMultiSelect options={GROWER_ROLES} value={form.role} onChange={(v) => set("role", v)} />
+              </div>
               <Field label="Operation description">
                 <input value={form.operation} onChange={(e) => set("operation", e.target.value)} className={INPUT_CLASS} placeholder="Greenhouse vegetables, Tree nursery…" />
               </Field>
@@ -261,13 +259,10 @@ export default function ProfilePage() {
               <Field label="Region">
                 <input value={form.region} onChange={(e) => set("region", e.target.value)} className={INPUT_CLASS} placeholder="Westland, NL" />
               </Field>
-              <Field label="Openness to pilots">
-                <select value={form.openness} onChange={(e) => set("openness", e.target.value)} className={INPUT_CLASS}>
-                  {["Open to pilots", "Active innovation partner", "Exploratory only"].map((o) => (
-                    <option key={o}>{o}</option>
-                  ))}
-                </select>
-              </Field>
+              <div className="space-y-1">
+                <span className="text-xs font-medium text-slate-600">Openness to pilots (multiple options possible)</span>
+                <ChipMultiSelect options={["Open to pilots", "Active innovation partner", "Exploratory only"] as const} value={form.openness} onChange={(v) => set("openness", v)} />
+              </div>
               <label className="block space-y-1 md:col-span-2">
                 <span className="text-xs font-medium text-slate-600">Countries active in</span>
                 <div className="flex flex-wrap gap-2 pt-1">
@@ -325,9 +320,10 @@ export default function ProfilePage() {
                 </div>
               </div>
               <div className="grid gap-4 md:grid-cols-2">
-                <Field label="Operational contexts (comma-separated)" full>
-                  <input value={form.contexts} onChange={(e) => set("contexts", e.target.value)} className={INPUT_CLASS} placeholder="Greenhouse, Open field" />
-                </Field>
+                <div className="space-y-1 md:col-span-2">
+                  <span className="text-xs font-medium text-slate-600">Growing environment (multiple options possible)</span>
+                  <ChipMultiSelect options={GROWING_ENVIRONMENT_OPTIONS} value={form.contexts} onChange={(v) => set("contexts", v)} withOther />
+                </div>
                 <div className="space-y-2">
                   <span className="text-xs font-medium text-slate-600">Preferred pilot season (multiple options possible)</span>
                   <ChipMultiSelect options={PILOT_SEASONS} value={form.preferredPilotSeason} onChange={(v) => set("preferredPilotSeason", v)} />
@@ -342,13 +338,13 @@ export default function ProfilePage() {
               <div>
                 <span className="text-xs font-medium text-slate-600">Pilot types accepted</span>
                 <div className="mt-2">
-                  <ChipMultiSelect options={PILOT_TYPES_OPTIONS} value={form.pilotTypes} onChange={(v) => set("pilotTypes", v)} />
+                  <ChipMultiSelect options={PILOT_TYPES_OPTIONS} value={form.pilotTypes} onChange={(v) => set("pilotTypes", v)} withOther />
                 </div>
               </div>
               <div>
                 <span className="text-xs font-medium text-slate-600">Pilot constraints</span>
                 <div className="mt-2">
-                  <ChipMultiSelect options={PILOT_CONSTRAINTS_OPTIONS} value={form.constraints} onChange={(v) => set("constraints", v)} />
+                  <ChipMultiSelect options={PILOT_CONSTRAINTS_OPTIONS} value={form.constraints} onChange={(v) => set("constraints", v)} withOther />
                 </div>
               </div>
               <div>
@@ -372,7 +368,7 @@ export default function ProfilePage() {
             Cancel
           </Button>
           <Button onClick={handleSave} disabled={saving} className="rounded-xl bg-emerald-800 hover:bg-emerald-900 disabled:opacity-60">
-            {saving ? "Saving…" : "Save changes"}
+            {saving ? "Saving…" : existingId ? "Save changes" : "Create profile"}
           </Button>
         </div>
       </main>

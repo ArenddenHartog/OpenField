@@ -61,7 +61,7 @@ export interface Solution {
 export interface Grower {
   id: string;
   name: string;
-  role: GrowerRole;
+  role: string;
   imageUrl?: string;
   region: string;
   countries: string[];
@@ -149,7 +149,7 @@ export interface InnovatorFormValues {
   solutionType: string[];
   challengeIds: ChallengeId[];
   stage: Stage;
-  contexts: string;
+  contexts: string[];
   crops: string[];
   requiredSystems: string;
   requiredData: string;
@@ -172,14 +172,14 @@ export interface InnovatorFormValues {
 
 export interface GrowerFormValues {
   name: string;
-  role: GrowerRole;
+  role: string[];
   imageUrl: string;
   operation: string;
   region: string;
   countries: string[];
-  contexts: string;
+  contexts: string[];
   crops: string[];
-  openness: string;
+  openness: string[];
   challengeIds: ChallengeId[];
   constraints: string[];
   systems: string[];
