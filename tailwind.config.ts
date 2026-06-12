@@ -9,6 +9,7 @@ const config: Config = {
   theme: {
     extend: {
       fontFamily: {
+        sans: ["var(--font-space-grotesk)", "sans-serif"],
         logo: ["var(--font-space-grotesk)", "sans-serif"],
       },
     },
