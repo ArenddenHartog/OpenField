@@ -76,6 +76,21 @@ export default function OpenFieldPage() {
     }
   }, [activeGrower]);
 
+  // ── Pick up solution created on the /innovator page ────────────────────────
+  useEffect(() => {
+    try {
+      const pending = localStorage.getItem("openfield-pending-solution");
+      if (pending) {
+        const { solution, pilotOffer, evidenceRecord } = JSON.parse(pending);
+        setSolutions((prev) => [solution, ...prev]);
+        setPilotOffers((prev) => [...prev, pilotOffer]);
+        setEvidenceRecords((prev) => [...prev, evidenceRecord]);
+        setSelectedId(solution.id);
+        localStorage.removeItem("openfield-pending-solution");
+      }
+    } catch {}
+  }, []);
+
   // ── Supabase: auth + data loading ──────────────────────────────────────────
   useEffect(() => {
     if (!supabase) return;
@@ -194,14 +209,9 @@ export default function OpenFieldPage() {
   const matchLabel = "Currently viewing";
 
   // ── Handlers ───────────────────────────────────────────────────────────────
-  function handleProfileSelect(profileType: "innovator" | "grower", growerRole?: GrowerRole) {
+  function handleProfileSelect(profileType: "innovator" | "grower") {
     setProfilePickerOpen(false);
-    if (profileType === "grower") {
-      router.push("/profile");
-      return;
-    }
-    setPresetGrowerRole(growerRole);
-    setModalRole(profileType);
+    router.push(profileType === "grower" ? "/profile" : "/innovator");
   }
 
   async function handleCreateSolution(payload: {
@@ -261,7 +271,7 @@ export default function OpenFieldPage() {
                   I am a grower
                 </Button>
                 <Button
-                  onClick={() => setModalRole("innovator")}
+                  onClick={() => router.push("/innovator")}
                   className="rounded-xl bg-emerald-800 hover:bg-emerald-900"
                 >
                   I am an innovator
