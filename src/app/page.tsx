@@ -109,7 +109,7 @@ export default function OpenFieldPage() {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
         setUser(session?.user ?? null);
-        if (session?.user && event === "SIGNED_IN") {
+        if (session?.user && (event === "SIGNED_IN" || event === "INITIAL_SESSION")) {
           const dbProfile = await loadGrowerProfile(session.user.id);
           if (dbProfile) {
             setActiveGrower(dbProfile);
@@ -120,6 +120,7 @@ export default function OpenFieldPage() {
               if (stored) {
                 const localProfile = JSON.parse(stored) as Grower;
                 await saveGrowerProfile(localProfile, session.user.id);
+                setActiveGrower(localProfile);
               }
             } catch {}
           }
