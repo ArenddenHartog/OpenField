@@ -62,7 +62,7 @@ export function IntakeModal({
     isInnovator
       ? EMPTY_INNOVATOR_FORM
       : presetGrowerRole
-        ? { ...EMPTY_GROWER_FORM, role: presetGrowerRole }
+        ? { ...EMPTY_GROWER_FORM, role: presetGrowerRole ? [presetGrowerRole] : [] }
         : EMPTY_GROWER_FORM
   );
 
