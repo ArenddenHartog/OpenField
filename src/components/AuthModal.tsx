@@ -15,6 +15,7 @@ type Status = "idle" | "submitting" | "sent" | "error";
 export function AuthModal({ onClose }: AuthModalProps) {
   const [email, setEmail] = useState("");
   const [status, setStatus] = useState<Status>("idle");
+  const [errorMessage, setErrorMessage] = useState("");
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -26,7 +27,12 @@ export function AuthModal({ onClose }: AuthModalProps) {
       options: { emailRedirectTo: `${window.location.origin}/auth/callback` },
     });
 
-    setStatus(error ? "error" : "sent");
+    if (error) {
+      setErrorMessage(error.message);
+      setStatus("error");
+    } else {
+      setStatus("sent");
+    }
   }
 
   const inputClass =
@@ -87,7 +93,7 @@ export function AuthModal({ onClose }: AuthModalProps) {
             </label>
             {status === "error" && (
               <p className="rounded-xl bg-red-50 px-3 py-2 text-sm text-red-700">
-                Something went wrong. Please try again.
+                {errorMessage || "Something went wrong. Please try again."}
               </p>
             )}
             <div className="flex justify-end gap-3">
