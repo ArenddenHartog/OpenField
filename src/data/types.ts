@@ -13,13 +13,7 @@ export type Stage = (typeof STAGES)[number];
 
 export type EvidenceQuality = "High" | "Medium" | "Early";
 
-export type ChallengeId =
-  | "disease-detection"
-  | "pesticide-reduction"
-  | "biological-control"
-  | "precision-spraying"
-  | "resistance-management"
-  | "crop-scouting";
+export type ChallengeId = string;
 
 export type PilotStatus = "Open" | "Closed";
 
@@ -67,7 +61,7 @@ export interface Solution {
 export interface Grower {
   id: string;
   name: string;
-  role: GrowerRole;
+  role: string;
   imageUrl?: string;
   region: string;
   countries: string[];
@@ -152,10 +146,10 @@ export interface InnovatorFormValues {
   solutionName: string;
   imageUrl: string;
   proposition: string;
-  solutionType: string;
+  solutionType: string[];
   challengeIds: ChallengeId[];
   stage: Stage;
-  contexts: string;
+  contexts: string[];
   crops: string[];
   requiredSystems: string;
   requiredData: string;
@@ -163,7 +157,7 @@ export interface InnovatorFormValues {
   lookingFor: string;
   website: string;
   contactEmail: string;
-  pricingModel: string;
+  pricingModel: string[];
   pilotTitle: string;
   pilotType: string;
   pilotDuration: string;
@@ -178,22 +172,22 @@ export interface InnovatorFormValues {
 
 export interface GrowerFormValues {
   name: string;
-  role: GrowerRole;
+  role: string[];
   imageUrl: string;
   operation: string;
   region: string;
   countries: string[];
-  contexts: string;
+  contexts: string[];
   crops: string[];
-  openness: string;
+  openness: string[];
   challengeIds: ChallengeId[];
-  constraints: string;
-  systems: string;
-  availableData: string;
-  pilotTypes: string;
+  constraints: string[];
+  systems: string[];
+  availableData: string[];
+  pilotTypes: string[];
   website: string;
   contactEmail: string;
   operationScale: string;
   certifications: string;
-  preferredPilotSeason: string;
+  preferredPilotSeason: string[];
 }

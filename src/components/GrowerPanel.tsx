@@ -21,22 +21,21 @@ export function GrowerPanel({ grower, onCreateProfile, onEdit }: GrowerPanelProp
             <UserPlus size={28} />
           </div>
           <div>
-            <p className="text-xs font-semibold uppercase tracking-wide text-emerald-800">
-              Your operational profile
-            </p>
-            <h3 className="mt-1 text-base font-semibold text-slate-950">
-              Tell us about your operation
+            <h3 className="text-base font-semibold text-slate-950">
+              Create a profile.
             </h3>
             <p className="mt-1 text-sm text-slate-500">
-              Solutions are ranked based on your crops, challenges, and existing
-              systems. Add your profile to unlock operational relevance.
+              Share your operational details.
+            </p>
+            <p className="mt-1 text-sm text-slate-500">
+              Recommendations are based on crops, operational challenges, openness to new technologies, and more.
             </p>
           </div>
           <Button
             onClick={onCreateProfile}
             className="rounded-xl bg-emerald-800 hover:bg-emerald-900"
           >
-            Create OpenField profile
+            Create profile
           </Button>
         </CardContent>
       </Card>
@@ -58,9 +57,6 @@ export function GrowerPanel({ grower, onCreateProfile, onEdit }: GrowerPanelProp
 
         <div className="mb-4 flex items-center justify-between">
           <div>
-            <p className="text-xs font-semibold uppercase tracking-wide text-emerald-800">
-              Your operational profile
-            </p>
             <div className="flex items-center gap-2">
               <h3 className="text-lg font-semibold text-slate-950">
                 {grower.name}
@@ -95,30 +91,59 @@ export function GrowerPanel({ grower, onCreateProfile, onEdit }: GrowerPanelProp
             </p>
           </div>
           <div className="rounded-xl bg-slate-50 p-3">
-            <p className="text-xs text-slate-500">Existing systems</p>
+            <p className="text-xs text-slate-500">Pilot types</p>
             <p className="text-sm font-medium text-slate-900">
-              {grower.systems.slice(0, 2).join(", ") || "—"}
+              {grower.pilotTypes.length > 0 ? grower.pilotTypes.slice(0, 2).join(", ") : "—"}
             </p>
           </div>
         </div>
 
-        <div className="space-y-3">
-          <div>
-            <p className="mb-2 text-xs text-slate-500">Current challenges</p>
-            <div className="flex flex-wrap gap-2">
-              {namesFromIds(grower.challengeIds, CHALLENGES).map((challenge) => (
-                <Tag key={challenge} active>
-                  {challenge}
-                </Tag>
-              ))}
-            </div>
+        {grower.operationScale && (
+          <div className="mb-3 rounded-xl bg-slate-50 p-3">
+            <p className="text-xs text-slate-500">Scale</p>
+            <p className="text-sm font-medium text-slate-900">{grower.operationScale}</p>
           </div>
+        )}
+
+        <div className="space-y-3">
+          {namesFromIds(grower.challengeIds, CHALLENGES).length > 0 && (
+            <div>
+              <p className="mb-2 text-xs text-slate-500">Current challenges</p>
+              <div className="flex flex-wrap gap-2">
+                {namesFromIds(grower.challengeIds, CHALLENGES).map((challenge) => (
+                  <Tag key={challenge} active>
+                    {challenge}
+                  </Tag>
+                ))}
+              </div>
+            </div>
+          )}
+          {grower.crops.length > 0 && (
+            <div>
+              <p className="mb-2 text-xs text-slate-500">Crops</p>
+              <div className="flex flex-wrap gap-2">
+                {grower.crops.map((crop) => (
+                  <Tag key={crop}>{crop}</Tag>
+                ))}
+              </div>
+            </div>
+          )}
           {grower.constraints.length > 0 && (
             <div>
               <p className="mb-2 text-xs text-slate-500">Pilot constraints</p>
               <div className="flex flex-wrap gap-2">
                 {grower.constraints.map((constraint) => (
                   <Tag key={constraint}>{constraint}</Tag>
+                ))}
+              </div>
+            </div>
+          )}
+          {grower.systems.length > 0 && (
+            <div>
+              <p className="mb-2 text-xs text-slate-500">Existing systems</p>
+              <div className="flex flex-wrap gap-2">
+                {grower.systems.map((s) => (
+                  <Tag key={s}>{s}</Tag>
                 ))}
               </div>
             </div>

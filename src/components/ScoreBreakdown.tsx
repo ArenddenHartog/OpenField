@@ -6,7 +6,7 @@ interface ScoreBreakdownProps {
 
 const SCORE_ROWS: [string, keyof Match["components"]][] = [
   ["Challenge fit", "challengeFitScore"],
-  ["Context fit", "contextFitScore"],
+  ["Growing environment", "contextFitScore"],
   ["Crop fit", "cropFitScore"],
   ["Pilot readiness", "pilotReadinessScore"],
   ["Geography", "geographyFitScore"],

@@ -1,6 +1,7 @@
 -- ============================================================
 -- OpenField – Supabase schema
 -- Run this in the Supabase SQL editor (Database → SQL Editor)
+-- Safe to re-run: uses IF NOT EXISTS and drops policies first
 -- ============================================================
 
 -- ── Solutions ────────────────────────────────────────────────
@@ -27,6 +28,10 @@ create table if not exists solutions (
 );
 
 alter table solutions enable row level security;
+drop policy if exists "solutions_read"   on solutions;
+drop policy if exists "solutions_insert" on solutions;
+drop policy if exists "solutions_update" on solutions;
+drop policy if exists "solutions_delete" on solutions;
 create policy "solutions_read"   on solutions for select using (true);
 create policy "solutions_insert" on solutions for insert with check (true);
 create policy "solutions_update" on solutions for update using (auth.uid() = user_id);
@@ -50,6 +55,10 @@ create table if not exists pilot_offers (
 );
 
 alter table pilot_offers enable row level security;
+drop policy if exists "pilot_offers_read"   on pilot_offers;
+drop policy if exists "pilot_offers_insert" on pilot_offers;
+drop policy if exists "pilot_offers_update" on pilot_offers;
+drop policy if exists "pilot_offers_delete" on pilot_offers;
 create policy "pilot_offers_read"   on pilot_offers for select using (true);
 create policy "pilot_offers_insert" on pilot_offers for insert with check (true);
 create policy "pilot_offers_update" on pilot_offers for update using (
@@ -72,6 +81,10 @@ create table if not exists evidence_records (
 );
 
 alter table evidence_records enable row level security;
+drop policy if exists "evidence_read"   on evidence_records;
+drop policy if exists "evidence_insert" on evidence_records;
+drop policy if exists "evidence_update" on evidence_records;
+drop policy if exists "evidence_delete" on evidence_records;
 create policy "evidence_read"   on evidence_records for select using (true);
 create policy "evidence_insert" on evidence_records for insert with check (true);
 create policy "evidence_update" on evidence_records for update using (
@@ -109,6 +122,10 @@ create table if not exists grower_profiles (
 );
 
 alter table grower_profiles enable row level security;
+drop policy if exists "profiles_read"   on grower_profiles;
+drop policy if exists "profiles_insert" on grower_profiles;
+drop policy if exists "profiles_update" on grower_profiles;
+drop policy if exists "profiles_delete" on grower_profiles;
 create policy "profiles_read"   on grower_profiles for select using (true);
 create policy "profiles_insert" on grower_profiles for insert with check (auth.uid() = user_id);
 create policy "profiles_update" on grower_profiles for update using (auth.uid() = user_id);
@@ -127,6 +144,8 @@ create table if not exists intro_requests (
 );
 
 alter table intro_requests enable row level security;
+drop policy if exists "intro_requests_insert" on intro_requests;
+drop policy if exists "intro_requests_read"   on intro_requests;
 create policy "intro_requests_insert" on intro_requests for insert with check (true);
 create policy "intro_requests_read"   on intro_requests for select using (
   exists (select 1 from solutions where id = solution_id and user_id = auth.uid())

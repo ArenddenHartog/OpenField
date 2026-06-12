@@ -20,7 +20,18 @@ import type {
 import { ImageUpload } from "@/components/ImageUpload";
 import { cn, listFromText, makeId } from "@/lib/utils";
 
-const COUNTRIES = ["NL", "BE", "DE", "FR", "DK", "ES", "PL", "UK", "IE", "IT", "PT", "Other"];
+const COUNTRIES = ["NL", "BE", "DE", "FR", "DK", "ES", "PL", "UK", "IE", "IT", "PT", "Global"];
+
+const GROWING_ENVIRONMENT_OPTIONS = [
+  "Greenhouse",
+  "Open field",
+  "Polytunnel",
+  "Nursery",
+  "Orchard",
+  "Vertical farming",
+  "Indoor",
+  "Aquaculture",
+] as const;
 
 type Role = "innovator" | "grower";
 
@@ -51,7 +62,7 @@ export function IntakeModal({
     isInnovator
       ? EMPTY_INNOVATOR_FORM
       : presetGrowerRole
-        ? { ...EMPTY_GROWER_FORM, role: presetGrowerRole }
+        ? { ...EMPTY_GROWER_FORM, role: presetGrowerRole ? [presetGrowerRole] : [] }
         : EMPTY_GROWER_FORM
   );
 
@@ -68,12 +79,12 @@ export function IntakeModal({
       const solution: Solution = {
         id: solutionId,
         name: f.solutionName || "New solution",
-        type: f.solutionType,
+        type: f.solutionType.length > 0 ? f.solutionType.join(" / ") : "AI / Software",
         imageUrl: f.imageUrl || undefined,
         proposition: f.proposition || "Solution ready for validation.",
         stage: f.stage,
         challengeIds: f.challengeIds,
-        contexts: listFromText(f.contexts),
+        contexts: f.contexts,
         crops: f.crops,
         requiredSystems: listFromText(f.requiredSystems),
         requiredData: listFromText(f.requiredData),
@@ -81,7 +92,7 @@ export function IntakeModal({
         lookingFor: listFromText(f.lookingFor),
         website: f.website || undefined,
         contactEmail: f.contactEmail || undefined,
-        pricingModel: f.pricingModel || undefined,
+        pricingModel: f.pricingModel.length > 0 ? f.pricingModel.join(", ") : undefined,
       };
       const pilotOffer: PilotOffer = {
         id: makeId("pilot", f.pilotTitle || f.solutionName),
@@ -114,24 +125,24 @@ export function IntakeModal({
     const grower: Grower = {
       id: makeId("grower", f.name || f.operation),
       name: f.name || "New grower",
-      role: f.role,
+      role: f.role.join(" / ") || "Grower",
       imageUrl: f.imageUrl || undefined,
       region: f.region || "Region not specified",
       countries: f.countries.length > 0 ? f.countries : ["NL"],
       operation: f.operation || "Agricultural operation",
-      contexts: listFromText(f.contexts),
+      contexts: f.contexts,
       crops: f.crops,
-      openness: f.openness,
+      openness: f.openness.join(" / ") || "Open to pilots",
       challengeIds: f.challengeIds,
-      constraints: listFromText(f.constraints),
-      systems: listFromText(f.systems),
-      availableData: listFromText(f.availableData),
-      pilotTypes: listFromText(f.pilotTypes),
+      constraints: f.constraints,
+      systems: f.systems,
+      availableData: f.availableData,
+      pilotTypes: f.pilotTypes,
       website: f.website || undefined,
       contactEmail: f.contactEmail || undefined,
       operationScale: f.operationScale || undefined,
       certifications: f.certifications ? listFromText(f.certifications) : undefined,
-      preferredPilotSeason: f.preferredPilotSeason || undefined,
+      preferredPilotSeason: f.preferredPilotSeason.length > 0 ? f.preferredPilotSeason.join(", ") : undefined,
     };
     onCreateGrower(grower);
   }
@@ -146,16 +157,11 @@ export function IntakeModal({
       >
         <div className="mb-5 flex items-start justify-between">
           <div>
-            <p className="text-xs font-semibold uppercase tracking-wide text-emerald-800">
-              OpenField intake
-            </p>
             <h2 className="text-xl font-semibold text-slate-950">
-              Create {isInnovator ? "a solution" : "your"} profile
+              {isInnovator ? "Add a solution" : "Create profile"}
             </h2>
             <p className="mt-1 text-sm text-slate-500">
-              {isInnovator
-                ? "Tell us about your innovation. The more context, the better the operational fit."
-                : "Your profile drives which innovations show up for you. Practical fit, not marketing."}
+              More details means better recommendations.
             </p>
           </div>
           <button
@@ -214,35 +220,32 @@ function InnovatorFields({
           <Field label="Solution name">
             <input value={form.solutionName} onChange={(e) => onChange("solutionName", e.target.value)} className={INPUT_CLASS} placeholder="e.g. MildewSense" />
           </Field>
-          <Field label="Solution type">
-            <select value={form.solutionType} onChange={(e) => onChange("solutionType", e.target.value)} className={INPUT_CLASS}>
-              {SOLUTION_TYPES.map((t) => <option key={t}>{t}</option>)}
-            </select>
-          </Field>
+          <div className="space-y-2 md:col-span-2">
+            <span className="text-xs font-medium text-slate-600">Solution type (multiple options possible)</span>
+            <ChipMultiSelect options={SOLUTION_TYPES} value={form.solutionType} onChange={(v) => onChange("solutionType", v)} withOther />
+          </div>
           <Field label="One-line proposition" full>
             <input value={form.proposition} onChange={(e) => onChange("proposition", e.target.value)} className={INPUT_CLASS} placeholder="What problem does it solve, and how?" />
           </Field>
           <div className="space-y-2 md:col-span-2">
-            <span className="text-xs font-medium text-slate-600">Challenges addressed</span>
+            <span className="text-xs font-medium text-slate-600">Challenges addressed (multiple options possible)</span>
             <ChallengePicker selectedIds={form.challengeIds} onChange={(ids) => onChange("challengeIds", ids)} />
           </div>
-          <Field label="Validation stage">
-            <select value={form.stage} onChange={(e) => onChange("stage", e.target.value)} className={INPUT_CLASS}>
-              {STAGES.map((s) => <option key={s}>{s}</option>)}
-            </select>
-          </Field>
-          <Field label="Pricing model">
-            <select value={form.pricingModel} onChange={(e) => onChange("pricingModel", e.target.value)} className={INPUT_CLASS}>
-              <option value="">Select…</option>
-              {PRICING_MODELS.map((p) => <option key={p}>{p}</option>)}
-            </select>
-          </Field>
+          <div className="space-y-2">
+            <span className="text-xs font-medium text-slate-600">Validation stage</span>
+            <SingleChipSelect options={STAGES} value={form.stage} onChange={(v) => onChange("stage", v)} />
+          </div>
+          <div className="space-y-2">
+            <span className="text-xs font-medium text-slate-600">Pricing model (multiple options possible)</span>
+            <ChipMultiSelect options={PRICING_MODELS} value={form.pricingModel} onChange={(v) => onChange("pricingModel", v)} withOther />
+          </div>
           <Field label="Geography (comma-separated)">
             <input value={form.geography} onChange={(e) => onChange("geography", e.target.value)} className={INPUT_CLASS} placeholder="NL, BE, DE" />
           </Field>
-          <Field label="Operational contexts (comma-separated)">
-            <input value={form.contexts} onChange={(e) => onChange("contexts", e.target.value)} className={INPUT_CLASS} placeholder="Greenhouse, Open field" />
-          </Field>
+          <div className="space-y-2 md:col-span-2">
+            <span className="text-xs font-medium text-slate-600">Growing environment (multiple options possible)</span>
+            <ChipMultiSelect options={GROWING_ENVIRONMENT_OPTIONS} value={form.contexts} onChange={(v) => onChange("contexts", v)} withOther />
+          </div>
           <Field label="Looking for (comma-separated)">
             <input value={form.lookingFor} onChange={(e) => onChange("lookingFor", e.target.value)} className={INPUT_CLASS} placeholder="Pilot growers, Researchers…" />
           </Field>
@@ -270,9 +273,10 @@ function InnovatorFields({
           <Field label="Pilot title" full>
             <input value={form.pilotTitle} onChange={(e) => onChange("pilotTitle", e.target.value)} className={INPUT_CLASS} placeholder="Greenhouse disease detection pilot" />
           </Field>
-          <Field label="Pilot type">
-            <input value={form.pilotType} onChange={(e) => onChange("pilotType", e.target.value)} className={INPUT_CLASS} placeholder="Free pilot, Paid pilot…" />
-          </Field>
+          <div className="space-y-2">
+            <span className="text-xs font-medium text-slate-600">Pilot type</span>
+            <SingleChipSelect options={["Free pilot", "Paid pilot", "Co-development", "Data partnership", "Observational"] as const} value={form.pilotType} onChange={(v) => onChange("pilotType", v)} />
+          </div>
           <Field label="Duration">
             <input value={form.pilotDuration} onChange={(e) => onChange("pilotDuration", e.target.value)} className={INPUT_CLASS} placeholder="8–12 weeks" />
           </Field>
@@ -299,11 +303,10 @@ function InnovatorFields({
           <Field label="Evidence type">
             <input value={form.evidenceType} onChange={(e) => onChange("evidenceType", e.target.value)} className={INPUT_CLASS} placeholder="Field trial, Plot trial, Production use…" />
           </Field>
-          <Field label="Evidence quality">
-            <select value={form.evidenceQuality} onChange={(e) => onChange("evidenceQuality", e.target.value)} className={INPUT_CLASS}>
-              {(["Early", "Medium", "High"] as const).map((q) => <option key={q}>{q}</option>)}
-            </select>
-          </Field>
+          <div className="space-y-2">
+            <span className="text-xs font-medium text-slate-600">Evidence quality</span>
+            <SingleChipSelect options={["Early", "Medium", "High"] as const} value={form.evidenceQuality} onChange={(v) => onChange("evidenceQuality", v)} />
+          </div>
           <Field label="Tested on">
             <input value={form.evidenceTested} onChange={(e) => onChange("evidenceTested", e.target.value)} className={INPUT_CLASS} placeholder="2 pilots, 4 demo plots…" />
           </Field>
@@ -330,11 +333,10 @@ function GrowerFields({
           <Field label="Name or organisation">
             <input value={form.name} onChange={(e) => onChange("name", e.target.value)} className={INPUT_CLASS} placeholder="e.g. Jan de Vries / Wageningen UR" />
           </Field>
-          <Field label="Role">
-            <select value={form.role} onChange={(e) => onChange("role", e.target.value)} className={INPUT_CLASS}>
-              {GROWER_ROLES.map((r) => <option key={r}>{r}</option>)}
-            </select>
-          </Field>
+          <div className="space-y-2">
+            <span className="text-xs font-medium text-slate-600">Role (multiple options possible)</span>
+            <ChipMultiSelect options={GROWER_ROLES} value={form.role} onChange={(v) => onChange("role", v)} />
+          </div>
           <Field label="Operation description">
             <input value={form.operation} onChange={(e) => onChange("operation", e.target.value)} className={INPUT_CLASS} placeholder="Greenhouse vegetables, Research institute…" />
           </Field>
@@ -344,13 +346,10 @@ function GrowerFields({
           <Field label="Region">
             <input value={form.region} onChange={(e) => onChange("region", e.target.value)} className={INPUT_CLASS} placeholder="Westland, NL" />
           </Field>
-          <Field label="Openness to pilots">
-            <select value={form.openness} onChange={(e) => onChange("openness", e.target.value)} className={INPUT_CLASS}>
-              {["Open to pilots", "Active innovation partner", "Exploratory only"].map((o) => (
-                <option key={o}>{o}</option>
-              ))}
-            </select>
-          </Field>
+          <div className="space-y-2 md:col-span-2">
+            <span className="text-xs font-medium text-slate-600">Openness to pilots (multiple options possible)</span>
+            <ChipMultiSelect options={["Open to pilots", "Active innovation partner", "Exploratory only"] as const} value={form.openness} onChange={(v) => onChange("openness", v)} />
+          </div>
           <label className="block space-y-1 md:col-span-2">
             <span className="text-xs font-medium text-slate-600">Countries active in</span>
             <div className="flex flex-wrap gap-2 pt-1">
@@ -408,29 +407,170 @@ function GrowerFields({
           </div>
         </div>
         <div className="grid gap-4 md:grid-cols-2">
-          <Field label="Operational contexts (comma-separated)">
-            <input value={form.contexts} onChange={(e) => onChange("contexts", e.target.value)} className={INPUT_CLASS} placeholder="Greenhouse, Open field" />
-          </Field>
-          <Field label="Preferred pilot season">
-            <select value={form.preferredPilotSeason} onChange={(e) => onChange("preferredPilotSeason", e.target.value)} className={INPUT_CLASS}>
-              <option value="">Select…</option>
-              {PILOT_SEASONS.map((s) => <option key={s}>{s}</option>)}
-            </select>
-          </Field>
-          <Field label="Pilot types accepted">
-            <input value={form.pilotTypes} onChange={(e) => onChange("pilotTypes", e.target.value)} className={INPUT_CLASS} placeholder="Free pilot, Paid pilot, Co-development…" />
-          </Field>
-          <Field label="Existing systems (comma-separated)">
-            <input value={form.systems} onChange={(e) => onChange("systems", e.target.value)} className={INPUT_CLASS} placeholder="Climate computer, Scouting rounds…" />
-          </Field>
-          <Field label="Available data (comma-separated)">
-            <input value={form.availableData} onChange={(e) => onChange("availableData", e.target.value)} className={INPUT_CLASS} placeholder="Disease records, Soil samples…" />
-          </Field>
-          <Field label="Pilot constraints (comma-separated)">
-            <input value={form.constraints} onChange={(e) => onChange("constraints", e.target.value)} className={INPUT_CLASS} placeholder="Low disruption, Seasonal window…" />
-          </Field>
+          <div className="space-y-2 md:col-span-2">
+            <span className="text-xs font-medium text-slate-600">Growing environment (multiple options possible)</span>
+            <ChipMultiSelect options={GROWING_ENVIRONMENT_OPTIONS} value={form.contexts} onChange={(v) => onChange("contexts", v)} withOther />
+          </div>
+          <div className="space-y-2">
+            <span className="text-xs font-medium text-slate-600">Preferred pilot season (multiple options possible)</span>
+            <ChipMultiSelect options={PILOT_SEASONS} value={form.preferredPilotSeason} onChange={(v) => onChange("preferredPilotSeason", v)} />
+          </div>
+          <div className="space-y-2 md:col-span-2">
+            <span className="text-xs font-medium text-slate-600">Pilot types accepted (multiple options possible)</span>
+            <ChipMultiSelect options={PILOT_TYPES_OPTIONS} value={form.pilotTypes} onChange={(v) => onChange("pilotTypes", v)} withOther />
+          </div>
+          <div className="space-y-2 md:col-span-2">
+            <span className="text-xs font-medium text-slate-600">Pilot constraints (multiple options possible)</span>
+            <ChipMultiSelect options={PILOT_CONSTRAINTS_OPTIONS} value={form.constraints} onChange={(v) => onChange("constraints", v)} withOther />
+          </div>
+          <div className="space-y-2 md:col-span-2">
+            <span className="text-xs font-medium text-slate-600">Existing systems (multiple options possible)</span>
+            <ChipMultiSelect options={SYSTEMS_OPTIONS} value={form.systems} onChange={(v) => onChange("systems", v)} withOther />
+          </div>
+          <div className="space-y-2 md:col-span-2">
+            <span className="text-xs font-medium text-slate-600">Available data (multiple options possible)</span>
+            <ChipMultiSelect options={AVAILABLE_DATA_OPTIONS} value={form.availableData} onChange={(v) => onChange("availableData", v)} withOther />
+          </div>
         </div>
       </Section>
+    </div>
+  );
+}
+
+// ─── Chip multi-select ────────────────────────────────────────────────────────
+
+const PILOT_TYPES_OPTIONS = [
+  "Free pilot",
+  "Paid pilot",
+  "Co-development",
+  "Data partnership",
+  "Observational",
+] as const;
+
+const PILOT_CONSTRAINTS_OPTIONS = [
+  "Low disruption",
+  "Seasonal windows",
+  "Weather dependent",
+  "Limited extra labour",
+  "Data privacy important",
+  "Practical setup only",
+  "No chemical changes",
+  "Certified operation restrictions",
+] as const;
+
+const SYSTEMS_OPTIONS = [
+  "Climate computer",
+  "Scouting rounds",
+  "Sprayer",
+  "GPS guidance",
+  "Field maps",
+  "Stable internet",
+  "Basic sensor setup",
+  "Manual scouting",
+  "Camera system",
+  "Weather station",
+  "Irrigation system",
+  "ERP / farm management software",
+] as const;
+
+const AVAILABLE_DATA_OPTIONS = [
+  "Weekly image capture",
+  "Disease observations",
+  "Soil samples",
+  "Control plot",
+  "Field boundary data",
+  "Weather data",
+  "Yield records",
+  "Spray logs",
+  "Scouting reports",
+  "Lab results",
+] as const;
+
+function SingleChipSelect({
+  options,
+  value,
+  onChange,
+}: {
+  options: readonly string[];
+  value: string;
+  onChange: (v: string) => void;
+}) {
+  return (
+    <div className="flex flex-wrap gap-2">
+      {options.map((opt) => (
+        <button
+          key={opt}
+          type="button"
+          onClick={() => onChange(opt)}
+          className={cn(
+            "rounded-full border px-3 py-1 text-xs font-medium transition-colors",
+            value === opt
+              ? "border-emerald-700 bg-emerald-50 text-emerald-900"
+              : "border-slate-200 text-slate-600 hover:border-slate-300"
+          )}
+        >
+          {opt}
+        </button>
+      ))}
+    </div>
+  );
+}
+
+function ChipMultiSelect({
+  options,
+  value,
+  onChange,
+  withOther = false,
+}: {
+  options: readonly string[];
+  value: string[];
+  onChange: (v: string[]) => void;
+  withOther?: boolean;
+}) {
+  const knownSet = new Set(options);
+  const otherValues = value.filter((v) => !knownSet.has(v));
+  const [otherText, setOtherText] = useState(otherValues.join(", "));
+
+  function toggle(opt: string) {
+    onChange(value.includes(opt) ? value.filter((v) => v !== opt) : [...value, opt]);
+  }
+
+  function applyOther(text: string) {
+    const extra = text.split(",").map((s) => s.trim()).filter(Boolean);
+    const known = value.filter((v) => knownSet.has(v));
+    onChange([...known, ...extra]);
+  }
+
+  return (
+    <div className="space-y-2">
+      <div className="flex flex-wrap gap-2">
+        {options.map((opt) => (
+          <button
+            key={opt}
+            type="button"
+            onClick={() => toggle(opt)}
+            className={cn(
+              "rounded-full border px-3 py-1 text-xs font-medium transition-colors",
+              value.includes(opt)
+                ? "border-emerald-700 bg-emerald-50 text-emerald-900"
+                : "border-slate-200 text-slate-600 hover:border-slate-300"
+            )}
+          >
+            {opt}
+          </button>
+        ))}
+      </div>
+      {withOther && (
+        <input
+          value={otherText}
+          onChange={(e) => {
+            setOtherText(e.target.value);
+            applyOther(e.target.value);
+          }}
+          className={INPUT_CLASS}
+          placeholder="+ Other (comma-separated)"
+        />
+      )}
     </div>
   );
 }

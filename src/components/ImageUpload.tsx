@@ -56,14 +56,26 @@ export function ImageUpload({ value, onChange }: ImageUploadProps) {
           e.target.value = "";
         }}
       />
-
-      {value ? (
+      <input
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        className={inputClass}
+        placeholder="Paste an image URL (or upload below)"
+      />
+      {!value && supabase && (
+        <button
+          type="button"
+          onClick={() => inputRef.current?.click()}
+          disabled={uploading}
+          className="flex items-center gap-2 rounded-xl border border-dashed border-slate-300 px-3 py-2 text-sm text-slate-500 hover:border-slate-400 disabled:opacity-50"
+        >
+          <Upload size={15} />
+          {uploading ? "Uploading…" : "Or upload a file"}
+        </button>
+      )}
+      {value && (
         <div className="relative">
-          <img
-            src={value}
-            alt="Preview"
-            className="h-32 w-full rounded-xl object-cover"
-          />
+          <img src={value} alt="Preview" className="h-28 w-full rounded-xl object-cover" />
           <button
             type="button"
             onClick={() => onChange("")}
@@ -73,28 +85,7 @@ export function ImageUpload({ value, onChange }: ImageUploadProps) {
             <X size={14} />
           </button>
         </div>
-      ) : (
-        <div className="flex gap-2">
-          {supabase && (
-            <button
-              type="button"
-              onClick={() => inputRef.current?.click()}
-              disabled={uploading}
-              className="flex flex-1 items-center justify-center gap-2 rounded-xl border border-dashed border-slate-300 px-3 py-3 text-sm text-slate-500 transition hover:border-slate-400 hover:text-slate-700 disabled:opacity-50"
-            >
-              <Upload size={15} />
-              {uploading ? "Uploading…" : "Upload photo"}
-            </button>
-          )}
-          <input
-            value={value}
-            onChange={(e) => onChange(e.target.value)}
-            className={`${inputClass} ${supabase ? "flex-1" : ""}`}
-            placeholder="Or paste an image URL"
-          />
-        </div>
       )}
-
       {error && <p className="text-xs text-red-600">{error}</p>}
     </div>
   );

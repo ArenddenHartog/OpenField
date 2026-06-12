@@ -1,4 +1,4 @@
-import { Activity, MapPin, Users, CheckCircle2, AlertTriangle } from "lucide-react";
+import { Activity, MapPin, Users, CheckCircle2, AlertTriangle, Circle } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Tag } from "@/components/Tag";
@@ -18,7 +18,7 @@ export function ProfileDetail({ solution, onRequestIntro }: ProfileDetailProps) 
       <Card className="rounded-2xl border-slate-200 bg-white shadow-sm">
         <CardContent className="p-6">
           <p className="text-sm text-slate-600">
-            No matching crop protection solution found.
+            Select a solution to see details.
           </p>
         </CardContent>
       </Card>
@@ -29,6 +29,40 @@ export function ProfileDetail({ solution, onRequestIntro }: ProfileDetailProps) 
     ...(solution.pilotOffer?.requiredSystems ?? []),
     ...(solution.pilotOffer?.requiredData ?? []),
   ]);
+
+  const match = solution.match;
+
+  // "Why this match" positives and gaps — only shown when there's a match
+  const positives: string[] = [];
+  const gaps: string[] = [];
+
+  if (match) {
+    if (match.sharedCrops.length > 0) {
+      positives.push(`Relevant to your ${match.sharedCrops.slice(0, 2).join(" and ")}`);
+    }
+    if (match.sharedContexts.length > 0) {
+      positives.push(`Suited to ${match.sharedContexts[0]} context`);
+    }
+    if (match.components.geographyFitScore > 0) {
+      positives.push("Available in your region");
+    }
+    if (solution.pilotOffer?.status === "Open") {
+      positives.push("Active pilot opportunity");
+    }
+    if (solution.evidenceRecord?.quality === "High") {
+      positives.push("High evidence quality");
+    } else if (solution.evidenceRecord?.quality === "Medium") {
+      positives.push("Good evidence quality");
+    }
+
+    // Gaps: required systems/data grower doesn't have
+    const missingSystems = (solution.pilotOffer?.requiredSystems ?? solution.requiredSystems)
+      .filter((s) => !match.matchedSystems.includes(s));
+    const missingData = (solution.pilotOffer?.requiredData ?? solution.requiredData)
+      .filter((d) => !match.matchedData.includes(d));
+    gaps.push(...missingSystems.map((s) => `Requires ${s}`));
+    gaps.push(...missingData.map((d) => `Needs ${d}`));
+  }
 
   return (
     <Card className="rounded-2xl border-slate-200 bg-white shadow-sm">
@@ -43,6 +77,7 @@ export function ProfileDetail({ solution, onRequestIntro }: ProfileDetailProps) 
           </div>
         )}
 
+        {/* Name + proposition + CTA */}
         <div className="mb-6 flex items-start justify-between gap-4">
           <div>
             <h2 className="text-2xl font-semibold text-slate-950">
@@ -54,12 +89,13 @@ export function ProfileDetail({ solution, onRequestIntro }: ProfileDetailProps) 
           </div>
           <Button
             onClick={onRequestIntro}
-            className="rounded-xl bg-emerald-800 hover:bg-emerald-900"
+            className="shrink-0 rounded-xl bg-emerald-800 hover:bg-emerald-900"
           >
             Request intro
           </Button>
         </div>
 
+        {/* 3 stat boxes */}
         <div className="mb-6 grid gap-4 md:grid-cols-3">
           <div className="rounded-2xl bg-slate-50 p-4">
             <div className="mb-2 flex items-center gap-2 text-sm font-semibold text-slate-900">
@@ -82,74 +118,26 @@ export function ProfileDetail({ solution, onRequestIntro }: ProfileDetailProps) 
             <p className="text-sm text-slate-700">
               {solution.lookingFor.join(", ")}
             </p>
+            {solution.geography.length > 0 && (
+              <p className="mt-1 text-xs text-slate-500">
+                Region: {solution.geography.join(", ")}
+              </p>
+            )}
+            {solution.pilotOffer?.type && (
+              <p className="mt-0.5 text-xs text-slate-500">
+                Compensation: {solution.pilotOffer.type}
+              </p>
+            )}
           </div>
         </div>
 
+        {/* Validation stage progress bar */}
         <div className="mb-6">
           <StagePill stage={solution.stage} />
         </div>
 
-        <div className="mb-6 rounded-2xl border border-slate-100 p-4">
-          <div className="mb-3 flex items-center justify-between">
-            <h4 className="text-sm font-semibold text-slate-950">
-              Score breakdown
-            </h4>
-            <span className="rounded-full bg-slate-950 px-3 py-1 text-xs font-semibold text-white">
-              {solution.match?.score ?? "—"} score
-            </span>
-          </div>
-          <ScoreBreakdown match={solution.match} />
-        </div>
-
-        <div className="grid gap-5 md:grid-cols-2">
-          <section>
-            <h4 className="mb-3 text-sm font-semibold text-slate-950">
-              Operational fit
-            </h4>
-            <div className="space-y-3 rounded-2xl border border-slate-100 p-4">
-              <div>
-                <p className="text-xs text-slate-500">Works best in</p>
-                <div className="mt-2 flex flex-wrap gap-2">
-                  {solution.contexts.map((context) => (
-                    <Tag
-                      key={context}
-                      active={solution.match?.sharedContexts.includes(context)}
-                    >
-                      {context}
-                    </Tag>
-                  ))}
-                </div>
-              </div>
-              <div>
-                <p className="text-xs text-slate-500">Relevant crops</p>
-                <div className="mt-2 flex flex-wrap gap-2">
-                  {solution.crops.map((crop) => (
-                    <Tag
-                      key={crop}
-                      active={solution.match?.sharedCrops.includes(crop)}
-                    >
-                      {crop}
-                    </Tag>
-                  ))}
-                </div>
-              </div>
-              <div>
-                <p className="text-xs text-slate-500">Pilot requirements</p>
-                <ul className="mt-2 space-y-1 text-sm text-slate-700">
-                  {pilotRequirements.map((requirement) => (
-                    <li key={requirement} className="flex gap-2">
-                      <CheckCircle2
-                        size={15}
-                        className="mt-0.5 text-emerald-700"
-                      />
-                      {requirement}
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            </div>
-          </section>
-
+        {/* Proof & availability (left) | Operational fit (right) */}
+        <div className="mb-6 grid gap-5 md:grid-cols-2">
           <section>
             <h4 className="mb-3 text-sm font-semibold text-slate-950">
               Proof &amp; availability
@@ -162,9 +150,7 @@ export function ProfileDetail({ solution, onRequestIntro }: ProfileDetailProps) 
                 </p>
               </div>
               <div>
-                <p className="text-xs text-slate-500">
-                  Measured / observed impact
-                </p>
+                <p className="text-xs text-slate-500">Measured / observed impact</p>
                 <p className="mt-1 text-sm text-slate-700">
                   {solution.evidenceRecord?.impact ?? "Not specified"}
                 </p>
@@ -204,7 +190,110 @@ export function ProfileDetail({ solution, onRequestIntro }: ProfileDetailProps) 
               </div>
             </div>
           </section>
+
+          <section>
+            <h4 className="mb-3 text-sm font-semibold text-slate-950">
+              Operational fit
+            </h4>
+            <div className="space-y-3 rounded-2xl border border-slate-100 p-4">
+              {solution.contexts.length > 0 && (
+                <div>
+                  <p className="text-xs text-slate-500">Works best in</p>
+                  <div className="mt-2 flex flex-wrap gap-2">
+                    {solution.contexts.map((context) => (
+                      <Tag
+                        key={context}
+                        active={match?.sharedContexts.includes(context)}
+                      >
+                        {context}
+                      </Tag>
+                    ))}
+                  </div>
+                </div>
+              )}
+              {solution.crops.length > 0 && (
+                <div>
+                  <p className="text-xs text-slate-500">Relevant crops</p>
+                  <div className="mt-2 flex flex-wrap gap-2">
+                    {solution.crops.map((crop) => (
+                      <Tag
+                        key={crop}
+                        active={match?.sharedCrops.includes(crop)}
+                      >
+                        {crop}
+                      </Tag>
+                    ))}
+                  </div>
+                </div>
+              )}
+              {pilotRequirements.length > 0 && (
+                <div>
+                  <p className="text-xs text-slate-500">Pilot requirements</p>
+                  <ul className="mt-2 space-y-1 text-sm text-slate-700">
+                    {pilotRequirements.map((requirement) => (
+                      <li key={requirement} className="flex gap-2">
+                        <CheckCircle2
+                          size={15}
+                          className="mt-0.5 text-emerald-700"
+                        />
+                        {requirement}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+            </div>
+          </section>
         </div>
+
+        {/* Why this match — only shown when there's a grower match */}
+        {match && positives.length > 0 && (
+          <div className="mb-6 grid gap-5 md:grid-cols-2">
+            <section>
+              <h4 className="mb-3 text-sm font-semibold text-slate-950">
+                Why this match
+              </h4>
+              <ul className="space-y-2">
+                {positives.map((text) => (
+                  <li key={text} className="flex items-start gap-2 text-sm text-slate-700">
+                    <CheckCircle2 size={16} className="mt-0.5 shrink-0 text-emerald-700" />
+                    {text}
+                  </li>
+                ))}
+              </ul>
+            </section>
+            {gaps.length > 0 && (
+              <section>
+                <h4 className="mb-3 text-[11px] font-semibold uppercase tracking-widest text-slate-400">
+                  Potential gaps
+                </h4>
+                <ul className="space-y-2">
+                  {gaps.map((text) => (
+                    <li key={text} className="flex items-start gap-2 text-sm text-slate-400">
+                      <Circle size={15} className="mt-0.5 shrink-0" />
+                      {text}
+                    </li>
+                  ))}
+                </ul>
+              </section>
+            )}
+          </div>
+        )}
+
+        {/* Score breakdown — always at the bottom */}
+        {match && (
+          <div className="rounded-2xl border border-slate-100 p-4">
+            <div className="mb-3 flex items-center justify-between">
+              <h4 className="text-sm font-semibold text-slate-950">
+                Score breakdown
+              </h4>
+              <span className="rounded-full bg-slate-950 px-3 py-1 text-xs font-semibold text-white">
+                {match.score} score
+              </span>
+            </div>
+            <ScoreBreakdown match={match} />
+          </div>
+        )}
       </CardContent>
     </Card>
   );

@@ -19,6 +19,152 @@ export const CHALLENGES: Challenge[] = [
   { id: "crop-scouting", name: "Crop scouting" },
 ];
 
+// ─── 3-level challenge taxonomy ───────────────────────────────────────────────
+
+export interface ChallengeSubgroup {
+  label: string;
+  items: string[];
+}
+export interface ChallengeGroup {
+  id: string;
+  label: string;
+  subgroups: ChallengeSubgroup[];
+}
+
+export const CHALLENGE_GROUPS: ChallengeGroup[] = [
+  {
+    id: "crop-protection",
+    label: "Crop Protection & Plant Health",
+    subgroups: [
+      { label: "Disease Detection & Monitoring", items: ["Early disease detection", "Disease forecasting", "Disease scouting", "Disease identification", "Hotspot detection", "Outbreak monitoring"] },
+      { label: "Pesticide Reduction", items: ["Regulatory pressure", "Cost reduction (pesticides)", "Residue requirements", "Retailer requirements", "Resistance management", "Reduced spray frequency"] },
+      { label: "Biological Control", items: ["Biological alternatives", "Beneficial insects", "Biostimulants", "Integrated Pest Management", "Reduced chemical dependency", "Biological efficacy improvement"] },
+      { label: "Pest Management", items: ["Insect monitoring", "Pest forecasting", "Pest identification", "Targeted interventions", "Invasive species management"] },
+      { label: "Resistance Management", items: ["Fungicide resistance", "Insecticide resistance", "Herbicide resistance", "Rotation strategies", "Multi-mode control"] },
+      { label: "Weed Control", items: ["Mechanical weed control", "Precision weed control", "Herbicide reduction", "Weed detection", "Resistant weeds"] },
+    ],
+  },
+  {
+    id: "water-irrigation",
+    label: "Water & Irrigation",
+    subgroups: [
+      { label: "Irrigation Optimization", items: ["Water savings", "Irrigation scheduling", "Drought management", "Precision irrigation", "Water use efficiency"] },
+      { label: "Water Availability", items: ["Water scarcity", "Water storage", "Alternative water sources", "Water allocation"] },
+      { label: "Water Quality", items: ["Salinity", "Nutrient levels in water", "Waterborne pathogens", "Water treatment"] },
+      { label: "Drainage & Excess Water", items: ["Waterlogging", "Drainage optimization", "Flood resilience"] },
+    ],
+  },
+  {
+    id: "labor",
+    label: "Labor & Workforce",
+    subgroups: [
+      { label: "Labor Shortage", items: ["Seasonal labor shortages", "Skilled labor shortages", "Recruitment challenges", "Retention challenges"] },
+      { label: "Labor Productivity", items: ["Task efficiency", "Workforce planning", "Resource allocation", "Reduced manual work"] },
+      { label: "Harvest Labor", items: ["Harvest workforce", "Harvest scheduling", "Peak labor demand"] },
+      { label: "Knowledge & Training", items: ["Staff training", "Knowledge transfer", "Operational consistency"] },
+    ],
+  },
+  {
+    id: "harvest",
+    label: "Harvest & Post-Harvest",
+    subgroups: [
+      { label: "Harvest Optimization", items: ["Harvest timing", "Harvest forecasting", "Yield-based planning", "Quality-based harvesting"] },
+      { label: "Harvest Automation", items: ["Autonomous harvesting", "Robotic harvesting", "Assisted harvesting"] },
+      { label: "Product Quality", items: ["Uniformity", "Grading", "Defect reduction", "Shelf-life improvement"] },
+      { label: "Post-Harvest Losses", items: ["Storage losses", "Transport losses", "Waste reduction"] },
+    ],
+  },
+  {
+    id: "climate",
+    label: "Climate & Resilience",
+    subgroups: [
+      { label: "Extreme Weather", items: ["Heat stress", "Frost damage", "Storm damage", "Hail damage"] },
+      { label: "Drought Resilience", items: ["Water stress", "Irrigation dependency", "Drought preparedness"] },
+      { label: "Climate Adaptation", items: ["Changing growing conditions", "Crop suitability", "Long-term resilience"] },
+      { label: "Protected Cultivation", items: ["Climate control", "Greenhouse optimization", "Energy-efficient growing"] },
+    ],
+  },
+  {
+    id: "soil",
+    label: "Soil & Growing Media",
+    subgroups: [
+      { label: "Soil Health", items: ["Organic matter", "Soil biology", "Soil structure", "Soil degradation"] },
+      { label: "Nutrient Management", items: ["Fertilizer optimization", "Nutrient efficiency", "Nutrient losses", "Nutrient monitoring"] },
+      { label: "Growing Media", items: ["Peat reduction", "Alternative substrates", "Media performance", "Circular substrates"] },
+      { label: "Soil Monitoring", items: ["Soil sampling", "Soil sensing", "Soil variability"] },
+    ],
+  },
+  {
+    id: "fertilization",
+    label: "Fertilization & Nutrients",
+    subgroups: [
+      { label: "Fertilizer Reduction", items: ["Cost reduction (fertilizers)", "Regulatory compliance", "Nutrient efficiency"] },
+      { label: "Precision Fertilization", items: ["Variable-rate application", "Site-specific management", "Nutrient targeting"] },
+      { label: "Nitrogen Reduction", items: ["Nitrogen losses", "Emissions reduction", "Compliance requirements"] },
+      { label: "Circular Nutrients", items: ["Organic fertilizers", "Recovered nutrients", "Nutrient recycling"] },
+    ],
+  },
+  {
+    id: "yield",
+    label: "Yield & Crop Performance",
+    subgroups: [
+      { label: "Yield Improvement", items: ["Yield stability", "Yield increase", "Yield consistency"] },
+      { label: "Crop Quality", items: ["Product quality", "Uniformity", "Premium market requirements"] },
+      { label: "Crop Stress", items: ["Abiotic stress", "Heat stress", "Nutrient stress", "Water stress"] },
+      { label: "Crop Monitoring", items: ["Growth monitoring", "Performance tracking", "Benchmarking"] },
+    ],
+  },
+  {
+    id: "automation",
+    label: "Automation & Robotics",
+    subgroups: [
+      { label: "Autonomous Operations", items: ["Autonomous vehicles", "Autonomous equipment", "Autonomous scouting"] },
+      { label: "Precision Application", items: ["Spot spraying", "Variable-rate application", "Precision treatment"] },
+      { label: "Robotics", items: ["Harvest robots", "Weeding robots", "Inspection robots"] },
+      { label: "Operational Automation", items: ["Repetitive tasks", "Workflow automation", "Process automation"] },
+    ],
+  },
+  {
+    id: "data",
+    label: "Data & Decision Support",
+    subgroups: [
+      { label: "Farm Data Integration", items: ["Data silos", "System integration", "Data quality"] },
+      { label: "Decision Support", items: ["Recommendations", "Predictive insights", "Scenario planning"] },
+      { label: "Forecasting", items: ["Yield forecasting", "Disease forecasting", "Weather forecasting"] },
+      { label: "Benchmarking", items: ["Peer comparison", "Operational benchmarking", "Performance measurement"] },
+    ],
+  },
+  {
+    id: "compliance",
+    label: "Compliance & Sustainability",
+    subgroups: [
+      { label: "Regulatory Compliance", items: ["Reporting requirements", "Audit preparation", "Certification compliance"] },
+      { label: "Sustainability Reporting", items: ["ESG reporting", "Carbon reporting", "Environmental metrics"] },
+      { label: "Traceability", items: ["Product traceability", "Supply chain visibility", "Batch tracking"] },
+      { label: "Certification", items: ["Global G.A.P.", "Organic", "MPS", "Retail standards"] },
+    ],
+  },
+  {
+    id: "energy",
+    label: "Energy & Inputs",
+    subgroups: [
+      { label: "Energy Reduction", items: ["Electricity costs", "Heating costs", "Fuel costs"] },
+      { label: "Greenhouse Energy", items: ["Heating optimization", "Lighting optimization", "Energy balancing"] },
+      { label: "Input Cost Reduction", items: ["Chemicals cost", "Fertilizers cost", "Water cost", "Labor cost"] },
+    ],
+  },
+  {
+    id: "market",
+    label: "Market & Commercial",
+    subgroups: [
+      { label: "Price Volatility", items: ["Market uncertainty", "Revenue predictability"] },
+      { label: "Production Planning", items: ["Demand forecasting", "Supply planning"] },
+      { label: "Retail Requirements", items: ["Quality standards", "Sustainability standards", "Residue requirements"] },
+      { label: "Supply Chain", items: ["Logistics", "Availability", "Distribution"] },
+    ],
+  },
+];
+
 // ─── Crop catalogue (grouped for the picker UI) ───────────────────────────────
 
 export const CROP_GROUPS: { label: string; crops: string[] }[] = [
@@ -97,6 +243,11 @@ export const SOLUTION_TYPES = [
 ] as const;
 
 export type SolutionType = (typeof SOLUTION_TYPES)[number];
+
+export const OPERATIONAL_CONTEXTS = [
+  "Greenhouse", "Open field", "Nursery", "Orchard", "High-value crops",
+  "Organic systems", "Indoor farming", "Hydroponic", "Arable",
+] as const;
 
 // ─── Seed solutions ───────────────────────────────────────────────────────────
 
@@ -284,10 +435,10 @@ export const EMPTY_INNOVATOR_FORM: InnovatorFormValues = {
   solutionName: "",
   imageUrl: "",
   proposition: "",
-  solutionType: "AI / Software",
+  solutionType: ["AI / Software"],
   challengeIds: ["disease-detection"],
   stage: "Prototype",
-  contexts: "Greenhouse",
+  contexts: [],
   crops: [],
   requiredSystems: "",
   requiredData: "",
@@ -295,7 +446,7 @@ export const EMPTY_INNOVATOR_FORM: InnovatorFormValues = {
   lookingFor: "Pilot growers, Grower feedback",
   website: "",
   contactEmail: "",
-  pricingModel: "",
+  pricingModel: [],
   pilotTitle: "",
   pilotType: "Paid pilot",
   pilotDuration: "8–12 weeks",
@@ -311,21 +462,21 @@ export const EMPTY_INNOVATOR_FORM: InnovatorFormValues = {
 export const EMPTY_GROWER_FORM: GrowerFormValues = {
   name: "",
   imageUrl: "",
-  role: "Grower",
+  role: [],
   operation: "",
   region: "",
   countries: ["NL"],
-  contexts: "Greenhouse",
+  contexts: [],
   crops: [],
-  openness: "Open to pilots",
+  openness: [],
   challengeIds: ["disease-detection"],
-  constraints: "",
-  systems: "",
-  availableData: "",
-  pilotTypes: "",
+  constraints: [],
+  systems: [],
+  availableData: [],
+  pilotTypes: [],
   website: "",
   contactEmail: "",
   operationScale: "",
   certifications: "",
-  preferredPilotSeason: "",
+  preferredPilotSeason: [],
 };

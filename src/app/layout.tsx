@@ -1,20 +1,22 @@
 import type { Metadata } from "next";
+import { Space_Grotesk } from "next/font/google";
 import "./globals.css";
 
+const spaceGrotesk = Space_Grotesk({
+  subsets: ["latin"],
+  variable: "--font-space-grotesk",
+  display: "swap",
+});
+
 export const metadata: Metadata = {
-  title: "OpenField – Crop protection innovation matching",
-  description:
-    "Connects practical crop protection challenges with innovators ready to test, prove, or scale their solutions.",
+  title: "Aggy — Field-ready innovations",
+  description: "Aggy connects growers with innovators solving real operational challenges. Practical fit, not marketing.",
 };
 
-export default function RootLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en">
-      <body className="antialiased">{children}</body>
+    <html lang="en" className={spaceGrotesk.variable}>
+      <body className="antialiased font-sans">{children}</body>
     </html>
   );
 }
