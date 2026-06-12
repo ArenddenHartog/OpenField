@@ -146,7 +146,7 @@ export interface InnovatorFormValues {
   solutionName: string;
   imageUrl: string;
   proposition: string;
-  solutionType: string;
+  solutionType: string[];
   challengeIds: ChallengeId[];
   stage: Stage;
   contexts: string;
@@ -157,7 +157,7 @@ export interface InnovatorFormValues {
   lookingFor: string;
   website: string;
   contactEmail: string;
-  pricingModel: string;
+  pricingModel: string[];
   pilotTitle: string;
   pilotType: string;
   pilotDuration: string;
@@ -189,5 +189,5 @@ export interface GrowerFormValues {
   contactEmail: string;
   operationScale: string;
   certifications: string;
-  preferredPilotSeason: string;
+  preferredPilotSeason: string[];
 }

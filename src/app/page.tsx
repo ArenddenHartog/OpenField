@@ -156,7 +156,7 @@ export default function OpenFieldPage() {
           const group = CHALLENGE_GROUPS.find((g) => g.subgroups.some((sg) => sg.items.includes(id)));
           return group?.label === selectedTag;
         });
-        const typeMatch = selectedType === "All" || s.type === selectedType;
+        const typeMatch = selectedType === "All" || s.type.includes(selectedType);
         const cropMatch =
           selectedCropGroup === "All" ? true :
           selectedCrop !== "All" ? s.crops.includes(selectedCrop) :
@@ -191,10 +191,7 @@ export default function OpenFieldPage() {
     activeGrower && selected
       ? namesFromIds(selected.match?.sharedChallengeIds ?? [], CHALLENGES)
       : [];
-  const matchLabel =
-    selected && bestMatch?.id === selected.id
-      ? "Worth exploring for your operation"
-      : "Currently viewing";
+  const matchLabel = "Currently viewing";
 
   // ── Handlers ───────────────────────────────────────────────────────────────
   function handleProfileSelect(profileType: "innovator" | "grower", growerRole?: GrowerRole) {
@@ -232,8 +229,8 @@ export default function OpenFieldPage() {
   return (
     <div className="min-h-screen bg-[#f7f6ef] text-slate-950">
       {/* Header */}
-      <header className="border-b border-slate-200 bg-[#fbfaf5]/90 backdrop-blur">
-        <div className="mx-auto flex max-w-7xl flex-col gap-4 px-6 py-4 md:flex-row md:items-center md:justify-between">
+      <header className="sticky top-0 z-50 border-b border-slate-200 bg-[#fbfaf5]/90 backdrop-blur">
+        <div className="mx-auto flex max-w-7xl flex-col gap-4 px-6 py-3 md:flex-row md:items-center md:justify-between">
           <div className="flex items-center gap-3">
             <h1 className="font-logo text-2xl font-bold tracking-tight text-slate-950">Aggy</h1>
           </div>
@@ -242,13 +239,13 @@ export default function OpenFieldPage() {
               /* Profile chip */
               <button
                 onClick={() => router.push("/profile")}
-                className="flex items-center gap-1.5 rounded-full border border-slate-200 bg-white px-2.5 py-1.5 hover:bg-slate-50"
+                className="flex items-center gap-1.5 rounded-full bg-slate-100 px-2.5 py-1.5 text-xs hover:bg-slate-200"
               >
-                <span className="flex h-6 w-6 items-center justify-center rounded-full bg-emerald-800 text-[11px] font-semibold text-white">
+                <span className="flex h-5 w-5 items-center justify-center rounded-full bg-emerald-800 text-[10px] font-semibold text-white">
                   {activeGrower.name.charAt(0).toUpperCase()}
                 </span>
-                <span className="text-sm font-medium text-slate-800">{activeGrower.name}</span>
-                <Pencil size={12} className="text-slate-400" />
+                <span className="font-medium text-slate-800">{activeGrower.name}</span>
+                <Pencil size={11} className="text-slate-400" />
               </button>
             ) : (
               <>
@@ -271,7 +268,7 @@ export default function OpenFieldPage() {
               <button
                 onClick={() => supabase?.auth.signOut()}
                 title={`Signed in as ${user.email}`}
-                className="flex items-center gap-1.5 rounded-xl border border-slate-200 px-3 py-2 text-xs text-slate-500 hover:bg-slate-50 hover:text-slate-900"
+                className="flex items-center gap-1.5 rounded-full bg-slate-100 px-3 py-1.5 text-xs text-slate-600 hover:bg-slate-200"
               >
                 <LogOut size={13} />
                 Sign out
@@ -279,7 +276,7 @@ export default function OpenFieldPage() {
             ) : (
               <button
                 onClick={() => setAuthModalOpen(true)}
-                className="flex items-center gap-1.5 rounded-xl border border-slate-200 px-3 py-2 text-xs text-slate-500 hover:bg-slate-50 hover:text-slate-900"
+                className="flex items-center gap-1.5 rounded-full bg-slate-100 px-3 py-1.5 text-xs text-slate-600 hover:bg-slate-200"
               >
                 <LogIn size={13} />
                 Sign in
@@ -537,11 +534,11 @@ export default function OpenFieldPage() {
                         : "Select a solution to see its score"}
                     </h3>
                     <p className="mt-1 text-sm text-emerald-50">
-                      {sharedTags.length > 0
-                        ? `Shared challenges: ${sharedTags.join(", ")}`
-                        : selected?.match?.score
-                          ? `Ranked on context, crops & geography fit`
-                          : "Add a profile to see ranked matches"}
+                      {selected?.match?.score
+                        ? sharedTags.length > 0
+                          ? `Ranked on shared challenges: ${sharedTags.join(", ")}`
+                          : "Ranked on context, crops & geography fit"
+                        : "Add a profile to see ranked matches"}
                     </p>
                   </div>
                   <div className="rounded-xl bg-white px-3 py-2 text-center text-emerald-950">

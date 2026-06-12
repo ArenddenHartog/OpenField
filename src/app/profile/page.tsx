@@ -67,7 +67,7 @@ function growerToForm(g: Grower): GrowerFormValues {
     contactEmail: g.contactEmail ?? "",
     operationScale: g.operationScale ?? "",
     certifications: g.certifications?.join(", ") ?? "",
-    preferredPilotSeason: g.preferredPilotSeason ?? "",
+    preferredPilotSeason: g.preferredPilotSeason ? g.preferredPilotSeason.split(", ").filter(Boolean) : [],
   };
 }
 
@@ -92,7 +92,7 @@ function formToGrower(f: GrowerFormValues, existingId?: string): Grower {
     contactEmail: f.contactEmail || undefined,
     operationScale: f.operationScale || undefined,
     certifications: f.certifications ? listFromText(f.certifications) : undefined,
-    preferredPilotSeason: f.preferredPilotSeason || undefined,
+    preferredPilotSeason: f.preferredPilotSeason.length > 0 ? f.preferredPilotSeason.join(", ") : undefined,
   };
 }
 
@@ -328,12 +328,10 @@ export default function ProfilePage() {
                 <Field label="Operational contexts (comma-separated)" full>
                   <input value={form.contexts} onChange={(e) => set("contexts", e.target.value)} className={INPUT_CLASS} placeholder="Greenhouse, Open field" />
                 </Field>
-                <Field label="Preferred pilot season">
-                  <select value={form.preferredPilotSeason} onChange={(e) => set("preferredPilotSeason", e.target.value)} className={INPUT_CLASS}>
-                    <option value="">Select…</option>
-                    {PILOT_SEASONS.map((s) => <option key={s}>{s}</option>)}
-                  </select>
-                </Field>
+                <div className="space-y-2">
+                  <span className="text-xs font-medium text-slate-600">Preferred pilot season (multiple options possible)</span>
+                  <ChipMultiSelect options={PILOT_SEASONS} value={form.preferredPilotSeason} onChange={(v) => set("preferredPilotSeason", v)} />
+                </div>
               </div>
             </div>
           </Section>
