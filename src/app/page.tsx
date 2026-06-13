@@ -306,7 +306,7 @@ export default function OpenFieldPage() {
             id="challenges"
             className="mb-12 grid items-stretch gap-6 lg:grid-cols-[1.15fr_0.85fr]"
           >
-            <div className="flex flex-col justify-center py-4">
+            <div className="flex flex-col py-4">
               <h2 className="max-w-3xl text-4xl font-semibold leading-tight tracking-tight text-slate-950 md:text-5xl">
                 Find what's worth trying next season.
               </h2>
@@ -316,7 +316,7 @@ export default function OpenFieldPage() {
               <p className="mt-1 text-base font-semibold text-slate-950">
                 Practical fit, not marketing.
               </p>
-              <ul className="mt-4">
+              <ul className="mt-auto pt-6">
                 {[
                   "Share what you're trying to improve.",
                   "See which innovations fit your operation.",
@@ -363,7 +363,7 @@ export default function OpenFieldPage() {
                   <button
                     key={tag}
                     type="button"
-                    onClick={() => setSelectedTag(tag)}
+                    onClick={() => activeGrower ? setSelectedTag(tag) : setProfilePickerOpen(true)}
                     className={cn(
                       "shrink-0 rounded-full px-3 py-1 text-xs font-medium transition-colors whitespace-nowrap",
                       selectedTag === tag
@@ -385,6 +385,7 @@ export default function OpenFieldPage() {
                     key={grp}
                     type="button"
                     onClick={() => {
+                      if (!activeGrower) { setProfilePickerOpen(true); return; }
                       setSelectedCropGroup(grp);
                       setSelectedCrop("All");
                     }}
@@ -408,7 +409,7 @@ export default function OpenFieldPage() {
                     <button
                       key={crop}
                       type="button"
-                      onClick={() => setSelectedCrop(crop)}
+                      onClick={() => activeGrower ? setSelectedCrop(crop) : setProfilePickerOpen(true)}
                       className={cn(
                         "shrink-0 rounded-full px-3 py-1 text-xs font-medium transition-colors whitespace-nowrap",
                         selectedCrop === crop
@@ -429,7 +430,7 @@ export default function OpenFieldPage() {
                   <button
                     key={type}
                     type="button"
-                    onClick={() => setSelectedType(type)}
+                    onClick={() => activeGrower ? setSelectedType(type) : setProfilePickerOpen(true)}
                     className={cn(
                       "shrink-0 rounded-full px-3 py-1 text-xs font-medium transition-colors whitespace-nowrap",
                       selectedType === type
