@@ -22,13 +22,10 @@ export function GrowerPanel({ grower, onCreateProfile, onEdit }: GrowerPanelProp
           </div>
           <div>
             <h3 className="text-base font-semibold text-slate-950">
-              Create a profile.
+              Tell us about your operation.
             </h3>
             <p className="mt-1 text-sm text-slate-500">
-              Share your operational details.
-            </p>
-            <p className="mt-1 text-sm text-slate-500">
-              Recommendations are based on crops, operational challenges, openness to new technologies, and more.
+              The better we understand your operation, the better we can match relevant innovations.
             </p>
           </div>
           <Button

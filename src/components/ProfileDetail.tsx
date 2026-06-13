@@ -115,19 +115,20 @@ export function ProfileDetail({ solution, onRequestIntro }: ProfileDetailProps) 
             <div className="mb-2 flex items-center gap-2 text-sm font-semibold text-slate-900">
               <Users size={16} /> Looking for
             </div>
-            <p className="text-sm text-slate-700">
-              {solution.lookingFor.join(", ")}
-            </p>
-            {solution.geography.length > 0 && (
-              <p className="mt-1 text-xs text-slate-500">
-                Region: {solution.geography.join(", ")}
-              </p>
-            )}
-            {solution.pilotOffer?.type && (
-              <p className="mt-0.5 text-xs text-slate-500">
-                Compensation: {solution.pilotOffer.type}
-              </p>
-            )}
+            <ul className="space-y-1">
+              {solution.lookingFor.map((item) => (
+                <li key={item} className="text-sm text-slate-700">{item}</li>
+              ))}
+              {solution.pilotOffer?.duration && (
+                <li className="text-sm text-slate-500">{solution.pilotOffer.duration} pilot</li>
+              )}
+              {solution.pilotOffer?.requiredData?.[0] && (
+                <li className="text-sm text-slate-500">{solution.pilotOffer.requiredData[0]}</li>
+              )}
+              {solution.geography.length > 0 && (
+                <li className="text-sm text-slate-500">{solution.geography.join(", ")}</li>
+              )}
+            </ul>
           </div>
         </div>
 

@@ -207,8 +207,6 @@ export default function OpenFieldPage() {
     activeGrower && selected
       ? namesFromIds(selected.match?.sharedChallengeIds ?? [], CHALLENGES)
       : [];
-  const matchLabel = "Currently viewing";
-
   // ── Handlers ───────────────────────────────────────────────────────────────
   function handleProfileSelect(profileType: "innovator" | "grower") {
     setProfilePickerOpen(false);
@@ -310,18 +308,18 @@ export default function OpenFieldPage() {
           >
             <div className="flex flex-col justify-center py-4">
               <h2 className="max-w-3xl text-4xl font-semibold leading-tight tracking-tight text-slate-950 md:text-5xl">
-                Field-ready innovations, tackling operational challenges.
+                Find what's worth trying next season.
               </h2>
               <p className="mt-5 max-w-2xl text-base leading-relaxed text-slate-600">
-                Aggy connects growers with innovators solving real operational challenges.
+                Aggy helps growers discover what's worth trying and innovators find the right pilot partners.
               </p>
               <p className="text-base leading-relaxed text-slate-600">
                 Practical fit, not marketing.
               </p>
               <ul className="mt-4">
                 {[
-                  "Share your operational challenges.",
-                  "Discover the most relevant innovations.",
+                  "Share what you're trying to improve.",
+                  "See which innovations fit your operation.",
                   "Connect and get a pilot running this season.",
                 ].map((text, i, arr) => (
                   <li key={text} className="flex items-start gap-3">
@@ -353,7 +351,7 @@ export default function OpenFieldPage() {
             <input
               value={query}
               onChange={(e) => setQuery(e.target.value)}
-              placeholder="Search by challenge, crop, solution type or requirement..."
+              placeholder="What are you looking to improve? e.g. disease pressure, labour shortage, irrigation…"
               className="w-full bg-transparent text-sm outline-none"
             />
           </div>
@@ -450,11 +448,13 @@ export default function OpenFieldPage() {
         {/* Section header above grid */}
         <div className="mb-4">
           <h2 className="text-xl font-semibold text-slate-950">
-            Innovations on Aggy
+            Innovations ready for the field
           </h2>
-          <p className="text-sm text-slate-500">
-            Ranked by operational relevance.
-          </p>
+          {activeGrower && (
+            <p className="text-sm text-slate-500">
+              Recommended by operational fit.
+            </p>
+          )}
         </div>
 
         {/* Solution list + detail panel */}
@@ -496,11 +496,11 @@ export default function OpenFieldPage() {
                 </div>
                 <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 rounded-2xl bg-white/70 p-4 text-center">
                   <p className="text-sm font-semibold text-slate-950">
-                    {filtered.length > 3 ? `+${filtered.length - 3} more` : "Unlock matches"}
+                    {filtered.length > 3 ? `+${filtered.length - 3} more` : "Find innovations that fit"}
                   </p>
-                  <p className="text-xs text-slate-500">Create a profile to see all solutions ranked by operational fit.</p>
+                  <p className="text-xs text-slate-500">Create a profile and see which innovations best match your operation.</p>
                   <Button
-                    onClick={() => setProfilePickerOpen(true)}
+                    onClick={() => router.push("/profile")}
                     className="rounded-xl bg-emerald-800 hover:bg-emerald-900 text-xs px-4 py-2"
                   >
                     Create a profile
@@ -540,10 +540,7 @@ export default function OpenFieldPage() {
               <div className="rounded-2xl bg-emerald-900 p-4 text-white">
                 <div className="flex items-start justify-between gap-4">
                   <div>
-                    <p className="text-xs uppercase tracking-wide text-emerald-100">
-                      {matchLabel}
-                    </p>
-                    <h3 className="mt-1 text-lg font-semibold">
+                    <h3 className="text-lg font-semibold">
                       {selected
                         ? `${activeGrower?.name ?? "Your context"} × ${selected.name}`
                         : "Select a solution to see its score"}
@@ -551,9 +548,9 @@ export default function OpenFieldPage() {
                     <p className="mt-1 text-sm text-emerald-50">
                       {selected?.match?.score
                         ? sharedTags.length > 0
-                          ? `Ranked on shared challenges: ${sharedTags.join(", ")}`
-                          : "Ranked on context, crops & geography fit"
-                        : "Add a profile to see ranked matches"}
+                          ? `Shared challenge: ${sharedTags.join(", ")}`
+                          : "Recommended on context, crops & geography fit"
+                        : "Add a profile to see recommended matches"}
                     </p>
                   </div>
                   <div className="rounded-xl bg-white px-3 py-2 text-center text-emerald-950">
