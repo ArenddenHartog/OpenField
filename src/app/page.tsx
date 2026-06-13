@@ -311,7 +311,7 @@ export default function OpenFieldPage() {
                 Find what's worth trying next season.
               </h2>
               <p className="mt-5 max-w-2xl text-base leading-relaxed text-slate-600">
-                Aggy helps growers discover what's worth trying and innovators find the right pilot partners.
+                Connecting growers and innovators. Getting innovations into the field.
               </p>
               <p className="text-base leading-relaxed text-slate-600">
                 Practical fit, not marketing.
