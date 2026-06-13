@@ -304,7 +304,7 @@ export default function OpenFieldPage() {
         {!activeGrower && (
           <section
             id="challenges"
-            className="mb-8 grid items-stretch gap-6 lg:grid-cols-[1.15fr_0.85fr]"
+            className="mb-12 grid items-stretch gap-6 lg:grid-cols-[1.15fr_0.85fr]"
           >
             <div className="flex flex-col justify-center py-4">
               <h2 className="max-w-3xl text-4xl font-semibold leading-tight tracking-tight text-slate-950 md:text-5xl">
@@ -345,7 +345,7 @@ export default function OpenFieldPage() {
         )}
 
         {/* Search + filter bar */}
-        <section id="solutions" className="mb-6 rounded-3xl bg-white p-4 shadow-sm">
+        <section id="solutions" className="mb-10 rounded-3xl bg-white p-4 shadow-sm">
           <div className="mb-3 flex items-center gap-3 rounded-2xl border border-slate-200 px-4 py-3">
             <Search size={18} className="text-slate-400" />
             <input
@@ -503,7 +503,7 @@ export default function OpenFieldPage() {
                     onClick={() => router.push("/profile")}
                     className="rounded-xl bg-emerald-800 hover:bg-emerald-900 text-xs px-4 py-2"
                   >
-                    Create a profile
+                    Create profile
                   </Button>
                 </div>
               </div>
@@ -572,7 +572,7 @@ export default function OpenFieldPage() {
         )}
       </main>
 
-      <footer className="mt-16 border-t border-slate-200 py-8 text-center text-sm text-slate-400">
+      <footer className="mt-16 border-t border-slate-200 py-4 text-center text-sm text-slate-400">
         Initiated with love by{" "}
         <a
           href="https://www.linkedin.com/in/arenddenhartog/"
