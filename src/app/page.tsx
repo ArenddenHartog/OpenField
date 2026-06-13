@@ -313,9 +313,9 @@ export default function OpenFieldPage() {
               <p className="mt-5 max-w-2xl text-base leading-relaxed text-slate-600">
                 Connecting growers and innovators. Getting innovations into the field.
               </p>
-              <p className="text-base leading-relaxed text-slate-600">
+              <span className="mt-3 inline-block rounded-full bg-emerald-50 px-4 py-1.5 text-sm font-medium text-emerald-800">
                 Practical fit, not marketing.
-              </p>
+              </span>
               <ul className="mt-4">
                 {[
                   "Share what you're trying to improve.",
