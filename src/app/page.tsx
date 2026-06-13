@@ -310,12 +310,12 @@ export default function OpenFieldPage() {
               <h2 className="max-w-3xl text-4xl font-semibold leading-tight tracking-tight text-slate-950 md:text-5xl">
                 Find what's worth trying next season.
               </h2>
-              <p className="mt-5 max-w-2xl text-base leading-relaxed text-slate-600">
+              <p className="mt-5 max-w-2xl text-lg leading-relaxed text-slate-500">
                 Connecting growers and innovators. Getting innovations into the field.
               </p>
-              <span className="mt-3 inline-block rounded-full bg-emerald-50 px-4 py-1.5 text-sm font-medium text-emerald-800">
+              <p className="mt-1 text-base font-semibold text-slate-950">
                 Practical fit, not marketing.
-              </span>
+              </p>
               <ul className="mt-4">
                 {[
                   "Share what you're trying to improve.",
