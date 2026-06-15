@@ -6,6 +6,7 @@ import { X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ChallengePicker } from "@/components/ChallengePicker";
 import { CropPicker } from "@/components/CropPicker";
+import { CountryPicker } from "@/components/CountryPicker";
 import { STAGES, GROWER_ROLES } from "@/data/types";
 import { EMPTY_GROWER_FORM, EMPTY_INNOVATOR_FORM, SOLUTION_TYPES } from "@/data/seed";
 import type {
@@ -20,7 +21,17 @@ import type {
 import { ImageUpload } from "@/components/ImageUpload";
 import { cn, listFromText, makeId } from "@/lib/utils";
 
-const COUNTRIES = ["NL", "BE", "DE", "FR", "DK", "ES", "PL", "UK", "IE", "IT", "PT", "Global"];
+const SYSTEMS_OPTIONS = [
+  "Climate computer", "Scouting rounds", "Sprayer", "GPS guidance", "Field maps",
+  "Stable internet", "Basic sensor setup", "Manual scouting", "Camera system",
+  "Weather station", "Irrigation system", "ERP / farm management software",
+] as const;
+
+const AVAILABLE_DATA_OPTIONS = [
+  "Weekly image capture", "Disease observations", "Soil samples", "Control plot",
+  "Field boundary data", "Weather data", "Yield records", "Spray logs",
+  "Scouting reports", "Lab results",
+] as const;
 
 const GROWING_ENVIRONMENT_OPTIONS = [
   "Greenhouse",
@@ -86,9 +97,9 @@ export function IntakeModal({
         challengeIds: f.challengeIds,
         contexts: f.contexts,
         crops: f.crops,
-        requiredSystems: listFromText(f.requiredSystems),
-        requiredData: listFromText(f.requiredData),
-        geography: listFromText(f.geography),
+        requiredSystems: f.requiredSystems,
+        requiredData: f.requiredData,
+        geography: f.geography,
         lookingFor: listFromText(f.lookingFor),
         website: f.website || undefined,
         contactEmail: f.contactEmail || undefined,
@@ -239,8 +250,8 @@ function InnovatorFields({
             <span className="text-xs font-medium text-slate-600">Pricing model (multiple options possible)</span>
             <ChipMultiSelect options={PRICING_MODELS} value={form.pricingModel} onChange={(v) => onChange("pricingModel", v)} withOther />
           </div>
-          <Field label="Geography (comma-separated)">
-            <input value={form.geography} onChange={(e) => onChange("geography", e.target.value)} className={INPUT_CLASS} placeholder="NL, BE, DE" />
+          <Field label="Geography">
+            <CountryPicker value={form.geography} onChange={(v) => onChange("geography", v)} />
           </Field>
           <div className="space-y-2 md:col-span-2">
             <span className="text-xs font-medium text-slate-600">Growing environment (multiple options possible)</span>
@@ -289,12 +300,14 @@ function InnovatorFields({
           <Field label="Response time">
             <input value={form.pilotResponseTime} onChange={(e) => onChange("pilotResponseTime", e.target.value)} className={INPUT_CLASS} placeholder="Reply within 3 working days" />
           </Field>
-          <Field label="Systems required (comma-separated)">
-            <input value={form.requiredSystems} onChange={(e) => onChange("requiredSystems", e.target.value)} className={INPUT_CLASS} placeholder="Stable internet, Sprayer…" />
-          </Field>
-          <Field label="Data required (comma-separated)">
-            <input value={form.requiredData} onChange={(e) => onChange("requiredData", e.target.value)} className={INPUT_CLASS} placeholder="Disease observations, Soil samples…" />
-          </Field>
+          <div className="space-y-1">
+            <span className="text-xs font-medium text-slate-600">Systems required</span>
+            <ChipMultiSelect options={SYSTEMS_OPTIONS} value={form.requiredSystems} onChange={(v) => onChange("requiredSystems", v)} withOther />
+          </div>
+          <div className="space-y-1">
+            <span className="text-xs font-medium text-slate-600">Data required</span>
+            <ChipMultiSelect options={AVAILABLE_DATA_OPTIONS} value={form.requiredData} onChange={(v) => onChange("requiredData", v)} withOther />
+          </div>
         </div>
       </Section>
 
