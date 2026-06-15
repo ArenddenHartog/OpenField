@@ -351,29 +351,10 @@ function GrowerFields({
             <span className="text-xs font-medium text-slate-600">Openness to pilots (multiple options possible)</span>
             <ChipMultiSelect options={["Open to pilots", "Active innovation partner", "Exploratory only"] as const} value={form.openness} onChange={(v) => onChange("openness", v)} />
           </div>
-          <label className="block space-y-1 md:col-span-2">
+          <div className="block space-y-1 md:col-span-2">
             <span className="text-xs font-medium text-slate-600">Countries active in</span>
-            <div className="flex flex-wrap gap-2 pt-1">
-              {COUNTRIES.map((c) => (
-                <button
-                  key={c}
-                  type="button"
-                  onClick={() => {
-                    const current = form.countries;
-                    onChange("countries", current.includes(c) ? current.filter((x) => x !== c) : [...current, c]);
-                  }}
-                  className={cn(
-                    "rounded-full border px-3 py-1 text-xs font-medium transition-colors",
-                    form.countries.includes(c)
-                      ? "border-emerald-700 bg-emerald-50 text-emerald-900"
-                      : "border-slate-200 text-slate-600 hover:border-slate-300"
-                  )}
-                >
-                  {c}
-                </button>
-              ))}
-            </div>
-          </label>
+            <CountryPicker value={form.countries} onChange={(v) => onChange("countries", v)} />
+          </div>
           <Field label="Contact email">
             <input type="email" value={form.contactEmail} onChange={(e) => onChange("contactEmail", e.target.value)} className={INPUT_CLASS} placeholder="you@operation.com" />
           </Field>
