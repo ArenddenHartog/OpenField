@@ -12,6 +12,7 @@ import { EMPTY_INNOVATOR_FORM, SOLUTION_TYPES } from "@/data/seed";
 import type { EvidenceRecord, InnovatorFormValues, PilotOffer, Solution } from "@/data/types";
 import { supabase } from "@/lib/supabase";
 import { saveSolution } from "@/lib/db";
+import { CountryPicker } from "@/components/CountryPicker";
 import { cn, listFromText, makeId } from "@/lib/utils";
 
 // ─── Constants ────────────────────────────────────────────────────────────────
@@ -44,6 +45,18 @@ const PILOT_TYPES_OPTIONS = [
   "Observational",
 ] as const;
 
+const SYSTEMS_OPTIONS = [
+  "Climate computer", "Scouting rounds", "Sprayer", "GPS guidance", "Field maps",
+  "Stable internet", "Basic sensor setup", "Manual scouting", "Camera system",
+  "Weather station", "Irrigation system", "ERP / farm management software",
+] as const;
+
+const AVAILABLE_DATA_OPTIONS = [
+  "Weekly image capture", "Disease observations", "Soil samples", "Control plot",
+  "Field boundary data", "Weather data", "Yield records", "Spray logs",
+  "Scouting reports", "Lab results",
+] as const;
+
 const INPUT_CLASS =
   "w-full rounded-xl border border-slate-200 px-3 py-2 text-sm outline-none focus:border-emerald-700";
 
@@ -65,9 +78,9 @@ function formToPayload(f: InnovatorFormValues): {
     challengeIds: f.challengeIds,
     contexts: f.contexts,
     crops: f.crops,
-    requiredSystems: listFromText(f.requiredSystems),
-    requiredData: listFromText(f.requiredData),
-    geography: listFromText(f.geography),
+    requiredSystems: f.requiredSystems,
+    requiredData: f.requiredData,
+    geography: f.geography,
     lookingFor: listFromText(f.lookingFor),
     website: f.website || undefined,
     contactEmail: f.contactEmail || undefined,
@@ -224,8 +237,8 @@ export default function InnovatorPage() {
                     <span className="text-xs font-medium text-slate-600">Pricing model (multiple options possible)</span>
                     <ChipMultiSelect options={PRICING_MODELS} value={form.pricingModel} onChange={(v) => set("pricingModel", v)} withOther />
                   </div>
-                  <Field label="Geography (comma-separated)">
-                    <input value={form.geography} onChange={(e) => set("geography", e.target.value)} className={INPUT_CLASS} placeholder="NL, BE, DE" />
+                  <Field label="Geography">
+                    <CountryPicker value={form.geography} onChange={(v) => set("geography", v)} />
                   </Field>
                   <div className="space-y-1">
                     <span className="text-xs font-medium text-slate-600">Growing environment (multiple options possible)</span>
@@ -269,11 +282,11 @@ export default function InnovatorPage() {
                   <Field label="Response time">
                     <input value={form.pilotResponseTime} onChange={(e) => set("pilotResponseTime", e.target.value)} className={INPUT_CLASS} placeholder="Reply within 3 working days" />
                   </Field>
-                  <Field label="Systems required (comma-separated)">
-                    <input value={form.requiredSystems} onChange={(e) => set("requiredSystems", e.target.value)} className={INPUT_CLASS} placeholder="Stable internet, Sprayer…" />
+                  <Field label="Systems required">
+                    <ChipMultiSelect options={SYSTEMS_OPTIONS} value={form.requiredSystems} onChange={(v) => set("requiredSystems", v)} withOther />
                   </Field>
-                  <Field label="Data required (comma-separated)">
-                    <input value={form.requiredData} onChange={(e) => set("requiredData", e.target.value)} className={INPUT_CLASS} placeholder="Disease observations, Soil samples…" />
+                  <Field label="Data required">
+                    <ChipMultiSelect options={AVAILABLE_DATA_OPTIONS} value={form.requiredData} onChange={(v) => set("requiredData", v)} withOther />
                   </Field>
                 </div>
               </Section>

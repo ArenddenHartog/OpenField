@@ -151,9 +151,9 @@ export interface InnovatorFormValues {
   stage: Stage;
   contexts: string[];
   crops: string[];
-  requiredSystems: string;
-  requiredData: string;
-  geography: string;
+  requiredSystems: string[];
+  requiredData: string[];
+  geography: string[];
   lookingFor: string;
   website: string;
   contactEmail: string;

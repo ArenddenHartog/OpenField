@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { Search, X } from "lucide-react";
 import { CHALLENGE_GROUPS } from "@/data/seed";
 import { cn } from "@/lib/utils";
 
@@ -19,8 +20,7 @@ export function ChallengePicker({
   challengePriority,
   onPriorityChange,
 }: ChallengePickerProps) {
-  const [activeGroupId, setActiveGroupId] = useState<string | null>(null);
-  const [activeSubgroup, setActiveSubgroup] = useState<string | null>(null);
+  const [query, setQuery] = useState("");
 
   function toggleItem(item: string) {
     const next = selectedIds.includes(item)
@@ -29,138 +29,233 @@ export function ChallengePicker({
     onChange(next);
   }
 
-  function countInGroup(groupId: string) {
-    const group = CHALLENGE_GROUPS.find((g) => g.id === groupId);
-    if (!group) return 0;
-    return group.subgroups.flatMap((sg) => sg.items).filter((item) => selectedIds.includes(item)).length;
+  function toggleSubgroup(items: string[]) {
+    const allSelected = items.every((item) => selectedIds.includes(item));
+    if (allSelected) {
+      onChange(selectedIds.filter((id) => !items.includes(id)));
+    } else {
+      const toAdd = items.filter((item) => !selectedIds.includes(item));
+      onChange([...selectedIds, ...toAdd]);
+    }
   }
 
-  function countInSubgroup(groupId: string, subgroupLabel: string) {
-    const group = CHALLENGE_GROUPS.find((g) => g.id === groupId);
-    if (!group) return 0;
-    const sg = group.subgroups.find((s) => s.label === subgroupLabel);
-    if (!sg) return 0;
-    return sg.items.filter((item) => selectedIds.includes(item)).length;
+  const q = query.toLowerCase().trim();
+
+  // ── Search mode ──────────────────────────────────────────────────────────────
+
+  if (q) {
+    const matchedSubgroups: Array<{ label: string; items: string[] }> = [];
+    const matchedItems: Array<{ item: string; subgroupLabel: string }> = [];
+
+    for (const group of CHALLENGE_GROUPS) {
+      for (const sg of group.subgroups) {
+        if (sg.label.toLowerCase().includes(q)) {
+          matchedSubgroups.push(sg);
+        } else {
+          for (const item of sg.items) {
+            if (item.toLowerCase().includes(q)) {
+              matchedItems.push({ item, subgroupLabel: sg.label });
+            }
+          }
+        }
+      }
+    }
+
+    return (
+      <div className="space-y-3">
+        {/* Search bar */}
+        <div className="relative">
+          <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+          <input
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            placeholder="Search challenges…"
+            className="w-full rounded-xl border border-slate-200 px-4 py-3 pl-9 pr-9 text-sm outline-none focus:border-emerald-700"
+          />
+          <button
+            type="button"
+            onClick={() => setQuery("")}
+            className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
+          >
+            <X size={14} />
+          </button>
+        </div>
+
+        {/* Search results */}
+        {matchedSubgroups.length === 0 && matchedItems.length === 0 ? (
+          <p className="text-xs text-slate-400">No results for &ldquo;{query}&rdquo;</p>
+        ) : (
+          <div className="space-y-3">
+            {matchedSubgroups.length > 0 && (
+              <div className="space-y-1.5">
+                <p className="text-[10px] font-semibold uppercase tracking-widest text-slate-400">Subgroups</p>
+                <div className="flex flex-wrap gap-1.5">
+                  {matchedSubgroups.map((sg) => {
+                    const count = sg.items.filter((i) => selectedIds.includes(i)).length;
+                    const allSel = count === sg.items.length;
+                    const someSel = count > 0 && !allSel;
+                    return (
+                      <button
+                        key={sg.label}
+                        type="button"
+                        onClick={() => toggleSubgroup(sg.items)}
+                        className={cn(
+                          "flex items-center gap-1 rounded-full px-3 py-1 text-xs font-medium transition-colors",
+                          allSel
+                            ? "border border-emerald-700 bg-emerald-50 text-emerald-900"
+                            : someSel
+                              ? "border border-slate-300 bg-slate-50 text-slate-700"
+                              : "border border-slate-200 text-slate-600 hover:border-slate-300"
+                        )}
+                      >
+                        {sg.label}
+                        {count > 0 && (
+                          <span
+                            className={cn(
+                              "rounded-full px-1.5 py-0.5 text-[10px] font-semibold",
+                              allSel ? "bg-emerald-100 text-emerald-800" : "bg-slate-200 text-slate-600"
+                            )}
+                          >
+                            {count}
+                          </span>
+                        )}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+            {matchedItems.length > 0 && (
+              <div className="space-y-1.5">
+                <p className="text-[10px] font-semibold uppercase tracking-widest text-slate-400">Items</p>
+                <div className="flex flex-wrap gap-1.5">
+                  {matchedItems.map(({ item }) => {
+                    const isSel = selectedIds.includes(item);
+                    return (
+                      <button
+                        key={item}
+                        type="button"
+                        onClick={() => toggleItem(item)}
+                        className={cn(
+                          "rounded-full px-3 py-1 text-xs font-medium transition-colors",
+                          isSel
+                            ? "bg-emerald-600 text-white"
+                            : "border border-slate-200 text-slate-600 hover:border-slate-300"
+                        )}
+                      >
+                        {item}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Priority stars */}
+        {onPriorityChange && selectedIds.length > 0 && (
+          <PriorityStars
+            selectedIds={selectedIds}
+            challengePriority={challengePriority}
+            onPriorityChange={onPriorityChange}
+          />
+        )}
+      </div>
+    );
   }
 
-  const activeGroup = activeGroupId
-    ? CHALLENGE_GROUPS.find((g) => g.id === activeGroupId) ?? null
-    : null;
-  const activeSubgroupData =
-    activeGroup && activeSubgroup
-      ? activeGroup.subgroups.find((sg) => sg.label === activeSubgroup) ?? null
-      : null;
+  // ── Browse mode ──────────────────────────────────────────────────────────────
 
   return (
-    <div className="space-y-2">
-      {/* Level 1: Category chips */}
-      <div className="flex flex-wrap gap-1.5">
-        {CHALLENGE_GROUPS.map((group) => {
-          const count = countInGroup(group.id);
-          const isActive = activeGroupId === group.id;
-          return (
-            <button
-              key={group.id}
-              type="button"
-              onClick={() => {
-                if (isActive) {
-                  setActiveGroupId(null);
-                  setActiveSubgroup(null);
-                } else {
-                  setActiveGroupId(group.id);
-                  setActiveSubgroup(null);
-                }
-              }}
-              className={cn(
-                "flex items-center gap-1 rounded-full px-3 py-1 text-xs font-medium transition-colors",
-                isActive
-                  ? "bg-emerald-800 text-white"
-                  : count > 0
-                    ? "bg-emerald-50 text-emerald-800 border border-emerald-200"
-                    : "border border-slate-200 bg-white text-slate-600 hover:border-slate-300"
-              )}
-            >
-              {group.label}
-              {count > 0 && (
-                <span
-                  className={cn(
-                    "rounded-full px-1.5 py-0.5 text-[10px] font-semibold",
-                    isActive ? "bg-white text-emerald-800" : "bg-emerald-100 text-emerald-800"
-                  )}
-                >
-                  {count}
-                </span>
-              )}
-            </button>
-          );
-        })}
+    <div className="space-y-3">
+      {/* Search bar */}
+      <div className="relative">
+        <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+        <input
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+          placeholder="Search challenges…"
+          className="w-full rounded-xl border border-slate-200 px-4 py-3 pl-9 text-sm outline-none focus:border-emerald-700"
+        />
       </div>
 
-      {/* Level 2: Subcategory chips */}
-      {activeGroup && (
-        <div className="flex flex-wrap gap-1.5 pl-2 border-l-2 border-emerald-200">
-          {activeGroup.subgroups.map((sg) => {
-            const count = countInSubgroup(activeGroup.id, sg.label);
-            const isActive = activeSubgroup === sg.label;
-            return (
-              <button
-                key={sg.label}
-                type="button"
-                onClick={() => {
-                  setActiveSubgroup(isActive ? null : sg.label);
-                }}
-                className={cn(
-                  "flex items-center gap-1 rounded-full px-3 py-1 text-xs font-medium transition-colors",
-                  isActive
-                    ? "bg-slate-800 text-white"
-                    : count > 0
-                      ? "bg-slate-100 text-slate-800 border border-slate-300"
-                      : "border border-slate-200 bg-white text-slate-600 hover:border-slate-300"
-                )}
-              >
-                {sg.label}
-                {count > 0 && (
-                  <span
-                    className={cn(
-                      "rounded-full px-1.5 py-0.5 text-[10px] font-semibold",
-                      isActive ? "bg-white text-slate-800" : "bg-slate-200 text-slate-700"
-                    )}
-                  >
-                    {count}
-                  </span>
-                )}
-              </button>
-            );
-          })}
-        </div>
-      )}
+      {/* Groups with subgroup chips */}
+      <div className="space-y-4">
+        {CHALLENGE_GROUPS.map((group) => (
+          <div key={group.id} className="space-y-2">
+            {/* Group header — non-clickable */}
+            <p className="text-[10px] font-semibold uppercase tracking-widest text-slate-400">
+              {group.label}
+            </p>
 
-      {/* Level 3: Individual challenge items */}
-      {activeSubgroupData && (
-        <div className="flex flex-wrap gap-1.5 pl-4 border-l-2 border-slate-200">
-          {activeSubgroupData.items.map((item) => {
-            const isSelected = selectedIds.includes(item);
-            return (
-              <button
-                key={item}
-                type="button"
-                onClick={() => toggleItem(item)}
-                className={cn(
-                  "rounded-full px-3 py-1 text-xs font-medium transition-colors",
-                  isSelected
-                    ? "bg-emerald-600 text-white"
-                    : "border border-slate-200 bg-white text-slate-600 hover:border-emerald-300 hover:text-emerald-700"
-                )}
-              >
-                {item}
-              </button>
-            );
-          })}
-        </div>
-      )}
+            {/* Subgroup chips */}
+            <div className="space-y-1.5">
+              {group.subgroups.map((sg) => {
+                const count = sg.items.filter((i) => selectedIds.includes(i)).length;
+                const allSel = count === sg.items.length;
+                const someSel = count > 0 && !allSel;
+
+                return (
+                  <div key={sg.label}>
+                    <button
+                      type="button"
+                      onClick={() => toggleSubgroup(sg.items)}
+                      className={cn(
+                        "flex items-center gap-1 rounded-full px-3 py-1 text-xs font-medium transition-colors",
+                        allSel
+                          ? "border border-emerald-700 bg-emerald-50 text-emerald-900"
+                          : someSel
+                            ? "border border-slate-300 bg-slate-50 text-slate-700"
+                            : "border border-slate-200 text-slate-600 hover:border-slate-300"
+                      )}
+                    >
+                      {sg.label}
+                      {count > 0 && (
+                        <span
+                          className={cn(
+                            "rounded-full px-1.5 py-0.5 text-[10px] font-semibold",
+                            allSel ? "bg-emerald-100 text-emerald-800" : "bg-slate-200 text-slate-600"
+                          )}
+                        >
+                          {count}
+                        </span>
+                      )}
+                    </button>
+
+                    {/* Individual items shown when some are selected */}
+                    {count > 0 && (
+                      <div className="mt-1.5 flex flex-wrap gap-1.5 border-l-2 border-slate-200 pl-3">
+                        {sg.items.map((item) => {
+                          const isSel = selectedIds.includes(item);
+                          return (
+                            <button
+                              key={item}
+                              type="button"
+                              onClick={() => toggleItem(item)}
+                              className={cn(
+                                "rounded-full px-3 py-1 text-xs font-medium transition-colors",
+                                isSel
+                                  ? "bg-emerald-600 text-white"
+                                  : "border border-slate-200 text-slate-600 hover:border-slate-300"
+                              )}
+                            >
+                              {item}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        ))}
+      </div>
 
       {/* Summary line */}
-      {selectedIds.length > 0 && !activeGroupId && (
+      {selectedIds.length > 0 && (
         <p className="text-xs text-slate-500">
           {selectedIds.length} selected —{" "}
           {selectedIds.slice(0, 3).join(", ")}
@@ -168,40 +263,60 @@ export function ChallengePicker({
         </p>
       )}
 
-      {/* Stars for selected items if onPriorityChange provided */}
+      {/* Priority stars */}
       {onPriorityChange && selectedIds.length > 0 && (
-        <div className="space-y-1 pt-1">
-          {selectedIds.map((id) => {
-            const priority = challengePriority?.find((p) => p.challengeId === id);
-            const severity = priority?.severity ?? 3;
-            return (
-              <div key={id} className="flex items-center gap-2">
-                <span className="text-xs text-slate-600 min-w-0 flex-1 truncate">{id}</span>
-                <div className="flex gap-0.5">
-                  {([1, 2, 3, 4, 5] as const).map((star) => (
-                    <button
-                      key={star}
-                      type="button"
-                      onClick={() => {
-                        const next = (challengePriority ?? []).filter(
-                          (p) => p.challengeId !== id
-                        );
-                        onPriorityChange([...next, { challengeId: id, severity: star }]);
-                      }}
-                      className={cn(
-                        "text-base leading-none",
-                        star <= severity ? "text-amber-400" : "text-slate-200"
-                      )}
-                    >
-                      ★
-                    </button>
-                  ))}
-                </div>
-              </div>
-            );
-          })}
-        </div>
+        <PriorityStars
+          selectedIds={selectedIds}
+          challengePriority={challengePriority}
+          onPriorityChange={onPriorityChange}
+        />
       )}
+    </div>
+  );
+}
+
+// ─── Priority stars sub-component ────────────────────────────────────────────
+
+function PriorityStars({
+  selectedIds,
+  challengePriority,
+  onPriorityChange,
+}: {
+  selectedIds: string[];
+  challengePriority?: Array<{ challengeId: string; severity: 1 | 2 | 3 | 4 | 5 }>;
+  onPriorityChange: (priority: Array<{ challengeId: string; severity: 1 | 2 | 3 | 4 | 5 }>) => void;
+}) {
+  return (
+    <div className="space-y-1 pt-1">
+      {selectedIds.map((id) => {
+        const priority = challengePriority?.find((p) => p.challengeId === id);
+        const severity = priority?.severity ?? 3;
+        return (
+          <div key={id} className="flex items-center gap-2">
+            <span className="text-xs text-slate-600 min-w-0 flex-1 truncate">{id}</span>
+            <div className="flex gap-0.5">
+              {([1, 2, 3, 4, 5] as const).map((star) => (
+                <button
+                  key={star}
+                  type="button"
+                  onClick={() => {
+                    const next = (challengePriority ?? []).filter(
+                      (p) => p.challengeId !== id
+                    );
+                    onPriorityChange([...next, { challengeId: id, severity: star }]);
+                  }}
+                  className={cn(
+                    "text-base leading-none",
+                    star <= severity ? "text-amber-400" : "text-slate-200"
+                  )}
+                >
+                  ★
+                </button>
+              ))}
+            </div>
+          </div>
+        );
+      })}
     </div>
   );
 }

@@ -12,11 +12,10 @@ import { EMPTY_GROWER_FORM } from "@/data/seed";
 import type { Grower, GrowerFormValues } from "@/data/types";
 import { supabase } from "@/lib/supabase";
 import { saveGrowerProfile } from "@/lib/db";
+import { CountryPicker } from "@/components/CountryPicker";
 import { cn, listFromText, makeId } from "@/lib/utils";
 
 // ─── Constants ────────────────────────────────────────────────────────────────
-
-const COUNTRIES = ["NL", "BE", "DE", "FR", "DK", "ES", "PL", "UK", "IE", "IT", "PT", "Global"];
 
 const GROWING_ENVIRONMENT_OPTIONS = [
   "Greenhouse",
@@ -279,29 +278,9 @@ export default function ProfilePage() {
                   <Field label="Region">
                     <input value={form.region} onChange={(e) => set("region", e.target.value)} className={INPUT_CLASS} placeholder="Westland, NL" />
                   </Field>
-                  <label className="block space-y-1 md:col-span-2">
-                    <span className="text-xs font-medium text-slate-600">Countries active in</span>
-                    <div className="flex flex-wrap gap-2 pt-1">
-                      {COUNTRIES.map((c) => (
-                        <button
-                          key={c}
-                          type="button"
-                          onClick={() => {
-                            const curr = form.countries;
-                            set("countries", curr.includes(c) ? curr.filter((x) => x !== c) : [...curr, c]);
-                          }}
-                          className={cn(
-                            "rounded-full border px-3 py-1 text-xs font-medium transition-colors",
-                            form.countries.includes(c)
-                              ? "border-emerald-700 bg-emerald-50 text-emerald-900"
-                              : "border-slate-200 text-slate-600 hover:border-slate-300"
-                          )}
-                        >
-                          {c}
-                        </button>
-                      ))}
-                    </div>
-                  </label>
+                  <Field label="Countries active in" full>
+                    <CountryPicker value={form.countries} onChange={(v) => set("countries", v)} />
+                  </Field>
                   <Field label="Contact email *">
                     <input required type="email" value={form.contactEmail} onChange={(e) => set("contactEmail", e.target.value)} className={INPUT_CLASS} placeholder="you@operation.com" />
                   </Field>
