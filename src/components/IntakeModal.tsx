@@ -21,18 +21,6 @@ import type {
 import { ImageUpload } from "@/components/ImageUpload";
 import { cn, listFromText, makeId } from "@/lib/utils";
 
-const SYSTEMS_OPTIONS = [
-  "Climate computer", "Scouting rounds", "Sprayer", "GPS guidance", "Field maps",
-  "Stable internet", "Basic sensor setup", "Manual scouting", "Camera system",
-  "Weather station", "Irrigation system", "ERP / farm management software",
-] as const;
-
-const AVAILABLE_DATA_OPTIONS = [
-  "Weekly image capture", "Disease observations", "Soil samples", "Control plot",
-  "Field boundary data", "Weather data", "Yield records", "Spray logs",
-  "Scouting reports", "Lab results",
-] as const;
-
 const GROWING_ENVIRONMENT_OPTIONS = [
   "Greenhouse",
   "Open field",
