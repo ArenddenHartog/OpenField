@@ -113,7 +113,7 @@ export async function saveSolution(
 
 export async function saveGrowerProfile(
   grower: Grower,
-  userId: string
+  userId: string | null
 ): Promise<void> {
   if (!supabase) return;
 
@@ -141,7 +141,7 @@ export async function saveGrowerProfile(
       certifications: grower.certifications ?? [],
       preferred_pilot_season: grower.preferredPilotSeason ?? null,
     },
-    { onConflict: "user_id" }
+    { onConflict: "id" }
   );
 }
 

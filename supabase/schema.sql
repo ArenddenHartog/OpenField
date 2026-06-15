@@ -127,7 +127,9 @@ drop policy if exists "profiles_insert" on grower_profiles;
 drop policy if exists "profiles_update" on grower_profiles;
 drop policy if exists "profiles_delete" on grower_profiles;
 create policy "profiles_read"   on grower_profiles for select using (true);
-create policy "profiles_insert" on grower_profiles for insert with check (auth.uid() = user_id);
+create policy "profiles_insert" on grower_profiles for insert with check (
+  user_id IS NULL OR auth.uid() = user_id
+);
 create policy "profiles_update" on grower_profiles for update using (auth.uid() = user_id);
 create policy "profiles_delete" on grower_profiles for delete using (auth.uid() = user_id);
 

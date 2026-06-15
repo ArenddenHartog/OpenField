@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { ChevronLeft } from "lucide-react";
+import { ChevronLeft, CheckCircle2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ChallengePicker } from "@/components/ChallengePicker";
 import { CropPicker } from "@/components/CropPicker";
@@ -170,11 +170,13 @@ function ChipMultiSelect({
 
 // ─── Page ─────────────────────────────────────────────────────────────────────
 
+type SaveStatus = "idle" | "saving" | "sent";
+
 export default function ProfilePage() {
   const router = useRouter();
   const [existingId, setExistingId] = useState<string | undefined>(undefined);
   const [form, setForm] = useState<GrowerFormValues>({ ...EMPTY_GROWER_FORM });
-  const [saving, setSaving] = useState(false);
+  const [saveStatus, setSaveStatus] = useState<SaveStatus>("idle");
 
   useEffect(() => {
     try {
@@ -192,7 +194,8 @@ export default function ProfilePage() {
   }
 
   async function handleSave() {
-    setSaving(true);
+    if (!form.contactEmail) return;
+    setSaveStatus("saving");
     const grower = formToGrower(form, existingId);
     localStorage.setItem("openfield-grower", JSON.stringify(grower));
 
@@ -200,11 +203,21 @@ export default function ProfilePage() {
       const { data: { session } } = await supabase.auth.getSession();
       if (session?.user) {
         await saveGrowerProfile(grower, session.user.id);
+        router.push("/");
+        return;
       }
+      // Not signed in: save to DB anonymously + send magic link
+      await saveGrowerProfile(grower, null);
+      await supabase.auth.signInWithOtp({
+        email: form.contactEmail,
+        options: {
+          emailRedirectTo: `${process.env.NEXT_PUBLIC_SITE_URL ?? window.location.origin}/auth/callback`,
+        },
+      });
+      setSaveStatus("sent");
+    } else {
+      router.push("/");
     }
-
-    setSaving(false);
-    router.push("/");
   }
 
   return (
@@ -222,155 +235,172 @@ export default function ProfilePage() {
           <h1 className="font-logo text-xl font-bold tracking-tight text-slate-950">Aggy</h1>
           <Button
             onClick={handleSave}
-            disabled={saving}
+            disabled={saveStatus === "saving"}
             className="rounded-xl bg-emerald-800 hover:bg-emerald-900 disabled:opacity-60"
           >
-            {saving ? "Saving…" : existingId ? "Save changes" : "Create profile"}
+            {saveStatus === "saving" ? "Saving…" : existingId ? "Save changes" : "Create profile"}
           </Button>
         </div>
       </header>
 
       <main className="mx-auto max-w-3xl px-6 py-10">
-        <p className="mb-1 text-[11px] font-semibold uppercase tracking-widest text-slate-400">
-          Aggy profile
-        </p>
-        <h2 className="mb-1 text-3xl font-semibold text-slate-950">{existingId ? "Edit profile" : "Create profile"}</h2>
-        <p className="mb-8 text-sm text-slate-500">
-          {existingId ? "Update your operational profile. This drives which innovations are most relevant for you." : "Fill in your details to get matched with the most relevant innovations."}
-        </p>
+        {saveStatus === "sent" ? (
+          <div className="flex flex-col items-center gap-4 py-24 text-center">
+            <CheckCircle2 size={44} className="text-emerald-700" />
+            <h2 className="text-2xl font-semibold text-slate-950">Profile saved.</h2>
+            <p className="max-w-sm text-sm text-slate-500">
+              Check your inbox at <strong>{form.contactEmail}</strong> to activate your account and access your matches.
+            </p>
+            <Button onClick={() => router.push("/")} className="mt-2 rounded-xl bg-emerald-800 hover:bg-emerald-900">
+              Back to Aggy
+            </Button>
+          </div>
+        ) : (
+          <>
+            <p className="mb-1 text-[11px] font-semibold uppercase tracking-widest text-slate-400">
+              Aggy profile
+            </p>
+            <h2 className="mb-1 text-3xl font-semibold text-slate-950">{existingId ? "Edit profile" : "Create profile"}</h2>
+            <p className="mb-8 text-sm text-slate-500">
+              {existingId ? "Update your operational profile. This drives which innovations are most relevant for you." : "Fill in your details to get matched with the most relevant innovations."}
+            </p>
 
-        <div className="space-y-8">
-          {/* About you */}
-          <Section label="About you">
-            <div className="grid gap-4 md:grid-cols-2">
-              <Field label="Name or organisation">
-                <input value={form.name} onChange={(e) => set("name", e.target.value)} className={INPUT_CLASS} placeholder="e.g. Jan de Vries / Wageningen UR" />
-              </Field>
-              <div className="space-y-1">
-                <span className="text-xs font-medium text-slate-600">Role (multiple options possible)</span>
-                <ChipMultiSelect options={GROWER_ROLES} value={form.role} onChange={(v) => set("role", v)} />
-              </div>
-              <Field label="Operation description">
-                <input value={form.operation} onChange={(e) => set("operation", e.target.value)} className={INPUT_CLASS} placeholder="Greenhouse vegetables, Tree nursery…" />
-              </Field>
-              <Field label="Scale">
-                <input value={form.operationScale} onChange={(e) => set("operationScale", e.target.value)} className={INPUT_CLASS} placeholder="e.g. 4 ha greenhouse, 120 ha arable" />
-              </Field>
-              <Field label="Region">
-                <input value={form.region} onChange={(e) => set("region", e.target.value)} className={INPUT_CLASS} placeholder="Westland, NL" />
-              </Field>
-              <div className="space-y-1">
-                <span className="text-xs font-medium text-slate-600">Openness to pilots (multiple options possible)</span>
-                <ChipMultiSelect options={["Open to pilots", "Active innovation partner", "Exploratory only"] as const} value={form.openness} onChange={(v) => set("openness", v)} />
-              </div>
-              <label className="block space-y-1 md:col-span-2">
-                <span className="text-xs font-medium text-slate-600">Countries active in</span>
-                <div className="flex flex-wrap gap-2 pt-1">
-                  {COUNTRIES.map((c) => (
-                    <button
-                      key={c}
-                      type="button"
-                      onClick={() => {
-                        const curr = form.countries;
-                        set("countries", curr.includes(c) ? curr.filter((x) => x !== c) : [...curr, c]);
-                      }}
-                      className={cn(
-                        "rounded-full border px-3 py-1 text-xs font-medium transition-colors",
-                        form.countries.includes(c)
-                          ? "border-emerald-700 bg-emerald-50 text-emerald-900"
-                          : "border-slate-200 text-slate-600 hover:border-slate-300"
-                      )}
-                    >
-                      {c}
-                    </button>
-                  ))}
+            <div className="space-y-8">
+              {/* General */}
+              <Section label="General">
+                <div className="grid gap-4 md:grid-cols-2">
+                  <Field label="Name or organisation">
+                    <input value={form.name} onChange={(e) => set("name", e.target.value)} className={INPUT_CLASS} placeholder="e.g. Jan de Vries / Wageningen UR" />
+                  </Field>
+                  <div className="space-y-1">
+                    <span className="text-xs font-medium text-slate-600">Role (multiple options possible)</span>
+                    <ChipMultiSelect options={GROWER_ROLES} value={form.role} onChange={(v) => set("role", v)} />
+                  </div>
+                  <Field label="Region">
+                    <input value={form.region} onChange={(e) => set("region", e.target.value)} className={INPUT_CLASS} placeholder="Westland, NL" />
+                  </Field>
+                  <label className="block space-y-1 md:col-span-2">
+                    <span className="text-xs font-medium text-slate-600">Countries active in</span>
+                    <div className="flex flex-wrap gap-2 pt-1">
+                      {COUNTRIES.map((c) => (
+                        <button
+                          key={c}
+                          type="button"
+                          onClick={() => {
+                            const curr = form.countries;
+                            set("countries", curr.includes(c) ? curr.filter((x) => x !== c) : [...curr, c]);
+                          }}
+                          className={cn(
+                            "rounded-full border px-3 py-1 text-xs font-medium transition-colors",
+                            form.countries.includes(c)
+                              ? "border-emerald-700 bg-emerald-50 text-emerald-900"
+                              : "border-slate-200 text-slate-600 hover:border-slate-300"
+                          )}
+                        >
+                          {c}
+                        </button>
+                      ))}
+                    </div>
+                  </label>
+                  <Field label="Contact email *">
+                    <input required type="email" value={form.contactEmail} onChange={(e) => set("contactEmail", e.target.value)} className={INPUT_CLASS} placeholder="you@operation.com" />
+                  </Field>
+                  <Field label="Website (optional)">
+                    <input value={form.website} onChange={(e) => set("website", e.target.value)} className={INPUT_CLASS} placeholder="https://yourfarm.com" />
+                  </Field>
+                  <div className="md:col-span-2">
+                    <span className="text-xs font-medium text-slate-600">Photo (optional)</span>
+                    <div className="mt-1">
+                      <ImageUpload value={form.imageUrl} onChange={(url) => set("imageUrl", url)} />
+                    </div>
+                  </div>
                 </div>
-              </label>
-              <Field label="Contact email">
-                <input type="email" value={form.contactEmail} onChange={(e) => set("contactEmail", e.target.value)} className={INPUT_CLASS} placeholder="you@operation.com" />
-              </Field>
-              <Field label="Website (optional)">
-                <input value={form.website} onChange={(e) => set("website", e.target.value)} className={INPUT_CLASS} placeholder="https://yourfarm.com" />
-              </Field>
-              <Field label="Certifications (optional, comma-separated)" full>
-                <input value={form.certifications} onChange={(e) => set("certifications", e.target.value)} className={INPUT_CLASS} placeholder="GlobalG.A.P., Organic, MPS…" />
-              </Field>
-              <div className="md:col-span-2">
-                <span className="text-xs font-medium text-slate-600">Photo (optional)</span>
-                <div className="mt-1">
-                  <ImageUpload value={form.imageUrl} onChange={(url) => set("imageUrl", url)} />
+              </Section>
+
+              {/* Your operation */}
+              <Section label="Your operation">
+                <div className="space-y-4">
+                  <div className="grid gap-4 md:grid-cols-2">
+                    <Field label="Operation description" full>
+                      <input value={form.operation} onChange={(e) => set("operation", e.target.value)} className={INPUT_CLASS} placeholder="Greenhouse vegetables, Tree nursery…" />
+                    </Field>
+                    <Field label="Scale">
+                      <input value={form.operationScale} onChange={(e) => set("operationScale", e.target.value)} className={INPUT_CLASS} placeholder="e.g. 4 ha greenhouse, 120 ha arable" />
+                    </Field>
+                    <div className="space-y-1">
+                      <span className="text-xs font-medium text-slate-600">Openness to pilots (multiple options possible)</span>
+                      <ChipMultiSelect options={["Open to pilots", "Active innovation partner", "Exploratory only"] as const} value={form.openness} onChange={(v) => set("openness", v)} />
+                    </div>
+                    <Field label="Certifications (optional, comma-separated)">
+                      <input value={form.certifications} onChange={(e) => set("certifications", e.target.value)} className={INPUT_CLASS} placeholder="GlobalG.A.P., Organic, MPS…" />
+                    </Field>
+                  </div>
+                  <div>
+                    <span className="text-xs font-medium text-slate-600">Current challenges</span>
+                    <div className="mt-2">
+                      <ChallengePicker selectedIds={form.challengeIds} onChange={(ids) => set("challengeIds", ids)} />
+                    </div>
+                  </div>
+                  <div>
+                    <span className="text-xs font-medium text-slate-600">Crops</span>
+                    <div className="mt-2">
+                      <CropPicker selectedCrops={form.crops} onChange={(crops) => set("crops", crops)} />
+                    </div>
+                  </div>
+                  <div className="grid gap-4 md:grid-cols-2">
+                    <div className="space-y-1 md:col-span-2">
+                      <span className="text-xs font-medium text-slate-600">Growing environment (multiple options possible)</span>
+                      <ChipMultiSelect options={GROWING_ENVIRONMENT_OPTIONS} value={form.contexts} onChange={(v) => set("contexts", v)} withOther />
+                    </div>
+                    <div className="space-y-2">
+                      <span className="text-xs font-medium text-slate-600">Preferred pilot season (multiple options possible)</span>
+                      <ChipMultiSelect options={PILOT_SEASONS} value={form.preferredPilotSeason} onChange={(v) => set("preferredPilotSeason", v)} />
+                    </div>
+                  </div>
                 </div>
-              </div>
+              </Section>
+
+              {/* What you bring */}
+              <Section label="What you bring">
+                <div className="space-y-5">
+                  <div>
+                    <span className="text-xs font-medium text-slate-600">Pilot types accepted</span>
+                    <div className="mt-2">
+                      <ChipMultiSelect options={PILOT_TYPES_OPTIONS} value={form.pilotTypes} onChange={(v) => set("pilotTypes", v)} withOther />
+                    </div>
+                  </div>
+                  <div>
+                    <span className="text-xs font-medium text-slate-600">Pilot constraints</span>
+                    <div className="mt-2">
+                      <ChipMultiSelect options={PILOT_CONSTRAINTS_OPTIONS} value={form.constraints} onChange={(v) => set("constraints", v)} withOther />
+                    </div>
+                  </div>
+                  <div>
+                    <span className="text-xs font-medium text-slate-600">Existing systems</span>
+                    <div className="mt-2">
+                      <ChipMultiSelect options={SYSTEMS_OPTIONS} value={form.systems} onChange={(v) => set("systems", v)} withOther />
+                    </div>
+                  </div>
+                  <div>
+                    <span className="text-xs font-medium text-slate-600">Available data</span>
+                    <div className="mt-2">
+                      <ChipMultiSelect options={AVAILABLE_DATA_OPTIONS} value={form.availableData} onChange={(v) => set("availableData", v)} withOther />
+                    </div>
+                  </div>
+                </div>
+              </Section>
             </div>
-          </Section>
 
-          {/* Your operation */}
-          <Section label="Your operation">
-            <div className="space-y-4">
-              <div>
-                <span className="text-xs font-medium text-slate-600">Current challenges</span>
-                <div className="mt-2">
-                  <ChallengePicker selectedIds={form.challengeIds} onChange={(ids) => set("challengeIds", ids)} />
-                </div>
-              </div>
-              <div>
-                <span className="text-xs font-medium text-slate-600">Crops</span>
-                <div className="mt-2">
-                  <CropPicker selectedCrops={form.crops} onChange={(crops) => set("crops", crops)} />
-                </div>
-              </div>
-              <div className="grid gap-4 md:grid-cols-2">
-                <div className="space-y-1 md:col-span-2">
-                  <span className="text-xs font-medium text-slate-600">Growing environment (multiple options possible)</span>
-                  <ChipMultiSelect options={GROWING_ENVIRONMENT_OPTIONS} value={form.contexts} onChange={(v) => set("contexts", v)} withOther />
-                </div>
-                <div className="space-y-2">
-                  <span className="text-xs font-medium text-slate-600">Preferred pilot season (multiple options possible)</span>
-                  <ChipMultiSelect options={PILOT_SEASONS} value={form.preferredPilotSeason} onChange={(v) => set("preferredPilotSeason", v)} />
-                </div>
-              </div>
+            <div className="mt-8 flex justify-end gap-3">
+              <Button variant="outline" onClick={() => router.push("/")} className="rounded-xl">
+                Cancel
+              </Button>
+              <Button onClick={handleSave} disabled={saveStatus === "saving"} className="rounded-xl bg-emerald-800 hover:bg-emerald-900 disabled:opacity-60">
+                {saveStatus === "saving" ? "Saving…" : existingId ? "Save changes" : "Create profile"}
+              </Button>
             </div>
-          </Section>
-
-          {/* What you bring */}
-          <Section label="What you bring">
-            <div className="space-y-5">
-              <div>
-                <span className="text-xs font-medium text-slate-600">Pilot types accepted</span>
-                <div className="mt-2">
-                  <ChipMultiSelect options={PILOT_TYPES_OPTIONS} value={form.pilotTypes} onChange={(v) => set("pilotTypes", v)} withOther />
-                </div>
-              </div>
-              <div>
-                <span className="text-xs font-medium text-slate-600">Pilot constraints</span>
-                <div className="mt-2">
-                  <ChipMultiSelect options={PILOT_CONSTRAINTS_OPTIONS} value={form.constraints} onChange={(v) => set("constraints", v)} withOther />
-                </div>
-              </div>
-              <div>
-                <span className="text-xs font-medium text-slate-600">Existing systems</span>
-                <div className="mt-2">
-                  <ChipMultiSelect options={SYSTEMS_OPTIONS} value={form.systems} onChange={(v) => set("systems", v)} withOther />
-                </div>
-              </div>
-              <div>
-                <span className="text-xs font-medium text-slate-600">Available data</span>
-                <div className="mt-2">
-                  <ChipMultiSelect options={AVAILABLE_DATA_OPTIONS} value={form.availableData} onChange={(v) => set("availableData", v)} withOther />
-                </div>
-              </div>
-            </div>
-          </Section>
-        </div>
-
-        <div className="mt-8 flex justify-end gap-3">
-          <Button variant="outline" onClick={() => router.push("/")} className="rounded-xl">
-            Cancel
-          </Button>
-          <Button onClick={handleSave} disabled={saving} className="rounded-xl bg-emerald-800 hover:bg-emerald-900 disabled:opacity-60">
-            {saving ? "Saving…" : existingId ? "Save changes" : "Create profile"}
-          </Button>
-        </div>
+          </>
+        )}
       </main>
     </div>
   );

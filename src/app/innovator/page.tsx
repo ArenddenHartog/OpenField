@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { ChevronLeft } from "lucide-react";
+import { ChevronLeft, CheckCircle2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ChallengePicker } from "@/components/ChallengePicker";
 import { CropPicker } from "@/components/CropPicker";
@@ -101,29 +101,42 @@ function formToPayload(f: InnovatorFormValues): {
 
 // ─── Page ─────────────────────────────────────────────────────────────────────
 
+type SaveStatus = "idle" | "saving" | "sent";
+
 export default function InnovatorPage() {
   const router = useRouter();
   const [form, setForm] = useState<InnovatorFormValues>({ ...EMPTY_INNOVATOR_FORM });
-  const [saving, setSaving] = useState(false);
+  const [saveStatus, setSaveStatus] = useState<SaveStatus>("idle");
 
   function set(key: string, value: unknown) {
     setForm((prev) => ({ ...prev, [key]: value }));
   }
 
   async function handleSave() {
-    setSaving(true);
+    if (!form.contactEmail) return;
+    setSaveStatus("saving");
     const payload = formToPayload(form);
     localStorage.setItem("openfield-pending-solution", JSON.stringify(payload));
 
     if (supabase) {
       const { data: { session } } = await supabase.auth.getSession();
+      // Always save to Supabase (null user_id if not signed in)
+      await saveSolution(payload.solution, payload.pilotOffer, payload.evidenceRecord, session?.user?.id);
       if (session?.user) {
-        await saveSolution(payload.solution, payload.pilotOffer, payload.evidenceRecord, session.user.id);
+        router.push("/");
+        return;
       }
+      // Not signed in: send magic link
+      await supabase.auth.signInWithOtp({
+        email: form.contactEmail,
+        options: {
+          emailRedirectTo: `${process.env.NEXT_PUBLIC_SITE_URL ?? window.location.origin}/auth/callback`,
+        },
+      });
+      setSaveStatus("sent");
+    } else {
+      router.push("/");
     }
-
-    setSaving(false);
-    router.push("/");
   }
 
   return (
@@ -141,139 +154,160 @@ export default function InnovatorPage() {
           <h1 className="font-logo text-xl font-bold tracking-tight text-slate-950">Aggy</h1>
           <Button
             onClick={handleSave}
-            disabled={saving}
+            disabled={saveStatus === "saving"}
             className="rounded-xl bg-emerald-800 hover:bg-emerald-900 disabled:opacity-60"
           >
-            {saving ? "Saving…" : "Create solution"}
+            {saveStatus === "saving" ? "Saving…" : "Create solution"}
           </Button>
         </div>
       </header>
 
       <main className="mx-auto max-w-3xl px-6 py-10">
-        <p className="mb-1 text-[11px] font-semibold uppercase tracking-widest text-slate-400">
-          Aggy innovator
-        </p>
-        <h2 className="mb-1 text-3xl font-semibold text-slate-950">Add a solution</h2>
-        <p className="mb-8 text-sm text-slate-500">
-          More details means better matches with growers. Fields marked optional can be filled in later.
-        </p>
+        {saveStatus === "sent" ? (
+          <div className="flex flex-col items-center gap-4 py-24 text-center">
+            <CheckCircle2 size={44} className="text-emerald-700" />
+            <h2 className="text-2xl font-semibold text-slate-950">Profile saved.</h2>
+            <p className="max-w-sm text-sm text-slate-500">
+              Check your inbox at <strong>{form.contactEmail}</strong> to activate your account and access your matches.
+            </p>
+            <Button onClick={() => router.push("/")} className="mt-2 rounded-xl bg-emerald-800 hover:bg-emerald-900">
+              Back to Aggy
+            </Button>
+          </div>
+        ) : (
+          <>
+            <p className="mb-1 text-[11px] font-semibold uppercase tracking-widest text-slate-400">
+              Aggy innovator
+            </p>
+            <h2 className="mb-1 text-3xl font-semibold text-slate-950">Add a solution</h2>
+            <p className="mb-8 text-sm text-slate-500">
+              More details means better matches with growers. Fields marked optional can be filled in later.
+            </p>
 
-        <div className="space-y-8">
-          {/* About your solution */}
-          <Section label="About your solution">
-            <div className="grid gap-4 md:grid-cols-2">
-              <Field label="Solution name">
-                <input value={form.solutionName} onChange={(e) => set("solutionName", e.target.value)} className={INPUT_CLASS} placeholder="e.g. MildewSense" />
-              </Field>
-              <div className="space-y-1 md:col-span-2">
-                <span className="text-xs font-medium text-slate-600">Solution type (multiple options possible)</span>
-                <ChipMultiSelect options={SOLUTION_TYPES} value={form.solutionType} onChange={(v) => set("solutionType", v)} withOther />
-              </div>
-              <Field label="One-line proposition" full>
-                <input value={form.proposition} onChange={(e) => set("proposition", e.target.value)} className={INPUT_CLASS} placeholder="What problem does it solve, and how?" />
-              </Field>
-              <div className="space-y-1 md:col-span-2">
-                <span className="text-xs font-medium text-slate-600">Challenges addressed</span>
-                <div className="mt-1">
-                  <ChallengePicker selectedIds={form.challengeIds} onChange={(ids) => set("challengeIds", ids)} />
+            <div className="space-y-8">
+              {/* General */}
+              <Section label="General">
+                <div className="grid gap-4 md:grid-cols-2">
+                  <Field label="Contact email *">
+                    <input required type="email" value={form.contactEmail} onChange={(e) => set("contactEmail", e.target.value)} className={INPUT_CLASS} placeholder="hello@yourcompany.com" />
+                  </Field>
+                  <Field label="Website (optional)">
+                    <input value={form.website} onChange={(e) => set("website", e.target.value)} className={INPUT_CLASS} placeholder="https://yourproduct.com" />
+                  </Field>
                 </div>
-              </div>
-              <div className="space-y-1">
-                <span className="text-xs font-medium text-slate-600">Validation stage</span>
-                <SingleChipSelect options={STAGES} value={form.stage} onChange={(v) => set("stage", v)} />
-              </div>
-              <div className="space-y-1">
-                <span className="text-xs font-medium text-slate-600">Pricing model (multiple options possible)</span>
-                <ChipMultiSelect options={PRICING_MODELS} value={form.pricingModel} onChange={(v) => set("pricingModel", v)} withOther />
-              </div>
-              <Field label="Geography (comma-separated)">
-                <input value={form.geography} onChange={(e) => set("geography", e.target.value)} className={INPUT_CLASS} placeholder="NL, BE, DE" />
-              </Field>
-              <div className="space-y-1">
-                <span className="text-xs font-medium text-slate-600">Growing environment (multiple options possible)</span>
-                <ChipMultiSelect options={GROWING_ENVIRONMENT_OPTIONS} value={form.contexts} onChange={(v) => set("contexts", v)} withOther />
-              </div>
-              <Field label="Looking for (comma-separated)">
-                <input value={form.lookingFor} onChange={(e) => set("lookingFor", e.target.value)} className={INPUT_CLASS} placeholder="Pilot growers, Researchers…" />
-              </Field>
-              <Field label="Contact email">
-                <input type="email" value={form.contactEmail} onChange={(e) => set("contactEmail", e.target.value)} className={INPUT_CLASS} placeholder="hello@yourcompany.com" />
-              </Field>
-              <Field label="Website (optional)" full>
-                <input value={form.website} onChange={(e) => set("website", e.target.value)} className={INPUT_CLASS} placeholder="https://yourproduct.com" />
-              </Field>
-              <div className="md:col-span-2">
-                <span className="text-xs font-medium text-slate-600">Photo (optional)</span>
-                <div className="mt-1">
-                  <ImageUpload value={form.imageUrl} onChange={(url) => set("imageUrl", url)} />
+              </Section>
+
+              {/* About your solution */}
+              <Section label="About your solution">
+                <div className="grid gap-4 md:grid-cols-2">
+                  <Field label="Solution name">
+                    <input value={form.solutionName} onChange={(e) => set("solutionName", e.target.value)} className={INPUT_CLASS} placeholder="e.g. MildewSense" />
+                  </Field>
+                  <div className="space-y-1 md:col-span-2">
+                    <span className="text-xs font-medium text-slate-600">Solution type (multiple options possible)</span>
+                    <ChipMultiSelect options={SOLUTION_TYPES} value={form.solutionType} onChange={(v) => set("solutionType", v)} withOther />
+                  </div>
+                  <Field label="One-line proposition" full>
+                    <input value={form.proposition} onChange={(e) => set("proposition", e.target.value)} className={INPUT_CLASS} placeholder="What problem does it solve, and how?" />
+                  </Field>
+                  <div className="space-y-1 md:col-span-2">
+                    <span className="text-xs font-medium text-slate-600">Challenges addressed</span>
+                    <div className="mt-1">
+                      <ChallengePicker selectedIds={form.challengeIds} onChange={(ids) => set("challengeIds", ids)} />
+                    </div>
+                  </div>
+                  <div className="space-y-1">
+                    <span className="text-xs font-medium text-slate-600">Validation stage</span>
+                    <SingleChipSelect options={STAGES} value={form.stage} onChange={(v) => set("stage", v)} />
+                  </div>
+                  <div className="space-y-1">
+                    <span className="text-xs font-medium text-slate-600">Pricing model (multiple options possible)</span>
+                    <ChipMultiSelect options={PRICING_MODELS} value={form.pricingModel} onChange={(v) => set("pricingModel", v)} withOther />
+                  </div>
+                  <Field label="Geography (comma-separated)">
+                    <input value={form.geography} onChange={(e) => set("geography", e.target.value)} className={INPUT_CLASS} placeholder="NL, BE, DE" />
+                  </Field>
+                  <div className="space-y-1">
+                    <span className="text-xs font-medium text-slate-600">Growing environment (multiple options possible)</span>
+                    <ChipMultiSelect options={GROWING_ENVIRONMENT_OPTIONS} value={form.contexts} onChange={(v) => set("contexts", v)} withOther />
+                  </div>
+                  <Field label="Looking for (comma-separated)">
+                    <input value={form.lookingFor} onChange={(e) => set("lookingFor", e.target.value)} className={INPUT_CLASS} placeholder="Pilot growers, Researchers…" />
+                  </Field>
+                  <div className="md:col-span-2">
+                    <span className="text-xs font-medium text-slate-600">Photo (optional)</span>
+                    <div className="mt-1">
+                      <ImageUpload value={form.imageUrl} onChange={(url) => set("imageUrl", url)} />
+                    </div>
+                  </div>
                 </div>
-              </div>
-            </div>
-            <div className="mt-4 space-y-1">
-              <span className="text-xs font-medium text-slate-600">Relevant crops</span>
-              <CropPicker selectedCrops={form.crops} onChange={(crops) => set("crops", crops)} />
-            </div>
-          </Section>
+                <div className="mt-4 space-y-1">
+                  <span className="text-xs font-medium text-slate-600">Relevant crops</span>
+                  <CropPicker selectedCrops={form.crops} onChange={(crops) => set("crops", crops)} />
+                </div>
+              </Section>
 
-          {/* Pilot offer */}
-          <Section label="Pilot offer">
-            <div className="grid gap-4 md:grid-cols-2">
-              <Field label="Pilot title" full>
-                <input value={form.pilotTitle} onChange={(e) => set("pilotTitle", e.target.value)} className={INPUT_CLASS} placeholder="Greenhouse disease detection pilot" />
-              </Field>
-              <div className="space-y-1">
-                <span className="text-xs font-medium text-slate-600">Pilot type</span>
-                <SingleChipSelect options={PILOT_TYPES_OPTIONS} value={form.pilotType} onChange={(v) => set("pilotType", v)} />
-              </div>
-              <Field label="Duration">
-                <input value={form.pilotDuration} onChange={(e) => set("pilotDuration", e.target.value)} className={INPUT_CLASS} placeholder="8–12 weeks" />
-              </Field>
-              <Field label="Availability" full>
-                <input value={form.pilotAvailability} onChange={(e) => set("pilotAvailability", e.target.value)} className={INPUT_CLASS} placeholder="3 pilot locations available from March" />
-              </Field>
-              <Field label="What's included (comma-separated)" full>
-                <input value={form.pilotIncludes} onChange={(e) => set("pilotIncludes", e.target.value)} className={INPUT_CLASS} placeholder="Sensor kit, Platform access, Weekly review…" />
-              </Field>
-              <Field label="Response time">
-                <input value={form.pilotResponseTime} onChange={(e) => set("pilotResponseTime", e.target.value)} className={INPUT_CLASS} placeholder="Reply within 3 working days" />
-              </Field>
-              <Field label="Systems required (comma-separated)">
-                <input value={form.requiredSystems} onChange={(e) => set("requiredSystems", e.target.value)} className={INPUT_CLASS} placeholder="Stable internet, Sprayer…" />
-              </Field>
-              <Field label="Data required (comma-separated)">
-                <input value={form.requiredData} onChange={(e) => set("requiredData", e.target.value)} className={INPUT_CLASS} placeholder="Disease observations, Soil samples…" />
-              </Field>
-            </div>
-          </Section>
+              {/* Pilot offer */}
+              <Section label="Pilot offer">
+                <div className="grid gap-4 md:grid-cols-2">
+                  <Field label="Pilot title" full>
+                    <input value={form.pilotTitle} onChange={(e) => set("pilotTitle", e.target.value)} className={INPUT_CLASS} placeholder="Greenhouse disease detection pilot" />
+                  </Field>
+                  <div className="space-y-1">
+                    <span className="text-xs font-medium text-slate-600">Pilot type</span>
+                    <SingleChipSelect options={PILOT_TYPES_OPTIONS} value={form.pilotType} onChange={(v) => set("pilotType", v)} />
+                  </div>
+                  <Field label="Duration">
+                    <input value={form.pilotDuration} onChange={(e) => set("pilotDuration", e.target.value)} className={INPUT_CLASS} placeholder="8–12 weeks" />
+                  </Field>
+                  <Field label="Availability" full>
+                    <input value={form.pilotAvailability} onChange={(e) => set("pilotAvailability", e.target.value)} className={INPUT_CLASS} placeholder="3 pilot locations available from March" />
+                  </Field>
+                  <Field label="What's included (comma-separated)" full>
+                    <input value={form.pilotIncludes} onChange={(e) => set("pilotIncludes", e.target.value)} className={INPUT_CLASS} placeholder="Sensor kit, Platform access, Weekly review…" />
+                  </Field>
+                  <Field label="Response time">
+                    <input value={form.pilotResponseTime} onChange={(e) => set("pilotResponseTime", e.target.value)} className={INPUT_CLASS} placeholder="Reply within 3 working days" />
+                  </Field>
+                  <Field label="Systems required (comma-separated)">
+                    <input value={form.requiredSystems} onChange={(e) => set("requiredSystems", e.target.value)} className={INPUT_CLASS} placeholder="Stable internet, Sprayer…" />
+                  </Field>
+                  <Field label="Data required (comma-separated)">
+                    <input value={form.requiredData} onChange={(e) => set("requiredData", e.target.value)} className={INPUT_CLASS} placeholder="Disease observations, Soil samples…" />
+                  </Field>
+                </div>
+              </Section>
 
-          {/* Evidence */}
-          <Section label="Evidence">
-            <div className="grid gap-4 md:grid-cols-2">
-              <Field label="Evidence type">
-                <input value={form.evidenceType} onChange={(e) => set("evidenceType", e.target.value)} className={INPUT_CLASS} placeholder="Field trial, Plot trial, Production use…" />
-              </Field>
-              <div className="space-y-1">
-                <span className="text-xs font-medium text-slate-600">Evidence quality</span>
-                <SingleChipSelect options={["Early", "Medium", "High"] as const} value={form.evidenceQuality} onChange={(v) => set("evidenceQuality", v)} />
-              </div>
-              <Field label="Tested on">
-                <input value={form.evidenceTested} onChange={(e) => set("evidenceTested", e.target.value)} className={INPUT_CLASS} placeholder="2 pilots, 4 demo plots…" />
-              </Field>
-              <Field label="Observed impact">
-                <input value={form.evidenceImpact} onChange={(e) => set("evidenceImpact", e.target.value)} className={INPUT_CLASS} placeholder="Earlier detection, lower input use…" />
-              </Field>
+              {/* Evidence */}
+              <Section label="Evidence">
+                <div className="grid gap-4 md:grid-cols-2">
+                  <Field label="Evidence type">
+                    <input value={form.evidenceType} onChange={(e) => set("evidenceType", e.target.value)} className={INPUT_CLASS} placeholder="Field trial, Plot trial, Production use…" />
+                  </Field>
+                  <div className="space-y-1">
+                    <span className="text-xs font-medium text-slate-600">Evidence quality</span>
+                    <SingleChipSelect options={["Early", "Medium", "High"] as const} value={form.evidenceQuality} onChange={(v) => set("evidenceQuality", v)} />
+                  </div>
+                  <Field label="Tested on">
+                    <input value={form.evidenceTested} onChange={(e) => set("evidenceTested", e.target.value)} className={INPUT_CLASS} placeholder="2 pilots, 4 demo plots…" />
+                  </Field>
+                  <Field label="Observed impact">
+                    <input value={form.evidenceImpact} onChange={(e) => set("evidenceImpact", e.target.value)} className={INPUT_CLASS} placeholder="Earlier detection, lower input use…" />
+                  </Field>
+                </div>
+              </Section>
             </div>
-          </Section>
-        </div>
 
-        <div className="mt-8 flex justify-end gap-3">
-          <Button variant="outline" onClick={() => router.push("/")} className="rounded-xl">
-            Cancel
-          </Button>
-          <Button onClick={handleSave} disabled={saving} className="rounded-xl bg-emerald-800 hover:bg-emerald-900 disabled:opacity-60">
-            {saving ? "Saving…" : "Create solution"}
-          </Button>
-        </div>
+            <div className="mt-8 flex justify-end gap-3">
+              <Button variant="outline" onClick={() => router.push("/")} className="rounded-xl">
+                Cancel
+              </Button>
+              <Button onClick={handleSave} disabled={saveStatus === "saving"} className="rounded-xl bg-emerald-800 hover:bg-emerald-900 disabled:opacity-60">
+                {saveStatus === "saving" ? "Saving…" : "Create solution"}
+              </Button>
+            </div>
+          </>
+        )}
       </main>
     </div>
   );
