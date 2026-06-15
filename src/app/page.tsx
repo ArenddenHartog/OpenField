@@ -2,7 +2,8 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Search, LogIn, LogOut, Pencil } from "lucide-react";
+import { Search, LogIn, LogOut, Pencil, X } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
 import type { User } from "@supabase/supabase-js";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -61,6 +62,7 @@ export default function OpenFieldPage() {
   const [presetGrowerRole, setPresetGrowerRole] = useState<GrowerRole | undefined>(undefined);
   const [authModalOpen, setAuthModalOpen] = useState(false);
   const [requestIntroOpen, setRequestIntroOpen] = useState(false);
+  const [sheetOpen, setSheetOpen] = useState(false);
 
   // ── Persist grower profile in localStorage (survives page refresh without sign-in) ──
   useEffect(() => {
@@ -519,7 +521,7 @@ export default function OpenFieldPage() {
                     key={s.id}
                     solution={s}
                     selected={selected?.id === s.id}
-                    onClick={() => setSelectedId(s.id)}
+                    onClick={() => { setSelectedId(s.id); setSheetOpen(true); }}
                   />
                 ))
               ) : (
@@ -536,8 +538,8 @@ export default function OpenFieldPage() {
               )}
             </div>
 
-            {/* Sticky detail panel */}
-            <div className="sticky top-6 h-fit space-y-4">
+            {/* Sticky detail panel — desktop only */}
+            <div className="sticky top-6 h-fit space-y-4 hidden lg:block">
               <div className="rounded-2xl bg-emerald-900 p-4 text-white">
                 <div className="flex items-start justify-between gap-4">
                   <div>
@@ -572,6 +574,73 @@ export default function OpenFieldPage() {
           </section>
         )}
       </main>
+
+      {/* Mobile / tablet bottom sheet — hidden on lg+ */}
+      <AnimatePresence>
+        {sheetOpen && selected && (
+          <div className="fixed inset-0 z-50 lg:hidden">
+            {/* Backdrop */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="absolute inset-0 bg-slate-950/40"
+              onClick={() => setSheetOpen(false)}
+            />
+            {/* Sheet */}
+            <motion.div
+              initial={{ y: "100%" }}
+              animate={{ y: 0 }}
+              exit={{ y: "100%" }}
+              transition={{ type: "spring", damping: 32, stiffness: 320 }}
+              className="absolute bottom-0 left-0 right-0 flex max-h-[88vh] flex-col rounded-t-3xl bg-[#f7f6ef] shadow-2xl"
+            >
+              {/* Handle + score header */}
+              <div className="shrink-0 px-4 pt-3 pb-0">
+                <div className="mx-auto mb-3 h-1 w-10 rounded-full bg-slate-300" />
+                <div className="rounded-2xl bg-emerald-900 p-4 text-white">
+                  <div className="flex items-start justify-between gap-4">
+                    <div>
+                      <h3 className="text-base font-semibold leading-snug">
+                        {activeGrower?.name ?? "Your context"} × {selected.name}
+                      </h3>
+                      <p className="mt-1 text-sm text-emerald-100">
+                        {selected.match?.score
+                          ? sharedTags.length > 0
+                            ? `Shared challenge: ${sharedTags.join(", ")}`
+                            : "Recommended on context, crops & geography fit"
+                          : "No match score — add a profile to see fit"}
+                      </p>
+                    </div>
+                    <div className="flex items-start gap-2 shrink-0">
+                      {selected.match?.score && (
+                        <div className="rounded-xl bg-white px-3 py-2 text-center text-emerald-950">
+                          <div className="text-xl font-semibold">{selected.match.score}</div>
+                          <div className="text-[10px] uppercase tracking-wide">score</div>
+                        </div>
+                      )}
+                      <button
+                        onClick={() => setSheetOpen(false)}
+                        className="rounded-full bg-white/20 p-1.5 text-white hover:bg-white/30"
+                        aria-label="Close"
+                      >
+                        <X size={16} />
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              {/* Scrollable detail */}
+              <div className="overflow-y-auto px-4 pb-10 pt-3">
+                <ProfileDetail
+                  solution={selected}
+                  onRequestIntro={() => { setSheetOpen(false); setRequestIntroOpen(true); }}
+                />
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
 
       <footer className="mt-16 border-t border-slate-200 py-4 text-center text-sm text-slate-400">
         Initiated with love by{" "}
