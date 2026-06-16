@@ -505,9 +505,9 @@ export default function OpenFieldPage() {
                 </div>
                 <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 rounded-2xl bg-white/70 p-4 text-center">
                   <p className="text-sm font-semibold text-slate-950">
-                    {filtered.length > 3 ? `+${filtered.length - 3} more` : "Find innovations that fit"}
+                    {filtered.length > 3 ? `+${filtered.length - 3} more` : "Find innovations that work."}
                   </p>
-                  <p className="text-xs text-slate-500">Create a profile and see which innovations best match your operation.</p>
+                  <p className="text-xs text-slate-500">Create your profile and discover innovations that fit your operation.</p>
                   <Button
                     onClick={() => router.push("/profile")}
                     className="rounded-xl bg-emerald-800 hover:bg-emerald-900 text-xs px-4 py-2"

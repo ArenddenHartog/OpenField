@@ -74,10 +74,10 @@ export function GrowerPanel({ grower, onCreateProfile, onEdit }: GrowerPanelProp
               Free · Takes 2 minutes
             </p>
             <h3 className="mb-1.5 text-base font-semibold text-slate-950">
-              See innovations that work.
+              Find innovations that work.
             </h3>
             <p className="mb-5 text-xs leading-relaxed text-slate-500">
-              Add your profile and discover innovations that fit your operation.
+              Create your profile and discover innovations that fit your operation.
             </p>
             <Button
               onClick={onCreateProfile}
