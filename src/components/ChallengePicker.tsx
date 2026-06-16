@@ -208,112 +208,102 @@ export function ChallengePicker({
         />
       </div>
 
-      {/* Groups */}
+      {/* Group chips — inline */}
       <div className="flex flex-wrap gap-1.5">
         {CHALLENGE_GROUPS.map((group) => {
           const allItems = group.subgroups.flatMap((sg) => sg.items);
           const count = allItems.filter((i) => selectedIds.includes(i)).length;
           const allSel = count === allItems.length && allItems.length > 0;
           const someSel = count > 0 && !allSel;
-          const isOpen = activeGroupId === group.id;
-
           return (
-            <div key={group.id} className="w-full">
-              {/* Group chip */}
-              <button
-                type="button"
-                onClick={() => toggleGroup(group.id)}
-                className={cn(
-                  "flex items-center gap-1 rounded-full px-3 py-1 text-xs font-medium transition-colors",
-                  allSel
-                    ? "border border-emerald-700 bg-emerald-50 text-emerald-900"
-                    : someSel
-                      ? "border border-slate-300 bg-slate-50 text-slate-700"
-                      : "border border-slate-200 text-slate-600 hover:border-slate-300"
-                )}
-              >
-                {group.label}
-                {count > 0 && (
-                  <span
-                    className={cn(
-                      "rounded-full px-1.5 py-0.5 text-[10px] font-semibold",
-                      allSel ? "bg-emerald-100 text-emerald-800" : "bg-slate-200 text-slate-600"
-                    )}
-                  >
-                    {count}
-                  </span>
-                )}
-              </button>
-
-              {/* Subgroup chips — shown when group is expanded */}
-              {isOpen && (
-                <div className="mt-1.5 flex flex-wrap gap-1.5 border-l-2 border-slate-200 pl-3">
-                  {group.subgroups.map((sg) => {
-                    const sgCount = sg.items.filter((i) => selectedIds.includes(i)).length;
-                    const sgAllSel = sgCount === sg.items.length;
-                    const sgSomeSel = sgCount > 0 && !sgAllSel;
-                    const sgOpen = activeSubgroup === sg.label;
-
-                    return (
-                      <div key={sg.label} className="w-full">
-                        {/* Subgroup chip */}
-                        <button
-                          type="button"
-                          onClick={() => toggleSubgroupWithExpand(sg)}
-                          className={cn(
-                            "flex items-center gap-1 rounded-full px-3 py-1 text-xs font-medium transition-colors",
-                            sgAllSel
-                              ? "border border-emerald-700 bg-emerald-50 text-emerald-900"
-                              : sgSomeSel
-                                ? "border border-slate-300 bg-slate-50 text-slate-700"
-                                : "border border-slate-200 text-slate-600 hover:border-slate-300"
-                          )}
-                        >
-                          {sg.label}
-                          {sgCount > 0 && (
-                            <span
-                              className={cn(
-                                "rounded-full px-1.5 py-0.5 text-[10px] font-semibold",
-                                sgAllSel ? "bg-emerald-100 text-emerald-800" : "bg-slate-200 text-slate-600"
-                              )}
-                            >
-                              {sgCount}
-                            </span>
-                          )}
-                        </button>
-
-                        {/* Individual items — shown when subgroup is expanded */}
-                        {sgOpen && (
-                          <div className="mt-1.5 flex flex-wrap gap-1.5 border-l-2 border-slate-200 pl-3">
-                            {sg.items.map((item) => {
-                              const isSel = selectedIds.includes(item);
-                              return (
-                                <button
-                                  key={item}
-                                  type="button"
-                                  onClick={() => toggleItem(item)}
-                                  className={cn(
-                                    "rounded-full px-3 py-1 text-xs font-medium transition-colors",
-                                    isSel
-                                      ? "bg-emerald-600 text-white"
-                                      : "border border-slate-200 text-slate-600 hover:border-slate-300"
-                                  )}
-                                >
-                                  {item}
-                                </button>
-                              );
-                            })}
-                          </div>
-                        )}
-                      </div>
-                    );
-                  })}
-                </div>
+            <button
+              key={group.id}
+              type="button"
+              onClick={() => toggleGroup(group.id)}
+              className={cn(
+                "flex items-center gap-1 rounded-full px-3 py-1 text-xs font-medium transition-colors",
+                allSel
+                  ? "border border-emerald-700 bg-emerald-50 text-emerald-900"
+                  : someSel
+                    ? "border border-slate-300 bg-slate-50 text-slate-700"
+                    : "border border-slate-200 text-slate-600 hover:border-slate-300"
               )}
-            </div>
+            >
+              {group.label}
+              {count > 0 && (
+                <span className={cn("rounded-full px-1.5 py-0.5 text-[10px] font-semibold", allSel ? "bg-emerald-100 text-emerald-800" : "bg-slate-200 text-slate-600")}>
+                  {count}
+                </span>
+              )}
+            </button>
           );
         })}
       </div>
+
+      {/* Subgroup chips — shown when a group is active */}
+      {activeGroupId && (() => {
+        const group = CHALLENGE_GROUPS.find((g) => g.id === activeGroupId);
+        if (!group) return null;
+        return (
+          <div className="space-y-1.5 border-l-2 border-slate-200 pl-3">
+            <div className="flex flex-wrap gap-1.5">
+              {group.subgroups.map((sg) => {
+                const sgCount = sg.items.filter((i) => selectedIds.includes(i)).length;
+                const sgAllSel = sgCount === sg.items.length;
+                const sgSomeSel = sgCount > 0 && !sgAllSel;
+                return (
+                  <button
+                    key={sg.label}
+                    type="button"
+                    onClick={() => toggleSubgroupWithExpand(sg)}
+                    className={cn(
+                      "flex items-center gap-1 rounded-full px-3 py-1 text-xs font-medium transition-colors",
+                      sgAllSel
+                        ? "border border-emerald-700 bg-emerald-50 text-emerald-900"
+                        : sgSomeSel
+                          ? "border border-slate-300 bg-slate-50 text-slate-700"
+                          : "border border-slate-200 text-slate-600 hover:border-slate-300"
+                    )}
+                  >
+                    {sg.label}
+                    {sgCount > 0 && (
+                      <span className={cn("rounded-full px-1.5 py-0.5 text-[10px] font-semibold", sgAllSel ? "bg-emerald-100 text-emerald-800" : "bg-slate-200 text-slate-600")}>
+                        {sgCount}
+                      </span>
+                    )}
+                  </button>
+                );
+              })}
+            </div>
+
+            {/* Individual items — shown when a subgroup is active */}
+            {activeSubgroup && (() => {
+              const sg = group.subgroups.find((s) => s.label === activeSubgroup);
+              if (!sg) return null;
+              return (
+                <div className="flex flex-wrap gap-1.5 border-l-2 border-slate-200 pl-3">
+                  {sg.items.map((item) => {
+                    const isSel = selectedIds.includes(item);
+                    return (
+                      <button
+                        key={item}
+                        type="button"
+                        onClick={() => toggleItem(item)}
+                        className={cn(
+                          "rounded-full px-3 py-1 text-xs font-medium transition-colors",
+                          isSel ? "bg-emerald-600 text-white" : "border border-slate-200 text-slate-600 hover:border-slate-300"
+                        )}
+                      >
+                        {item}
+                      </button>
+                    );
+                  })}
+                </div>
+              );
+            })()}
+          </div>
+        );
+      })()}
 
       {/* Summary line */}
       {selectedIds.length > 0 && (

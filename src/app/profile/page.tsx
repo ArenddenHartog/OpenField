@@ -256,12 +256,9 @@ export default function ProfilePage() {
           </div>
         ) : (
           <>
-            <p className="mb-1 text-[11px] font-semibold uppercase tracking-widest text-slate-400">
-              Aggy profile
-            </p>
             <h2 className="mb-1 text-3xl font-semibold text-slate-950">{existingId ? "Edit profile" : "Create profile"}</h2>
             <p className="mb-8 text-sm text-slate-500">
-              {existingId ? "Update your operational profile. This drives which innovations are most relevant for you." : "Fill in your details to get matched with the most relevant innovations."}
+              {existingId ? "Update your operational profile. This drives which innovations are most relevant for you." : "The better we understand your operation, the better we can match relevant innovations."}
             </p>
 
             <div className="space-y-8">

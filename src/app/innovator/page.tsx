@@ -189,12 +189,9 @@ export default function InnovatorPage() {
           </div>
         ) : (
           <>
-            <p className="mb-1 text-[11px] font-semibold uppercase tracking-widest text-slate-400">
-              Aggy innovator
-            </p>
             <h2 className="mb-1 text-3xl font-semibold text-slate-950">Add a solution</h2>
             <p className="mb-8 text-sm text-slate-500">
-              More details means better matches with growers. Fields marked optional can be filled in later.
+              The better we understand your solution, the better we can match relevant growers.
             </p>
 
             <div className="space-y-8">

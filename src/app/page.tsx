@@ -319,7 +319,7 @@ export default function OpenFieldPage() {
                 Find what's worth trying next season.
               </h2>
               <p className="mt-5 max-w-2xl text-lg leading-relaxed text-slate-500">
-                Connecting growers and innovators. Getting innovations into the field.
+                Connecting growers and innovators to get more innovations into the field.
               </p>
               <p className="mt-1 text-base font-semibold text-slate-950">
                 Practical fit, not marketing.
@@ -328,7 +328,7 @@ export default function OpenFieldPage() {
                 {[
                   "Share what you're trying to improve.",
                   "See which innovations fit your operation.",
-                  "Connect and get a pilot running this season.",
+                  "Connect, test and see what grows.",
                 ].map((text, i, arr) => (
                   <li key={text} className="flex items-start gap-3">
                     <div className="flex flex-col items-center">
