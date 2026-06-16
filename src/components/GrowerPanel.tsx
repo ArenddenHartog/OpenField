@@ -14,79 +14,56 @@ interface GrowerPanelProps {
 
 export function GrowerPanel({ grower, onCreateProfile, onEdit }: GrowerPanelProps) {
   if (!grower) {
-    const ghostCards = [
-      {
-        name: "SporeSight AI",
-        type: "AI / Software",
-        proposition: "Early mildew and fungal disease detection from greenhouse imagery.",
-        tags: ["Disease detection", "Greenhouse", "Imaging"],
-        stage: "Proven in production",
-        stageIndex: 4,
-        pilot: "Commercial rollout; pilots for new crops",
-        score: 56,
-      },
-      {
-        name: "BioShield Labs",
-        type: "Biological / Biostimulants",
-        proposition: "Beneficial microbe treatment to suppress soil-borne pathogens.",
-        tags: ["Pest control", "Soil health"],
-        stage: "Active pilots",
-        stageIndex: 3,
-        pilot: "Seeking pilot growers in NL, BE",
-        score: 45,
-      },
-    ];
-
     return (
       <Card className="relative h-full overflow-hidden rounded-2xl border-slate-200 bg-white shadow-sm">
-        {/* Ghost — two fake solution cards, blurred */}
+        {/* Ghost — single fake solution card, blurred */}
         <div className="pointer-events-none select-none blur-[2px]">
-          <div className="space-y-3 p-4">
-            {ghostCards.map((card) => (
-              <div key={card.name} className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-                <div className="flex items-start justify-between gap-4">
-                  <div>
-                    <div className="mb-2 flex items-center gap-2">
-                      <div className="rounded-xl bg-emerald-50 p-2 text-emerald-800">
-                        <ShieldCheck size={18} />
-                      </div>
-                      <div>
-                        <h3 className="text-base font-semibold text-slate-950">{card.name}</h3>
-                        <p className="text-xs text-slate-500">{card.type}</p>
-                      </div>
+          <div className="p-4">
+            <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+              <div className="flex items-start justify-between gap-4">
+                <div>
+                  <div className="mb-2 flex items-center gap-2">
+                    <div className="rounded-xl bg-emerald-50 p-2 text-emerald-800">
+                      <ShieldCheck size={18} />
                     </div>
-                    <p className="mb-4 text-sm leading-relaxed text-slate-700">{card.proposition}</p>
+                    <div>
+                      <h3 className="text-base font-semibold text-slate-950">SporeSight AI</h3>
+                      <p className="text-xs text-slate-500">AI / Software</p>
+                    </div>
                   </div>
-                  <div className="rounded-xl bg-slate-950 px-3 py-2 text-center text-white shrink-0">
-                    <div className="text-lg font-semibold">{card.score}</div>
-                    <div className="text-[10px] uppercase tracking-wide text-slate-300">score</div>
-                  </div>
+                  <p className="mb-4 text-sm leading-relaxed text-slate-700">
+                    Early mildew and fungal disease detection from greenhouse imagery.
+                  </p>
                 </div>
-                <div className="mb-4 flex flex-wrap gap-2">
-                  {card.tags.map((tag) => (
-                    <span key={tag} className="rounded-full border border-slate-200 px-3 py-1 text-xs text-slate-600">{tag}</span>
-                  ))}
-                </div>
-                <div className="space-y-2">
-                  <div className="flex items-center justify-between text-xs text-slate-500">
-                    <span>Validation stage</span>
-                    <span className="rounded-md bg-emerald-50 px-1.5 py-0.5 font-medium text-emerald-800">{card.stage}</span>
-                  </div>
-                  <div className="grid grid-cols-6 gap-1">
-                    {Array.from({ length: 6 }).map((_, i) => (
-                      <div key={i} className={`h-2 rounded-full ${i <= card.stageIndex ? "bg-emerald-700" : "bg-slate-200"}`} />
-                    ))}
-                  </div>
-                </div>
-                <div className="mt-4 flex items-center justify-between border-t border-slate-100 pt-4">
-                  <div className="flex items-center gap-2 text-xs text-slate-600">
-                    <Handshake size={14} />
-                    {card.pilot}
-                  </div>
-                  <ArrowRight size={16} className="text-slate-400" />
+                <div className="shrink-0 rounded-xl bg-slate-950 px-3 py-2 text-center text-white">
+                  <div className="text-lg font-semibold">56</div>
+                  <div className="text-[10px] uppercase tracking-wide text-slate-300">score</div>
                 </div>
               </div>
-            ))}
+              <div className="mb-4 flex flex-wrap gap-2">
+                {["Disease detection", "Greenhouse", "Imaging"].map((tag) => (
+                  <span key={tag} className="rounded-full border border-slate-200 px-3 py-1 text-xs text-slate-600">{tag}</span>
+                ))}
+              </div>
+              <div className="space-y-2">
+                <div className="flex items-center justify-between text-xs text-slate-500">
+                  <span>Validation stage</span>
+                  <span className="rounded-md bg-emerald-50 px-1.5 py-0.5 font-medium text-emerald-800">Proven in production</span>
+                </div>
+                <div className="grid grid-cols-6 gap-1">
+                  {Array.from({ length: 6 }).map((_, i) => (
+                    <div key={i} className={`h-2 rounded-full ${i <= 4 ? "bg-emerald-700" : "bg-slate-200"}`} />
+                  ))}
+                </div>
+              </div>
+              <div className="mt-4 flex items-center justify-between border-t border-slate-100 pt-4">
+                <div className="flex items-center gap-2 text-xs text-slate-600">
+                  <Handshake size={14} />
+                  Commercial rollout; pilots for new crops
+                </div>
+                <ArrowRight size={16} className="text-slate-400" />
+              </div>
+            </div>
           </div>
         </div>
 
