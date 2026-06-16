@@ -21,54 +21,54 @@ export function GrowerPanel({ grower, onCreateProfile, onEdit }: GrowerPanelProp
           <div className="mb-4 flex items-center justify-between">
             <div className="space-y-1.5">
               <div className="flex items-center gap-2">
-                <div className="h-5 w-32 rounded-full bg-slate-200 blur-sm" />
-                <div className="h-4 w-16 rounded-full bg-slate-100 blur-sm" />
+                <div className="h-5 w-32 rounded-full bg-slate-200 blur-[1.5px]" />
+                <div className="h-4 w-16 rounded-full bg-slate-100 blur-[1.5px]" />
               </div>
-              <div className="h-3.5 w-44 rounded-full bg-slate-100 blur-sm" />
+              <div className="h-3.5 w-44 rounded-full bg-slate-100 blur-[1.5px]" />
             </div>
-            <div className="rounded-xl bg-emerald-50 p-2 text-emerald-200">
+            <div className="rounded-xl bg-emerald-50 p-2 text-emerald-300">
               <Sprout size={20} />
             </div>
           </div>
           <div className="mb-4 grid gap-3 sm:grid-cols-2">
             <div className="rounded-xl bg-slate-50 p-3">
-              <div className="mb-1.5 h-2.5 w-12 rounded bg-slate-200 blur-sm" />
-              <div className="h-4 w-24 rounded bg-slate-300 blur-sm" />
+              <div className="mb-1.5 h-2.5 w-12 rounded bg-slate-200 blur-[1px]" />
+              <div className="h-4 w-24 rounded bg-slate-300 blur-[1px]" />
             </div>
             <div className="rounded-xl bg-slate-50 p-3">
-              <div className="mb-1.5 h-2.5 w-16 rounded bg-slate-200 blur-sm" />
-              <div className="h-4 w-20 rounded bg-slate-300 blur-sm" />
+              <div className="mb-1.5 h-2.5 w-16 rounded bg-slate-200 blur-[1px]" />
+              <div className="h-4 w-20 rounded bg-slate-300 blur-[1px]" />
             </div>
           </div>
           <div className="space-y-3">
             <div>
-              <div className="mb-2 h-2.5 w-28 rounded bg-slate-200 blur-sm" />
+              <div className="mb-2 h-2.5 w-28 rounded bg-slate-200 blur-[1px]" />
               <div className="flex flex-wrap gap-2">
-                <div className="h-6 w-28 rounded-full bg-emerald-100 blur-sm" />
-                <div className="h-6 w-24 rounded-full bg-emerald-100 blur-sm" />
-                <div className="h-6 w-20 rounded-full bg-emerald-100 blur-sm" />
+                <div className="h-6 w-28 rounded-full bg-emerald-100 blur-[1.5px]" />
+                <div className="h-6 w-24 rounded-full bg-emerald-100 blur-[1.5px]" />
+                <div className="h-6 w-20 rounded-full bg-emerald-100 blur-[1.5px]" />
               </div>
             </div>
             <div>
-              <div className="mb-2 h-2.5 w-16 rounded bg-slate-200 blur-sm" />
+              <div className="mb-2 h-2.5 w-16 rounded bg-slate-200 blur-[1px]" />
               <div className="flex flex-wrap gap-2">
-                <div className="h-6 w-20 rounded-full bg-slate-100 blur-sm" />
-                <div className="h-6 w-16 rounded-full bg-slate-100 blur-sm" />
-                <div className="h-6 w-24 rounded-full bg-slate-100 blur-sm" />
+                <div className="h-6 w-20 rounded-full bg-slate-100 blur-[1.5px]" />
+                <div className="h-6 w-16 rounded-full bg-slate-100 blur-[1.5px]" />
+                <div className="h-6 w-24 rounded-full bg-slate-100 blur-[1.5px]" />
               </div>
             </div>
             <div>
-              <div className="mb-2 h-2.5 w-24 rounded bg-slate-200 blur-sm" />
+              <div className="mb-2 h-2.5 w-24 rounded bg-slate-200 blur-[1px]" />
               <div className="flex flex-wrap gap-2">
-                <div className="h-6 w-16 rounded-full bg-slate-100 blur-sm" />
-                <div className="h-6 w-20 rounded-full bg-slate-100 blur-sm" />
+                <div className="h-6 w-16 rounded-full bg-slate-100 blur-[1.5px]" />
+                <div className="h-6 w-20 rounded-full bg-slate-100 blur-[1.5px]" />
               </div>
             </div>
           </div>
         </CardContent>
 
         {/* CTA overlay */}
-        <div className="absolute inset-0 flex items-center justify-center bg-white/50 backdrop-blur-[3px]">
+        <div className="absolute inset-0 flex items-center justify-center bg-white/50 backdrop-blur-[2px]">
           <div className="mx-4 w-full max-w-xs rounded-2xl border border-slate-100 bg-white p-6 text-center shadow-lg">
             <p className="mb-2 text-[11px] font-semibold uppercase tracking-widest text-emerald-700">
               Free · Takes 2 minutes
