@@ -21,6 +21,8 @@ export function ChallengePicker({
   onPriorityChange,
 }: ChallengePickerProps) {
   const [query, setQuery] = useState("");
+  const [activeGroupId, setActiveGroupId] = useState<string | null>(null);
+  const [activeSubgroup, setActiveSubgroup] = useState<string | null>(null);
 
   function toggleItem(item: string) {
     const next = selectedIds.includes(item)
@@ -36,6 +38,27 @@ export function ChallengePicker({
     } else {
       const toAdd = items.filter((item) => !selectedIds.includes(item));
       onChange([...selectedIds, ...toAdd]);
+    }
+  }
+
+  function toggleGroup(groupId: string) {
+    const group = CHALLENGE_GROUPS.find((g) => g.id === groupId);
+    if (!group) return;
+    const allItems = group.subgroups.flatMap((sg) => sg.items);
+    const allSelected = allItems.every((item) => selectedIds.includes(item));
+    if (allSelected) {
+      onChange(selectedIds.filter((id) => !allItems.includes(id)));
+    } else {
+      const toAdd = allItems.filter((item) => !selectedIds.includes(item));
+      onChange([...selectedIds, ...toAdd]);
+    }
+    // Toggle expansion
+    if (activeGroupId === groupId) {
+      setActiveGroupId(null);
+      setActiveSubgroup(null);
+    } else {
+      setActiveGroupId(groupId);
+      setActiveSubgroup(null);
     }
   }
 
@@ -165,6 +188,11 @@ export function ChallengePicker({
     );
   }
 
+  function toggleSubgroupWithExpand(sg: { label: string; items: string[] }) {
+    toggleSubgroup(sg.items);
+    setActiveSubgroup((prev) => (prev === sg.label ? null : sg.label));
+  }
+
   // ── Browse mode ──────────────────────────────────────────────────────────────
 
   return (
@@ -180,78 +208,111 @@ export function ChallengePicker({
         />
       </div>
 
-      {/* Groups with subgroup chips */}
-      <div className="space-y-4">
-        {CHALLENGE_GROUPS.map((group) => (
-          <div key={group.id} className="space-y-2">
-            {/* Group header — non-clickable */}
-            <p className="text-[10px] font-semibold uppercase tracking-widest text-slate-400">
-              {group.label}
-            </p>
+      {/* Groups */}
+      <div className="flex flex-wrap gap-1.5">
+        {CHALLENGE_GROUPS.map((group) => {
+          const allItems = group.subgroups.flatMap((sg) => sg.items);
+          const count = allItems.filter((i) => selectedIds.includes(i)).length;
+          const allSel = count === allItems.length && allItems.length > 0;
+          const someSel = count > 0 && !allSel;
+          const isOpen = activeGroupId === group.id;
 
-            {/* Subgroup chips */}
-            <div className="space-y-1.5">
-              {group.subgroups.map((sg) => {
-                const count = sg.items.filter((i) => selectedIds.includes(i)).length;
-                const allSel = count === sg.items.length;
-                const someSel = count > 0 && !allSel;
+          return (
+            <div key={group.id} className="w-full">
+              {/* Group chip */}
+              <button
+                type="button"
+                onClick={() => toggleGroup(group.id)}
+                className={cn(
+                  "flex items-center gap-1 rounded-full px-3 py-1 text-xs font-medium transition-colors",
+                  allSel
+                    ? "border border-emerald-700 bg-emerald-50 text-emerald-900"
+                    : someSel
+                      ? "border border-slate-300 bg-slate-50 text-slate-700"
+                      : "border border-slate-200 text-slate-600 hover:border-slate-300"
+                )}
+              >
+                {group.label}
+                {count > 0 && (
+                  <span
+                    className={cn(
+                      "rounded-full px-1.5 py-0.5 text-[10px] font-semibold",
+                      allSel ? "bg-emerald-100 text-emerald-800" : "bg-slate-200 text-slate-600"
+                    )}
+                  >
+                    {count}
+                  </span>
+                )}
+              </button>
 
-                return (
-                  <div key={sg.label}>
-                    <button
-                      type="button"
-                      onClick={() => toggleSubgroup(sg.items)}
-                      className={cn(
-                        "flex items-center gap-1 rounded-full px-3 py-1 text-xs font-medium transition-colors",
-                        allSel
-                          ? "border border-emerald-700 bg-emerald-50 text-emerald-900"
-                          : someSel
-                            ? "border border-slate-300 bg-slate-50 text-slate-700"
-                            : "border border-slate-200 text-slate-600 hover:border-slate-300"
-                      )}
-                    >
-                      {sg.label}
-                      {count > 0 && (
-                        <span
+              {/* Subgroup chips — shown when group is expanded */}
+              {isOpen && (
+                <div className="mt-1.5 flex flex-wrap gap-1.5 border-l-2 border-slate-200 pl-3">
+                  {group.subgroups.map((sg) => {
+                    const sgCount = sg.items.filter((i) => selectedIds.includes(i)).length;
+                    const sgAllSel = sgCount === sg.items.length;
+                    const sgSomeSel = sgCount > 0 && !sgAllSel;
+                    const sgOpen = activeSubgroup === sg.label;
+
+                    return (
+                      <div key={sg.label} className="w-full">
+                        {/* Subgroup chip */}
+                        <button
+                          type="button"
+                          onClick={() => toggleSubgroupWithExpand(sg)}
                           className={cn(
-                            "rounded-full px-1.5 py-0.5 text-[10px] font-semibold",
-                            allSel ? "bg-emerald-100 text-emerald-800" : "bg-slate-200 text-slate-600"
+                            "flex items-center gap-1 rounded-full px-3 py-1 text-xs font-medium transition-colors",
+                            sgAllSel
+                              ? "border border-emerald-700 bg-emerald-50 text-emerald-900"
+                              : sgSomeSel
+                                ? "border border-slate-300 bg-slate-50 text-slate-700"
+                                : "border border-slate-200 text-slate-600 hover:border-slate-300"
                           )}
                         >
-                          {count}
-                        </span>
-                      )}
-                    </button>
-
-                    {/* Individual items shown when some are selected */}
-                    {count > 0 && (
-                      <div className="mt-1.5 flex flex-wrap gap-1.5 border-l-2 border-slate-200 pl-3">
-                        {sg.items.map((item) => {
-                          const isSel = selectedIds.includes(item);
-                          return (
-                            <button
-                              key={item}
-                              type="button"
-                              onClick={() => toggleItem(item)}
+                          {sg.label}
+                          {sgCount > 0 && (
+                            <span
                               className={cn(
-                                "rounded-full px-3 py-1 text-xs font-medium transition-colors",
-                                isSel
-                                  ? "bg-emerald-600 text-white"
-                                  : "border border-slate-200 text-slate-600 hover:border-slate-300"
+                                "rounded-full px-1.5 py-0.5 text-[10px] font-semibold",
+                                sgAllSel ? "bg-emerald-100 text-emerald-800" : "bg-slate-200 text-slate-600"
                               )}
                             >
-                              {item}
-                            </button>
-                          );
-                        })}
+                              {sgCount}
+                            </span>
+                          )}
+                        </button>
+
+                        {/* Individual items — shown when subgroup is expanded */}
+                        {sgOpen && (
+                          <div className="mt-1.5 flex flex-wrap gap-1.5 border-l-2 border-slate-200 pl-3">
+                            {sg.items.map((item) => {
+                              const isSel = selectedIds.includes(item);
+                              return (
+                                <button
+                                  key={item}
+                                  type="button"
+                                  onClick={() => toggleItem(item)}
+                                  className={cn(
+                                    "rounded-full px-3 py-1 text-xs font-medium transition-colors",
+                                    isSel
+                                      ? "bg-emerald-600 text-white"
+                                      : "border border-slate-200 text-slate-600 hover:border-slate-300"
+                                  )}
+                                >
+                                  {item}
+                                </button>
+                              );
+                            })}
+                          </div>
+                        )}
                       </div>
-                    )}
-                  </div>
-                );
-              })}
+                    );
+                  })}
+                </div>
+              )}
             </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
 
       {/* Summary line */}

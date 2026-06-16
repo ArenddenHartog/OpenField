@@ -171,8 +171,14 @@ export default function OpenFieldPage() {
     return enrichedSolutions
       .filter((s) => {
         const tagMatch = selectedTag === "All" || s.challengeIds.some((id) => {
-          const group = CHALLENGE_GROUPS.find((g) => g.subgroups.some((sg) => sg.items.includes(id)));
-          return group?.label === selectedTag;
+          // Full-string items from ChallengePicker (e.g. "Early disease detection")
+          const selectedGroup = CHALLENGE_GROUPS.find((g) => g.label === selectedTag);
+          if (selectedGroup?.subgroups.some((sg) => sg.items.includes(id))) return true;
+          // Short IDs from seed data — map to group label via subgroup label keyword
+          const name = (CHALLENGES.find((c) => c.id === id)?.name ?? "").toLowerCase();
+          return selectedGroup?.subgroups.some((sg) =>
+            sg.label.toLowerCase().includes(name) || name.includes(sg.label.toLowerCase().split(" ")[0])
+          ) ?? false;
         });
         const typeMatch = selectedType === "All" || s.type.includes(selectedType);
         const cropMatch =
