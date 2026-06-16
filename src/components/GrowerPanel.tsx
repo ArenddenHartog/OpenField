@@ -16,59 +16,66 @@ export function GrowerPanel({ grower, onCreateProfile, onEdit }: GrowerPanelProp
   if (!grower) {
     return (
       <Card className="relative h-full overflow-hidden rounded-2xl border-slate-200 bg-white shadow-sm">
-        {/* Ghost profile — blurred preview of what a filled card looks like */}
-        <CardContent className="pointer-events-none select-none p-5">
-          <div className="mb-4 flex items-center justify-between">
-            <div className="space-y-1.5">
-              <div className="flex items-center gap-2">
-                <div className="h-5 w-32 rounded-full bg-slate-200 blur-[1.5px]" />
-                <div className="h-4 w-16 rounded-full bg-slate-100 blur-[1.5px]" />
+        {/* Ghost — real profile layout with sample data, softly blurred */}
+        <div className="pointer-events-none select-none blur-[2px]">
+          <CardContent className="p-5">
+            <div className="mb-4 flex items-center justify-between">
+              <div>
+                <div className="flex items-center gap-2">
+                  <h3 className="text-lg font-semibold text-slate-950">Jan de Vries</h3>
+                  <span className="rounded-full bg-slate-100 px-2 py-0.5 text-xs font-medium text-slate-600">Grower</span>
+                </div>
+                <p className="text-sm text-slate-500">Greenhouse vegetables · Netherlands</p>
               </div>
-              <div className="h-3.5 w-44 rounded-full bg-slate-100 blur-[1.5px]" />
-            </div>
-            <div className="rounded-xl bg-emerald-50 p-2 text-emerald-300">
-              <Sprout size={20} />
-            </div>
-          </div>
-          <div className="mb-4 grid gap-3 sm:grid-cols-2">
-            <div className="rounded-xl bg-slate-50 p-3">
-              <div className="mb-1.5 h-2.5 w-12 rounded bg-slate-200 blur-[1px]" />
-              <div className="h-4 w-24 rounded bg-slate-300 blur-[1px]" />
-            </div>
-            <div className="rounded-xl bg-slate-50 p-3">
-              <div className="mb-1.5 h-2.5 w-16 rounded bg-slate-200 blur-[1px]" />
-              <div className="h-4 w-20 rounded bg-slate-300 blur-[1px]" />
-            </div>
-          </div>
-          <div className="space-y-3">
-            <div>
-              <div className="mb-2 h-2.5 w-28 rounded bg-slate-200 blur-[1px]" />
-              <div className="flex flex-wrap gap-2">
-                <div className="h-6 w-28 rounded-full bg-emerald-100 blur-[1.5px]" />
-                <div className="h-6 w-24 rounded-full bg-emerald-100 blur-[1.5px]" />
-                <div className="h-6 w-20 rounded-full bg-emerald-100 blur-[1.5px]" />
+              <div className="rounded-xl bg-emerald-50 p-2 text-emerald-800">
+                <Sprout size={20} />
               </div>
             </div>
-            <div>
-              <div className="mb-2 h-2.5 w-16 rounded bg-slate-200 blur-[1px]" />
-              <div className="flex flex-wrap gap-2">
-                <div className="h-6 w-20 rounded-full bg-slate-100 blur-[1.5px]" />
-                <div className="h-6 w-16 rounded-full bg-slate-100 blur-[1.5px]" />
-                <div className="h-6 w-24 rounded-full bg-slate-100 blur-[1.5px]" />
+            <div className="mb-4 grid gap-3 sm:grid-cols-2">
+              <div className="rounded-xl bg-slate-50 p-3">
+                <p className="text-xs text-slate-500">Openness</p>
+                <p className="text-sm font-medium text-slate-900">Open to pilots</p>
+              </div>
+              <div className="rounded-xl bg-slate-50 p-3">
+                <p className="text-xs text-slate-500">Pilot types</p>
+                <p className="text-sm font-medium text-slate-900">Product trial, Data</p>
               </div>
             </div>
-            <div>
-              <div className="mb-2 h-2.5 w-24 rounded bg-slate-200 blur-[1px]" />
-              <div className="flex flex-wrap gap-2">
-                <div className="h-6 w-16 rounded-full bg-slate-100 blur-[1.5px]" />
-                <div className="h-6 w-20 rounded-full bg-slate-100 blur-[1.5px]" />
+            <div className="mb-3 rounded-xl bg-slate-50 p-3">
+              <p className="text-xs text-slate-500">Scale</p>
+              <p className="text-sm font-medium text-slate-900">4 ha under glass</p>
+            </div>
+            <div className="space-y-3">
+              <div>
+                <p className="mb-2 text-xs text-slate-500">Current challenges</p>
+                <div className="flex flex-wrap gap-2">
+                  {["Disease detection", "Water efficiency", "Labour"].map((c) => (
+                    <Tag key={c} active>{c}</Tag>
+                  ))}
+                </div>
+              </div>
+              <div>
+                <p className="mb-2 text-xs text-slate-500">Crops</p>
+                <div className="flex flex-wrap gap-2">
+                  {["Tomatoes", "Peppers", "Lettuce"].map((c) => (
+                    <Tag key={c}>{c}</Tag>
+                  ))}
+                </div>
+              </div>
+              <div>
+                <p className="mb-2 text-xs text-slate-500">Existing systems</p>
+                <div className="flex flex-wrap gap-2">
+                  {["Climate control", "ERP"].map((s) => (
+                    <Tag key={s}>{s}</Tag>
+                  ))}
+                </div>
               </div>
             </div>
-          </div>
-        </CardContent>
+          </CardContent>
+        </div>
 
         {/* CTA overlay */}
-        <div className="absolute inset-0 flex items-center justify-center bg-white/50 backdrop-blur-[2px]">
+        <div className="absolute inset-0 flex items-center justify-center bg-white/40 backdrop-blur-[1px]">
           <div className="mx-4 w-full max-w-xs rounded-2xl border border-slate-100 bg-white p-6 text-center shadow-lg">
             <p className="mb-2 text-[11px] font-semibold uppercase tracking-widest text-emerald-700">
               Free · Takes 2 minutes
