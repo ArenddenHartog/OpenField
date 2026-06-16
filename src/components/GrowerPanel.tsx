@@ -1,4 +1,4 @@
-import { Sprout, Pencil, Activity, MapPin, Users, CheckCircle2 } from "lucide-react";
+import { Sprout, Pencil, ShieldCheck, Handshake, ArrowRight } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Tag } from "@/components/Tag";
@@ -14,95 +14,80 @@ interface GrowerPanelProps {
 
 export function GrowerPanel({ grower, onCreateProfile, onEdit }: GrowerPanelProps) {
   if (!grower) {
+    const ghostCards = [
+      {
+        name: "SporeSight AI",
+        type: "AI / Software",
+        proposition: "Early mildew and fungal disease detection from greenhouse imagery.",
+        tags: ["Disease detection", "Greenhouse", "Imaging"],
+        stage: "Proven in production",
+        stageIndex: 4,
+        pilot: "Commercial rollout; pilots for new crops",
+        score: 56,
+      },
+      {
+        name: "BioShield Labs",
+        type: "Biological / Biostimulants",
+        proposition: "Beneficial microbe treatment to suppress soil-borne pathogens.",
+        tags: ["Pest control", "Soil health"],
+        stage: "Active pilots",
+        stageIndex: 3,
+        pilot: "Seeking pilot growers in NL, BE",
+        score: 45,
+      },
+    ];
+
     return (
       <Card className="relative h-full overflow-hidden rounded-2xl border-slate-200 bg-white shadow-sm">
-        {/* Ghost — mirrors the actual detail card with fake data, softly blurred */}
+        {/* Ghost — two fake solution cards, blurred */}
         <div className="pointer-events-none select-none blur-[2px]">
-          <CardContent className="p-6">
-            {/* Name + CTA row */}
-            <div className="mb-6 flex items-start justify-between gap-4">
-              <div>
-                <h2 className="text-2xl font-semibold text-slate-950">SporeSight AI</h2>
-                <p className="mt-2 text-sm leading-relaxed text-slate-700">
-                  Early mildew and fungal disease detection from greenhouse imagery.
-                </p>
-              </div>
-              <span className="shrink-0 rounded-xl bg-emerald-800 px-3 py-2 text-sm font-medium text-white">
-                Request intro
-              </span>
-            </div>
-
-            {/* 3 stat boxes */}
-            <div className="mb-6 grid gap-4 grid-cols-3">
-              <div className="rounded-2xl bg-slate-50 p-4">
-                <div className="mb-2 flex items-center gap-2 text-sm font-semibold text-slate-900">
-                  <Activity size={16} /> Stage
-                </div>
-                <p className="text-sm text-slate-700">Active pilots</p>
-              </div>
-              <div className="rounded-2xl bg-slate-50 p-4">
-                <div className="mb-2 flex items-center gap-2 text-sm font-semibold text-slate-900">
-                  <MapPin size={16} /> Tested in
-                </div>
-                <p className="text-sm text-slate-700">NL, BE</p>
-              </div>
-              <div className="rounded-2xl bg-slate-50 p-4">
-                <div className="mb-2 flex items-center gap-2 text-sm font-semibold text-slate-900">
-                  <Users size={16} /> Looking for
-                </div>
-                <ul className="space-y-1 text-sm text-slate-700">
-                  <li>Pilot growers</li>
-                  <li>Agronomic feedback</li>
-                </ul>
-              </div>
-            </div>
-
-            {/* Proof & fit */}
-            <div className="grid gap-5 grid-cols-2">
-              <section>
-                <h4 className="mb-3 text-sm font-semibold text-slate-950">Proof &amp; availability</h4>
-                <div className="space-y-3 rounded-2xl border border-slate-100 p-4">
+          <div className="space-y-3 p-4">
+            {ghostCards.map((card) => (
+              <div key={card.name} className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+                <div className="flex items-start justify-between gap-4">
                   <div>
-                    <p className="text-xs text-slate-500">Evidence</p>
-                    <p className="mt-1 text-sm text-slate-700">3 greenhouse trials, 2023–24</p>
-                  </div>
-                  <div>
-                    <p className="text-xs text-slate-500">Measured impact</p>
-                    <p className="mt-1 text-sm text-slate-700">Up to 40% earlier detection</p>
-                  </div>
-                  <div>
-                    <p className="text-xs text-slate-500">Pilot offer</p>
-                    <p className="mt-1 text-sm text-slate-700">Product trial · 10–12 weeks</p>
-                  </div>
-                  <div>
-                    <p className="text-xs text-slate-500">What&apos;s included</p>
-                    <ul className="mt-1 space-y-1 text-sm text-slate-700">
-                      {["Camera setup", "Weekly reports", "Agronomist support"].map((i) => (
-                        <li key={i} className="flex gap-2"><CheckCircle2 size={15} className="mt-0.5 shrink-0 text-emerald-700" />{i}</li>
-                      ))}
-                    </ul>
-                  </div>
-                </div>
-              </section>
-              <section>
-                <h4 className="mb-3 text-sm font-semibold text-slate-950">Operational fit</h4>
-                <div className="space-y-3 rounded-2xl border border-slate-100 p-4">
-                  <div>
-                    <p className="text-xs text-slate-500">Works best in</p>
-                    <div className="mt-2 flex flex-wrap gap-2">
-                      {["Greenhouse", "Vertical farming"].map((c) => <Tag key={c} active>{c}</Tag>)}
+                    <div className="mb-2 flex items-center gap-2">
+                      <div className="rounded-xl bg-emerald-50 p-2 text-emerald-800">
+                        <ShieldCheck size={18} />
+                      </div>
+                      <div>
+                        <h3 className="text-base font-semibold text-slate-950">{card.name}</h3>
+                        <p className="text-xs text-slate-500">{card.type}</p>
+                      </div>
                     </div>
+                    <p className="mb-4 text-sm leading-relaxed text-slate-700">{card.proposition}</p>
                   </div>
-                  <div>
-                    <p className="text-xs text-slate-500">Relevant crops</p>
-                    <div className="mt-2 flex flex-wrap gap-2">
-                      {["Tomatoes", "Cucumbers", "Peppers"].map((c) => <Tag key={c}>{c}</Tag>)}
-                    </div>
+                  <div className="rounded-xl bg-slate-950 px-3 py-2 text-center text-white shrink-0">
+                    <div className="text-lg font-semibold">{card.score}</div>
+                    <div className="text-[10px] uppercase tracking-wide text-slate-300">score</div>
                   </div>
                 </div>
-              </section>
-            </div>
-          </CardContent>
+                <div className="mb-4 flex flex-wrap gap-2">
+                  {card.tags.map((tag) => (
+                    <span key={tag} className="rounded-full border border-slate-200 px-3 py-1 text-xs text-slate-600">{tag}</span>
+                  ))}
+                </div>
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between text-xs text-slate-500">
+                    <span>Validation stage</span>
+                    <span className="rounded-md bg-emerald-50 px-1.5 py-0.5 font-medium text-emerald-800">{card.stage}</span>
+                  </div>
+                  <div className="grid grid-cols-6 gap-1">
+                    {Array.from({ length: 6 }).map((_, i) => (
+                      <div key={i} className={`h-2 rounded-full ${i <= card.stageIndex ? "bg-emerald-700" : "bg-slate-200"}`} />
+                    ))}
+                  </div>
+                </div>
+                <div className="mt-4 flex items-center justify-between border-t border-slate-100 pt-4">
+                  <div className="flex items-center gap-2 text-xs text-slate-600">
+                    <Handshake size={14} />
+                    {card.pilot}
+                  </div>
+                  <ArrowRight size={16} className="text-slate-400" />
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
 
         {/* CTA overlay */}
