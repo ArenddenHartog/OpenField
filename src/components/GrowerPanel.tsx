@@ -1,4 +1,4 @@
-import { Sprout, Pencil } from "lucide-react";
+import { Sprout, Pencil, Activity, MapPin, Users, CheckCircle2 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Tag } from "@/components/Tag";
@@ -16,60 +16,91 @@ export function GrowerPanel({ grower, onCreateProfile, onEdit }: GrowerPanelProp
   if (!grower) {
     return (
       <Card className="relative h-full overflow-hidden rounded-2xl border-slate-200 bg-white shadow-sm">
-        {/* Ghost — real profile layout with sample data, softly blurred */}
+        {/* Ghost — mirrors the actual detail card with fake data, softly blurred */}
         <div className="pointer-events-none select-none blur-[2px]">
-          <CardContent className="p-5">
-            <div className="mb-4 flex items-center justify-between">
+          <CardContent className="p-6">
+            {/* Name + CTA row */}
+            <div className="mb-6 flex items-start justify-between gap-4">
               <div>
-                <div className="flex items-center gap-2">
-                  <h3 className="text-lg font-semibold text-slate-950">Jan de Vries</h3>
-                  <span className="rounded-full bg-slate-100 px-2 py-0.5 text-xs font-medium text-slate-600">Grower</span>
-                </div>
-                <p className="text-sm text-slate-500">Greenhouse vegetables · Netherlands</p>
+                <h2 className="text-2xl font-semibold text-slate-950">SporeSight AI</h2>
+                <p className="mt-2 text-sm leading-relaxed text-slate-700">
+                  Early mildew and fungal disease detection from greenhouse imagery.
+                </p>
               </div>
-              <div className="rounded-xl bg-emerald-50 p-2 text-emerald-800">
-                <Sprout size={20} />
+              <span className="shrink-0 rounded-xl bg-emerald-800 px-3 py-2 text-sm font-medium text-white">
+                Request intro
+              </span>
+            </div>
+
+            {/* 3 stat boxes */}
+            <div className="mb-6 grid gap-4 grid-cols-3">
+              <div className="rounded-2xl bg-slate-50 p-4">
+                <div className="mb-2 flex items-center gap-2 text-sm font-semibold text-slate-900">
+                  <Activity size={16} /> Stage
+                </div>
+                <p className="text-sm text-slate-700">Active pilots</p>
+              </div>
+              <div className="rounded-2xl bg-slate-50 p-4">
+                <div className="mb-2 flex items-center gap-2 text-sm font-semibold text-slate-900">
+                  <MapPin size={16} /> Tested in
+                </div>
+                <p className="text-sm text-slate-700">NL, BE</p>
+              </div>
+              <div className="rounded-2xl bg-slate-50 p-4">
+                <div className="mb-2 flex items-center gap-2 text-sm font-semibold text-slate-900">
+                  <Users size={16} /> Looking for
+                </div>
+                <ul className="space-y-1 text-sm text-slate-700">
+                  <li>Pilot growers</li>
+                  <li>Agronomic feedback</li>
+                </ul>
               </div>
             </div>
-            <div className="mb-4 grid gap-3 sm:grid-cols-2">
-              <div className="rounded-xl bg-slate-50 p-3">
-                <p className="text-xs text-slate-500">Openness</p>
-                <p className="text-sm font-medium text-slate-900">Open to pilots</p>
-              </div>
-              <div className="rounded-xl bg-slate-50 p-3">
-                <p className="text-xs text-slate-500">Pilot types</p>
-                <p className="text-sm font-medium text-slate-900">Product trial, Data</p>
-              </div>
-            </div>
-            <div className="mb-3 rounded-xl bg-slate-50 p-3">
-              <p className="text-xs text-slate-500">Scale</p>
-              <p className="text-sm font-medium text-slate-900">4 ha under glass</p>
-            </div>
-            <div className="space-y-3">
-              <div>
-                <p className="mb-2 text-xs text-slate-500">Current challenges</p>
-                <div className="flex flex-wrap gap-2">
-                  {["Disease detection", "Water efficiency", "Labour"].map((c) => (
-                    <Tag key={c} active>{c}</Tag>
-                  ))}
+
+            {/* Proof & fit */}
+            <div className="grid gap-5 grid-cols-2">
+              <section>
+                <h4 className="mb-3 text-sm font-semibold text-slate-950">Proof &amp; availability</h4>
+                <div className="space-y-3 rounded-2xl border border-slate-100 p-4">
+                  <div>
+                    <p className="text-xs text-slate-500">Evidence</p>
+                    <p className="mt-1 text-sm text-slate-700">3 greenhouse trials, 2023–24</p>
+                  </div>
+                  <div>
+                    <p className="text-xs text-slate-500">Measured impact</p>
+                    <p className="mt-1 text-sm text-slate-700">Up to 40% earlier detection</p>
+                  </div>
+                  <div>
+                    <p className="text-xs text-slate-500">Pilot offer</p>
+                    <p className="mt-1 text-sm text-slate-700">Product trial · 10–12 weeks</p>
+                  </div>
+                  <div>
+                    <p className="text-xs text-slate-500">What&apos;s included</p>
+                    <ul className="mt-1 space-y-1 text-sm text-slate-700">
+                      {["Camera setup", "Weekly reports", "Agronomist support"].map((i) => (
+                        <li key={i} className="flex gap-2"><CheckCircle2 size={15} className="mt-0.5 shrink-0 text-emerald-700" />{i}</li>
+                      ))}
+                    </ul>
+                  </div>
                 </div>
-              </div>
-              <div>
-                <p className="mb-2 text-xs text-slate-500">Crops</p>
-                <div className="flex flex-wrap gap-2">
-                  {["Tomatoes", "Peppers", "Lettuce"].map((c) => (
-                    <Tag key={c}>{c}</Tag>
-                  ))}
+              </section>
+              <section>
+                <h4 className="mb-3 text-sm font-semibold text-slate-950">Operational fit</h4>
+                <div className="space-y-3 rounded-2xl border border-slate-100 p-4">
+                  <div>
+                    <p className="text-xs text-slate-500">Works best in</p>
+                    <div className="mt-2 flex flex-wrap gap-2">
+                      {["Greenhouse", "Vertical farming"].map((c) => <Tag key={c} active>{c}</Tag>)}
+                    </div>
+                  </div>
+                  <div>
+                    <p className="text-xs text-slate-500">Relevant crops</p>
+                    <div className="mt-2 flex flex-wrap gap-2">
+                      {["Tomatoes", "Cucumbers", "Peppers"].map((c) => <Tag key={c}>{c}</Tag>)}
+                    </div>
+                  </div>
                 </div>
-              </div>
-              <div>
-                <p className="mb-2 text-xs text-slate-500">Existing systems</p>
-                <div className="flex flex-wrap gap-2">
-                  {["Climate control", "ERP"].map((s) => (
-                    <Tag key={s}>{s}</Tag>
-                  ))}
-                </div>
-              </div>
+              </section>
             </div>
           </CardContent>
         </div>

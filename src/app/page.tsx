@@ -312,7 +312,7 @@ export default function OpenFieldPage() {
         {!activeGrower && (
           <section
             id="challenges"
-            className="mb-12 grid items-stretch gap-6 lg:grid-cols-[1fr_1.15fr]"
+            className="mb-12 grid items-stretch gap-6 lg:grid-cols-[1.15fr_0.85fr]"
           >
             <div className="flex flex-col py-4">
               <h2 className="max-w-3xl text-4xl font-semibold leading-tight tracking-tight text-slate-950 md:text-5xl">
