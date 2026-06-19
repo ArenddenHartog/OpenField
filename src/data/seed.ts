@@ -266,6 +266,21 @@ export const SEED_SOLUTIONS: Solution[] = [
     requiredData: ["Weekly image capture", "Disease observations"],
     geography: ["NL", "BE"],
     lookingFor: ["Pilot growers", "Agronomic feedback", "Data partners"],
+    testimonials: [
+      {
+        growerName: "Mark Verbeek",
+        growerRole: "Grower",
+        region: "Westland, NL",
+        quote: "We caught a mildew outbreak almost two weeks earlier than our usual scouting rounds would have.",
+        outcome: "2 weeks earlier detection",
+      },
+      {
+        growerName: "Sofie Dubois",
+        growerRole: "Grower",
+        region: "Antwerp, BE",
+        quote: "Easy to set up alongside our existing camera system, and the weekly reports are genuinely useful for our agronomist.",
+      },
+    ],
   },
   {
     id: "sol-bioshield-labs",
@@ -434,6 +449,9 @@ export const SEED_EVIDENCE_RECORDS: EvidenceRecord[] = [
 export const EMPTY_INNOVATOR_FORM: InnovatorFormValues = {
   solutionName: "",
   imageUrl: "",
+  mediaUrls: "",
+  videoUrl: "",
+  testimonials: [],
   proposition: "",
   solutionType: ["AI / Software"],
   challengeIds: ["disease-detection"],

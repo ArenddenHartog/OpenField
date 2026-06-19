@@ -39,11 +39,22 @@ export interface Challenge {
   name: string;
 }
 
+export interface Testimonial {
+  growerName: string;
+  growerRole?: string;
+  region?: string;
+  quote: string;
+  outcome?: string;
+}
+
 export interface Solution {
   id: string;
   name: string;
   type: string;
   imageUrl?: string;
+  mediaUrls?: string[];
+  videoUrl?: string;
+  testimonials?: Testimonial[];
   proposition: string;
   stage: Stage;
   challengeIds: ChallengeId[];
@@ -145,6 +156,9 @@ export interface EnrichedSolution extends Solution {
 export interface InnovatorFormValues {
   solutionName: string;
   imageUrl: string;
+  mediaUrls: string;
+  videoUrl: string;
+  testimonials: Testimonial[];
   proposition: string;
   solutionType: string[];
   challengeIds: ChallengeId[];

@@ -1,9 +1,10 @@
-import { Activity, MapPin, Users, CheckCircle2, AlertTriangle, Circle } from "lucide-react";
+import { Activity, MapPin, Users, CheckCircle2, AlertTriangle, Circle, Quote } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Tag } from "@/components/Tag";
 import { StagePill } from "@/components/StagePill";
 import { ScoreBreakdown } from "@/components/ScoreBreakdown";
+import { MediaGallery } from "@/components/MediaGallery";
 import type { EnrichedSolution } from "@/data/types";
 import { unique } from "@/lib/utils";
 
@@ -67,15 +68,12 @@ export function ProfileDetail({ solution, onRequestIntro }: ProfileDetailProps) 
   return (
     <Card className="rounded-2xl border-slate-200 bg-white shadow-sm">
       <CardContent className="p-6">
-        {solution.imageUrl && (
-          <div className="mb-5 overflow-hidden rounded-2xl">
-            <img
-              src={solution.imageUrl}
-              alt={solution.name}
-              className="h-44 w-full object-cover"
-            />
-          </div>
-        )}
+        <MediaGallery
+          imageUrl={solution.imageUrl}
+          mediaUrls={solution.mediaUrls}
+          videoUrl={solution.videoUrl}
+          name={solution.name}
+        />
 
         {/* Name + proposition + CTA */}
         <div className="mb-6 flex items-start justify-between gap-4">
@@ -246,6 +244,35 @@ export function ProfileDetail({ solution, onRequestIntro }: ProfileDetailProps) 
             </div>
           </section>
         </div>
+
+        {/* Testimonials — what other growers say */}
+        {solution.testimonials && solution.testimonials.length > 0 && (
+          <div className="mb-6">
+            <h4 className="mb-3 text-sm font-semibold text-slate-950">What growers say</h4>
+            <div className="grid gap-4 md:grid-cols-2">
+              {solution.testimonials.map((t, i) => (
+                <div key={i} className="rounded-2xl border border-slate-100 p-4">
+                  <Quote size={16} className="mb-2 text-emerald-700" />
+                  <p className="text-sm leading-relaxed text-slate-700">&ldquo;{t.quote}&rdquo;</p>
+                  {t.outcome && (
+                    <p className="mt-2 text-sm font-medium text-emerald-800">{t.outcome}</p>
+                  )}
+                  <div className="mt-3 flex items-center gap-2">
+                    <span className="flex h-7 w-7 items-center justify-center rounded-full bg-emerald-800 text-xs font-semibold text-white">
+                      {t.growerName.charAt(0).toUpperCase()}
+                    </span>
+                    <div>
+                      <p className="text-xs font-medium text-slate-900">{t.growerName}</p>
+                      <p className="text-xs text-slate-500">
+                        {[t.growerRole, t.region].filter(Boolean).join(" · ")}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
 
         {/* Why this match — only shown when there's a grower match */}
         {match && positives.length > 0 && (

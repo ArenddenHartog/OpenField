@@ -5,6 +5,7 @@ import type {
   Grower,
   PilotOffer,
   Solution,
+  Testimonial,
 } from "@/data/types";
 
 // ── Load all solutions with related records ───────────────────────────────────
@@ -69,6 +70,9 @@ export async function saveSolution(
     name: solution.name,
     type: solution.type,
     image_url: solution.imageUrl ?? null,
+    media_urls: solution.mediaUrls ?? [],
+    video_url: solution.videoUrl ?? null,
+    testimonials: solution.testimonials ?? [],
     proposition: solution.proposition,
     stage: solution.stage,
     challenge_ids: solution.challengeIds,
@@ -153,6 +157,9 @@ function rowToSolution(row: Record<string, unknown>): Solution {
     name: row.name as string,
     type: (row.type as string) ?? "",
     imageUrl: (row.image_url as string) ?? undefined,
+    mediaUrls: ((row.media_urls as string[]) ?? []),
+    videoUrl: (row.video_url as string) ?? undefined,
+    testimonials: ((row.testimonials as Testimonial[]) ?? []),
     proposition: (row.proposition as string) ?? "",
     stage: row.stage as Solution["stage"],
     challengeIds: ((row.challenge_ids as ChallengeId[]) ?? []),

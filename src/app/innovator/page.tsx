@@ -9,7 +9,7 @@ import { CropPicker } from "@/components/CropPicker";
 import { ImageUpload } from "@/components/ImageUpload";
 import { STAGES } from "@/data/types";
 import { EMPTY_INNOVATOR_FORM, SOLUTION_TYPES } from "@/data/seed";
-import type { EvidenceRecord, InnovatorFormValues, PilotOffer, Solution } from "@/data/types";
+import type { EvidenceRecord, InnovatorFormValues, PilotOffer, Solution, Testimonial } from "@/data/types";
 import { supabase } from "@/lib/supabase";
 import { saveSolution } from "@/lib/db";
 import { CountryPicker } from "@/components/CountryPicker";
@@ -73,6 +73,9 @@ function formToPayload(f: InnovatorFormValues): {
     name: f.solutionName || "New solution",
     type: f.solutionType.length > 0 ? f.solutionType.join(" / ") : "AI / Software",
     imageUrl: f.imageUrl || undefined,
+    mediaUrls: listFromText(f.mediaUrls),
+    videoUrl: f.videoUrl || undefined,
+    testimonials: f.testimonials,
     proposition: f.proposition || "Solution ready for validation.",
     stage: f.stage,
     challengeIds: f.challengeIds,
@@ -250,11 +253,25 @@ export default function InnovatorPage() {
                       <ImageUpload value={form.imageUrl} onChange={(url) => set("imageUrl", url)} />
                     </div>
                   </div>
+                  <Field label="Additional photo URLs (comma-separated, optional)" full>
+                    <input value={form.mediaUrls} onChange={(e) => set("mediaUrls", e.target.value)} className={INPUT_CLASS} placeholder="https://…/photo1.jpg, https://…/photo2.jpg" />
+                  </Field>
+                  <Field label="Video URL (optional)" full>
+                    <input value={form.videoUrl} onChange={(e) => set("videoUrl", e.target.value)} className={INPUT_CLASS} placeholder="https://youtube.com/watch?v=…" />
+                  </Field>
                 </div>
                 <div className="mt-4 space-y-1">
                   <span className="text-xs font-medium text-slate-600">Relevant crops</span>
                   <CropPicker selectedCrops={form.crops} onChange={(crops) => set("crops", crops)} />
                 </div>
+              </Section>
+
+              {/* Testimonials */}
+              <Section label="Grower testimonials (optional)">
+                <TestimonialsEditor
+                  value={form.testimonials}
+                  onChange={(v) => set("testimonials", v)}
+                />
               </Section>
 
               {/* Pilot offer */}
@@ -410,6 +427,65 @@ function ChipMultiSelect({
           placeholder="+ Other (comma-separated)"
         />
       )}
+    </div>
+  );
+}
+
+// ─── Testimonials editor ──────────────────────────────────────────────────────
+
+const EMPTY_TESTIMONIAL: Testimonial = { growerName: "", growerRole: "", region: "", quote: "", outcome: "" };
+
+function TestimonialsEditor({
+  value,
+  onChange,
+}: {
+  value: Testimonial[];
+  onChange: (v: Testimonial[]) => void;
+}) {
+  function update(i: number, patch: Partial<Testimonial>) {
+    onChange(value.map((t, idx) => (idx === i ? { ...t, ...patch } : t)));
+  }
+
+  function remove(i: number) {
+    onChange(value.filter((_, idx) => idx !== i));
+  }
+
+  return (
+    <div className="space-y-4">
+      {value.map((t, i) => (
+        <div key={i} className="space-y-3 rounded-xl border border-slate-200 p-4">
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-semibold text-slate-600">Testimonial {i + 1}</span>
+            <button type="button" onClick={() => remove(i)} className="text-xs text-slate-400 hover:text-red-600">
+              Remove
+            </button>
+          </div>
+          <div className="grid gap-3 md:grid-cols-3">
+            <Field label="Grower name">
+              <input value={t.growerName} onChange={(e) => update(i, { growerName: e.target.value })} className={INPUT_CLASS} placeholder="e.g. Mark Verbeek" />
+            </Field>
+            <Field label="Role (optional)">
+              <input value={t.growerRole ?? ""} onChange={(e) => update(i, { growerRole: e.target.value })} className={INPUT_CLASS} placeholder="Grower" />
+            </Field>
+            <Field label="Region (optional)">
+              <input value={t.region ?? ""} onChange={(e) => update(i, { region: e.target.value })} className={INPUT_CLASS} placeholder="Westland, NL" />
+            </Field>
+          </div>
+          <Field label="Quote">
+            <input value={t.quote} onChange={(e) => update(i, { quote: e.target.value })} className={INPUT_CLASS} placeholder="What did this grower experience?" />
+          </Field>
+          <Field label="Outcome (optional)">
+            <input value={t.outcome ?? ""} onChange={(e) => update(i, { outcome: e.target.value })} className={INPUT_CLASS} placeholder="e.g. 2 weeks earlier detection" />
+          </Field>
+        </div>
+      ))}
+      <button
+        type="button"
+        onClick={() => onChange([...value, { ...EMPTY_TESTIMONIAL }])}
+        className="rounded-xl border border-dashed border-slate-300 px-3 py-2 text-xs font-medium text-slate-600 hover:border-emerald-700 hover:text-emerald-800"
+      >
+        + Add testimonial
+      </button>
     </div>
   );
 }

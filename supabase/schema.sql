@@ -13,6 +13,9 @@ create table if not exists solutions (
   name            text not null,
   type            text,
   image_url       text,
+  media_urls      text[] default '{}',
+  video_url       text,
+  testimonials    jsonb default '[]',
   proposition     text,
   stage           text,
   challenge_ids   text[] default '{}',
@@ -26,6 +29,11 @@ create table if not exists solutions (
   contact_email   text,
   pricing_model   text
 );
+
+-- If the table already exists from a previous run, add the new columns:
+alter table solutions add column if not exists media_urls text[] default '{}';
+alter table solutions add column if not exists video_url text;
+alter table solutions add column if not exists testimonials jsonb default '[]';
 
 alter table solutions enable row level security;
 drop policy if exists "solutions_read"   on solutions;
