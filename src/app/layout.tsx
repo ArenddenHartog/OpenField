@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Space_Grotesk } from "next/font/google";
 import "./globals.css";
 
@@ -11,6 +11,12 @@ const spaceGrotesk = Space_Grotesk({
 export const metadata: Metadata = {
   title: "Aggy — Field-ready innovations",
   description: "Aggy connects growers with innovators solving real operational challenges. Practical fit, not marketing.",
+};
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  themeColor: "#f7f6ef",
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

@@ -46,3 +46,8 @@ export function slugify(value = "item"): string {
 export function makeId(prefix: string, label: string): string {
   return `${prefix}-${slugify(label)}-${Date.now().toString(36)}`;
 }
+
+/** Basic email format check (not exhaustive — just catches obvious typos). */
+export function isValidEmail(value: string): boolean {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value.trim());
+}

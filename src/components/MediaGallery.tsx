@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Play, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -28,6 +28,15 @@ export function MediaGallery({ imageUrl, mediaUrls, videoUrl, name }: MediaGalle
 
   const [activeIndex, setActiveIndex] = useState(0);
   const [lightboxOpen, setLightboxOpen] = useState(false);
+
+  useEffect(() => {
+    if (!lightboxOpen) return;
+    function handleKeyDown(e: KeyboardEvent) {
+      if (e.key === "Escape") setLightboxOpen(false);
+    }
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [lightboxOpen]);
 
   if (items.length === 0) return null;
 
@@ -71,7 +80,7 @@ export function MediaGallery({ imageUrl, mediaUrls, videoUrl, name }: MediaGalle
                   <Play size={16} />
                 </div>
               ) : (
-                <img src={item.src} alt="" className="h-full w-full object-cover" />
+                <img src={item.src} alt={`${name} photo ${i + 1}`} className="h-full w-full object-cover" />
               )}
             </button>
           ))}

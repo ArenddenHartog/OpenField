@@ -41,9 +41,13 @@ drop policy if exists "solutions_insert" on solutions;
 drop policy if exists "solutions_update" on solutions;
 drop policy if exists "solutions_delete" on solutions;
 create policy "solutions_read"   on solutions for select using (true);
-create policy "solutions_insert" on solutions for insert with check (true);
+create policy "solutions_insert" on solutions for insert with check (
+  user_id IS NULL OR auth.uid() = user_id
+);
 create policy "solutions_update" on solutions for update using (auth.uid() = user_id);
 create policy "solutions_delete" on solutions for delete using (auth.uid() = user_id);
+
+create index if not exists idx_solutions_user_id on solutions(user_id);
 
 -- ── Pilot offers ─────────────────────────────────────────────
 
@@ -76,6 +80,8 @@ create policy "pilot_offers_delete" on pilot_offers for delete using (
   exists (select 1 from solutions where id = solution_id and user_id = auth.uid())
 );
 
+create index if not exists idx_pilot_offers_solution_id on pilot_offers(solution_id);
+
 -- ── Evidence records ──────────────────────────────────────────
 
 create table if not exists evidence_records (
@@ -101,6 +107,8 @@ create policy "evidence_update" on evidence_records for update using (
 create policy "evidence_delete" on evidence_records for delete using (
   exists (select 1 from solutions where id = solution_id and user_id = auth.uid())
 );
+
+create index if not exists idx_evidence_records_solution_id on evidence_records(solution_id);
 
 -- ── Grower profiles ───────────────────────────────────────────
 
@@ -141,6 +149,8 @@ create policy "profiles_insert" on grower_profiles for insert with check (
 create policy "profiles_update" on grower_profiles for update using (auth.uid() = user_id);
 create policy "profiles_delete" on grower_profiles for delete using (auth.uid() = user_id);
 
+create index if not exists idx_grower_profiles_user_id on grower_profiles(user_id);
+
 -- ── Intro requests ────────────────────────────────────────────
 
 create table if not exists intro_requests (
@@ -156,25 +166,32 @@ create table if not exists intro_requests (
 alter table intro_requests enable row level security;
 drop policy if exists "intro_requests_insert" on intro_requests;
 drop policy if exists "intro_requests_read"   on intro_requests;
-create policy "intro_requests_insert" on intro_requests for insert with check (true);
+create policy "intro_requests_insert" on intro_requests for insert with check (
+  solution_id IS NOT NULL
+  AND requester_email IS NOT NULL
+  AND requester_email LIKE '%@%'
+);
 create policy "intro_requests_read"   on intro_requests for select using (
   exists (select 1 from solutions where id = solution_id and user_id = auth.uid())
 );
 
+create index if not exists idx_intro_requests_solution_id on intro_requests(solution_id);
+
 -- ============================================================
 -- Storage bucket
--- Create this in Supabase Dashboard → Storage → New bucket:
+-- First create this in Supabase Dashboard → Storage → New bucket:
 --   Name: openfield-images
 --   Public: true
--- Then add this policy:
+-- These policies are safe to re-run; without them, uploads/reads
+-- against the bucket are denied by default RLS even if "Public" is set.
 -- ============================================================
--- insert into storage.buckets (id, name, public) values ('openfield-images', 'openfield-images', true)
--- on conflict do nothing;
 
--- create policy "images_upload" on storage.objects
---   for insert with check (bucket_id = 'openfield-images');
--- create policy "images_read" on storage.objects
---   for select using (bucket_id = 'openfield-images');
+drop policy if exists "images_upload" on storage.objects;
+drop policy if exists "images_read"   on storage.objects;
+create policy "images_upload" on storage.objects
+  for insert with check (bucket_id = 'openfield-images');
+create policy "images_read" on storage.objects
+  for select using (bucket_id = 'openfield-images');
 
 -- ============================================================
 -- Seed data  (run after schema)

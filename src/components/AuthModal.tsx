@@ -1,10 +1,12 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { X, CheckCircle2 } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 import { Button } from "@/components/ui/button";
+import { useFocusTrap } from "@/lib/useFocusTrap";
+import { isValidEmail } from "@/lib/utils";
 
 interface AuthModalProps {
   onClose: () => void;
@@ -12,14 +14,30 @@ interface AuthModalProps {
 
 type Status = "idle" | "submitting" | "sent" | "error";
 
+const RESEND_COOLDOWN_SECONDS = 30;
+
 export function AuthModal({ onClose }: AuthModalProps) {
   const [email, setEmail] = useState("");
   const [status, setStatus] = useState<Status>("idle");
   const [errorMessage, setErrorMessage] = useState("");
+  const [cooldown, setCooldown] = useState(0);
+  const containerRef = useFocusTrap<HTMLDivElement>(onClose);
 
-  async function handleSubmit(e: React.FormEvent) {
-    e.preventDefault();
+  useEffect(() => {
+    if (cooldown <= 0) return;
+    const timer = setTimeout(() => setCooldown((c) => c - 1), 1000);
+    return () => clearTimeout(timer);
+  }, [cooldown]);
+
+  async function sendMagicLink() {
     if (!supabase) return;
+
+    if (!isValidEmail(email)) {
+      setErrorMessage("Enter a valid email address.");
+      setStatus("error");
+      return;
+    }
+
     setStatus("submitting");
 
     const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? window.location.origin;
@@ -33,7 +51,13 @@ export function AuthModal({ onClose }: AuthModalProps) {
       setStatus("error");
     } else {
       setStatus("sent");
+      setCooldown(RESEND_COOLDOWN_SECONDS);
     }
+  }
+
+  function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    sendMagicLink();
   }
 
   const inputClass =
@@ -42,6 +66,7 @@ export function AuthModal({ onClose }: AuthModalProps) {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/40 p-4">
       <motion.div
+        ref={containerRef}
         initial={{ opacity: 0, scale: 0.97 }}
         animate={{ opacity: 1, scale: 1 }}
         className="w-full max-w-sm rounded-3xl bg-white p-6 shadow-2xl"
@@ -70,12 +95,23 @@ export function AuthModal({ onClose }: AuthModalProps) {
             <p className="text-sm text-slate-500">
               Sent a sign-in link to <strong>{email}</strong>.
             </p>
-            <Button
-              onClick={onClose}
-              className="mt-2 rounded-xl bg-emerald-800 hover:bg-emerald-900"
-            >
-              Done
-            </Button>
+            <div className="mt-2 flex gap-3">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={sendMagicLink}
+                disabled={cooldown > 0}
+                className="rounded-xl disabled:opacity-60"
+              >
+                {cooldown > 0 ? `Resend in ${cooldown}s` : "Resend link"}
+              </Button>
+              <Button
+                onClick={onClose}
+                className="rounded-xl bg-emerald-800 hover:bg-emerald-900"
+              >
+                Done
+              </Button>
+            </div>
           </div>
         ) : (
           <form onSubmit={handleSubmit} className="space-y-4">

@@ -2,9 +2,12 @@
 
 import { useState } from "react";
 import { motion } from "framer-motion";
+import * as Sentry from "@sentry/nextjs";
 import { X, CheckCircle2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import type { EnrichedSolution } from "@/data/types";
+import { useFocusTrap } from "@/lib/useFocusTrap";
+import { isValidEmail } from "@/lib/utils";
 
 interface RequestIntroModalProps {
   solution: EnrichedSolution;
@@ -21,6 +24,8 @@ export function RequestIntroModal({ solution, onClose }: RequestIntroModalProps)
   const [phone, setPhone] = useState("");
   const [message, setMessage] = useState("");
   const [status, setStatus] = useState<Status>("idle");
+  const [errorText, setErrorText] = useState("");
+  const containerRef = useFocusTrap<HTMLDivElement>(onClose);
 
   const match = solution.match;
   const hasMatchContext = match && (
@@ -31,6 +36,13 @@ export function RequestIntroModal({ solution, onClose }: RequestIntroModalProps)
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
+
+    if (!isValidEmail(email)) {
+      setErrorText("Enter a valid email address.");
+      setStatus("error");
+      return;
+    }
+
     setStatus("submitting");
     try {
       const res = await fetch(FORMSPREE_ENDPOINT, {
@@ -49,8 +61,15 @@ export function RequestIntroModal({ solution, onClose }: RequestIntroModalProps)
           message,
         }),
       });
-      setStatus(res.ok ? "success" : "error");
-    } catch {
+      if (res.ok) {
+        setStatus("success");
+      } else {
+        setErrorText("Something went wrong. Please try again or email us directly.");
+        setStatus("error");
+      }
+    } catch (err) {
+      Sentry.captureException(err, { tags: { op: "RequestIntroModal.submit" } });
+      setErrorText("Something went wrong. Please try again or email us directly.");
       setStatus("error");
     }
   }
@@ -61,6 +80,7 @@ export function RequestIntroModal({ solution, onClose }: RequestIntroModalProps)
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/40 p-4">
       <motion.div
+        ref={containerRef}
         initial={{ opacity: 0, scale: 0.97 }}
         animate={{ opacity: 1, scale: 1 }}
         className="w-full max-w-md rounded-3xl bg-white p-6 shadow-2xl"
@@ -135,7 +155,7 @@ export function RequestIntroModal({ solution, onClose }: RequestIntroModalProps)
 
             {status === "error" && (
               <p className="rounded-xl bg-red-50 px-3 py-2 text-sm text-red-700">
-                Something went wrong. Please try again or email us directly.
+                {errorText}
               </p>
             )}
 

@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import * as Sentry from "@sentry/nextjs";
 import { ChevronLeft, CheckCircle2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ChallengePicker } from "@/components/ChallengePicker";
@@ -13,7 +14,7 @@ import type { Grower, GrowerFormValues } from "@/data/types";
 import { supabase } from "@/lib/supabase";
 import { saveGrowerProfile } from "@/lib/db";
 import { CountryPicker } from "@/components/CountryPicker";
-import { cn, listFromText, makeId } from "@/lib/utils";
+import { cn, isValidEmail, listFromText, makeId } from "@/lib/utils";
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
@@ -169,13 +170,14 @@ function ChipMultiSelect({
 
 // ─── Page ─────────────────────────────────────────────────────────────────────
 
-type SaveStatus = "idle" | "saving" | "sent";
+type SaveStatus = "idle" | "saving" | "sent" | "error";
 
 export default function ProfilePage() {
   const router = useRouter();
   const [existingId, setExistingId] = useState<string | undefined>(undefined);
   const [form, setForm] = useState<GrowerFormValues>({ ...EMPTY_GROWER_FORM });
   const [saveStatus, setSaveStatus] = useState<SaveStatus>("idle");
+  const [errorMessage, setErrorMessage] = useState("");
 
   useEffect(() => {
     try {
@@ -194,28 +196,44 @@ export default function ProfilePage() {
 
   async function handleSave() {
     if (!form.contactEmail) return;
+    if (!isValidEmail(form.contactEmail)) {
+      setErrorMessage("Enter a valid contact email address.");
+      setSaveStatus("error");
+      return;
+    }
+
     setSaveStatus("saving");
     const grower = formToGrower(form, existingId);
-    localStorage.setItem("openfield-grower", JSON.stringify(grower));
 
-    if (supabase) {
+    if (!supabase) {
+      localStorage.setItem("openfield-grower", JSON.stringify(grower));
+      router.push("/");
+      return;
+    }
+
+    try {
       const { data: { session } } = await supabase.auth.getSession();
       if (session?.user) {
         await saveGrowerProfile(grower, session.user.id);
+        localStorage.setItem("openfield-grower", JSON.stringify(grower));
         router.push("/");
         return;
       }
       // Not signed in: save to DB anonymously + send magic link
       await saveGrowerProfile(grower, null);
-      await supabase.auth.signInWithOtp({
+      localStorage.setItem("openfield-grower", JSON.stringify(grower));
+      const { error } = await supabase.auth.signInWithOtp({
         email: form.contactEmail,
         options: {
           emailRedirectTo: `${process.env.NEXT_PUBLIC_SITE_URL ?? window.location.origin}/auth/callback`,
         },
       });
+      if (error) throw error;
       setSaveStatus("sent");
-    } else {
-      router.push("/");
+    } catch (err) {
+      Sentry.captureException(err, { tags: { op: "ProfilePage.handleSave" } });
+      setErrorMessage("Something went wrong while saving your profile. Please try again.");
+      setSaveStatus("error");
     }
   }
 
@@ -366,6 +384,12 @@ export default function ProfilePage() {
                 </div>
               </Section>
             </div>
+
+            {saveStatus === "error" && (
+              <p className="mt-6 rounded-xl bg-red-50 px-3 py-2 text-sm text-red-700">
+                {errorMessage}
+              </p>
+            )}
 
             <div className="mt-8 flex justify-end gap-3">
               <Button variant="outline" onClick={() => router.push("/")} className="rounded-xl">

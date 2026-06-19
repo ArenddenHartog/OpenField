@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import * as Sentry from "@sentry/nextjs";
 import { ChevronLeft, CheckCircle2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ChallengePicker } from "@/components/ChallengePicker";
@@ -13,7 +14,7 @@ import type { EvidenceRecord, InnovatorFormValues, PilotOffer, Solution, Testimo
 import { supabase } from "@/lib/supabase";
 import { saveSolution } from "@/lib/db";
 import { CountryPicker } from "@/components/CountryPicker";
-import { cn, listFromText, makeId } from "@/lib/utils";
+import { cn, isValidEmail, listFromText, makeId } from "@/lib/utils";
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
@@ -117,12 +118,13 @@ function formToPayload(f: InnovatorFormValues): {
 
 // ─── Page ─────────────────────────────────────────────────────────────────────
 
-type SaveStatus = "idle" | "saving" | "sent";
+type SaveStatus = "idle" | "saving" | "sent" | "error";
 
 export default function InnovatorPage() {
   const router = useRouter();
   const [form, setForm] = useState<InnovatorFormValues>({ ...EMPTY_INNOVATOR_FORM });
   const [saveStatus, setSaveStatus] = useState<SaveStatus>("idle");
+  const [errorMessage, setErrorMessage] = useState("");
 
   function set(key: string, value: unknown) {
     setForm((prev) => ({ ...prev, [key]: value }));
@@ -130,28 +132,43 @@ export default function InnovatorPage() {
 
   async function handleSave() {
     if (!form.contactEmail) return;
+    if (!isValidEmail(form.contactEmail)) {
+      setErrorMessage("Enter a valid contact email address.");
+      setSaveStatus("error");
+      return;
+    }
+
     setSaveStatus("saving");
     const payload = formToPayload(form);
-    localStorage.setItem("openfield-pending-solution", JSON.stringify(payload));
 
-    if (supabase) {
+    if (!supabase) {
+      router.push("/");
+      return;
+    }
+
+    try {
       const { data: { session } } = await supabase.auth.getSession();
       // Always save to Supabase (null user_id if not signed in)
       await saveSolution(payload.solution, payload.pilotOffer, payload.evidenceRecord, session?.user?.id);
+      localStorage.setItem("openfield-pending-solution", JSON.stringify(payload));
+
       if (session?.user) {
         router.push("/");
         return;
       }
       // Not signed in: send magic link
-      await supabase.auth.signInWithOtp({
+      const { error } = await supabase.auth.signInWithOtp({
         email: form.contactEmail,
         options: {
           emailRedirectTo: `${process.env.NEXT_PUBLIC_SITE_URL ?? window.location.origin}/auth/callback`,
         },
       });
+      if (error) throw error;
       setSaveStatus("sent");
-    } else {
-      router.push("/");
+    } catch (err) {
+      Sentry.captureException(err, { tags: { op: "InnovatorPage.handleSave" } });
+      setErrorMessage("Something went wrong while saving your solution. Please try again.");
+      setSaveStatus("error");
     }
   }
 
@@ -324,6 +341,12 @@ export default function InnovatorPage() {
                 </div>
               </Section>
             </div>
+
+            {saveStatus === "error" && (
+              <p className="mt-6 rounded-xl bg-red-50 px-3 py-2 text-sm text-red-700">
+                {errorMessage}
+              </p>
+            )}
 
             <div className="mt-8 flex justify-end gap-3">
               <Button variant="outline" onClick={() => router.push("/")} className="rounded-xl">

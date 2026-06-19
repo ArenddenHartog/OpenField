@@ -63,6 +63,7 @@ export default function OpenFieldPage() {
   const [authModalOpen, setAuthModalOpen] = useState(false);
   const [requestIntroOpen, setRequestIntroOpen] = useState(false);
   const [sheetOpen, setSheetOpen] = useState(false);
+  const [showDemoDataNotice, setShowDemoDataNotice] = useState(false);
 
   // ── Persist grower profile in localStorage (survives page refresh without sign-in) ──
   useEffect(() => {
@@ -140,6 +141,9 @@ export default function OpenFieldPage() {
         setSolutions(data.solutions);
         setPilotOffers(data.pilotOffers);
         setEvidenceRecords(data.evidenceRecords);
+      } else if (!data) {
+        // Supabase query failed — keep showing seed data but let the user know.
+        setShowDemoDataNotice(true);
       }
     });
 
@@ -265,7 +269,7 @@ export default function OpenFieldPage() {
                 <span className="flex h-5 w-5 items-center justify-center rounded-full bg-emerald-800 text-[10px] font-semibold text-white">
                   {activeGrower.name.charAt(0).toUpperCase()}
                 </span>
-                <span className="font-medium text-slate-800">{activeGrower.name}</span>
+                <span className="max-w-[8rem] truncate font-medium text-slate-800">{activeGrower.name}</span>
                 <Pencil size={11} className="text-slate-400" />
               </button>
             ) : (
@@ -306,6 +310,12 @@ export default function OpenFieldPage() {
           </div>
         </div>
       </header>
+
+      {showDemoDataNotice && (
+        <div className="border-b border-amber-200 bg-amber-50 px-6 py-2 text-center text-xs text-amber-800">
+          Showing demo data — we couldn&apos;t reach the database right now.
+        </div>
+      )}
 
       <main className="mx-auto max-w-7xl px-6 py-8">
         {/* Hero + grower sidebar — only shown to visitors without a profile */}
@@ -539,6 +549,19 @@ export default function OpenFieldPage() {
                     <p className="mt-1 text-sm text-slate-600">
                       Try another challenge tag or search term.
                     </p>
+                    <Button
+                      variant="outline"
+                      onClick={() => {
+                        setSelectedTag("All");
+                        setSelectedType("All");
+                        setSelectedCropGroup("All");
+                        setSelectedCrop("All");
+                        setQuery("");
+                      }}
+                      className="mt-3 rounded-xl text-xs"
+                    >
+                      Clear filters
+                    </Button>
                   </CardContent>
                 </Card>
               )}

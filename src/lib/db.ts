@@ -1,3 +1,4 @@
+import * as Sentry from "@sentry/nextjs";
 import { supabase } from "./supabase";
 import type {
   ChallengeId,
@@ -22,7 +23,11 @@ export async function loadAllSolutions(): Promise<{
     .select("*, pilot_offers(*), evidence_records(*)")
     .order("created_at", { ascending: true });
 
-  if (error || !data) return null;
+  if (error) {
+    Sentry.captureException(error, { tags: { op: "loadAllSolutions" } });
+    return null;
+  }
+  if (!data) return null;
 
   const solutions: Solution[] = data.map(rowToSolution);
   const pilotOffers: PilotOffer[] = data.flatMap((row) =>
@@ -50,7 +55,11 @@ export async function loadGrowerProfile(userId: string): Promise<Grower | null> 
     .eq("user_id", userId)
     .maybeSingle();
 
-  if (error || !data) return null;
+  if (error) {
+    Sentry.captureException(error, { tags: { op: "loadGrowerProfile" } });
+    return null;
+  }
+  if (!data) return null;
   return rowToGrower(data as Record<string, unknown>);
 }
 
@@ -64,7 +73,7 @@ export async function saveSolution(
 ): Promise<void> {
   if (!supabase) return;
 
-  await supabase.from("solutions").upsert({
+  const { error: solutionError } = await supabase.from("solutions").upsert({
     id: solution.id,
     user_id: userId ?? null,
     name: solution.name,
@@ -87,7 +96,12 @@ export async function saveSolution(
     pricing_model: solution.pricingModel ?? null,
   });
 
-  await supabase.from("pilot_offers").upsert({
+  if (solutionError) {
+    Sentry.captureException(solutionError, { tags: { op: "saveSolution.solutions" } });
+    throw solutionError;
+  }
+
+  const { error: pilotOfferError } = await supabase.from("pilot_offers").upsert({
     id: pilotOffer.id,
     solution_id: pilotOffer.solutionId,
     title: pilotOffer.title,
@@ -102,7 +116,14 @@ export async function saveSolution(
     required_data: pilotOffer.requiredData,
   });
 
-  await supabase.from("evidence_records").upsert({
+  if (pilotOfferError) {
+    Sentry.captureException(pilotOfferError, { tags: { op: "saveSolution.pilot_offers" } });
+    // Roll back the solution we just created so we don't leave an orphaned record.
+    await supabase.from("solutions").delete().eq("id", solution.id);
+    throw pilotOfferError;
+  }
+
+  const { error: evidenceError } = await supabase.from("evidence_records").upsert({
     id: evidenceRecord.id,
     solution_id: evidenceRecord.solutionId,
     type: evidenceRecord.type,
@@ -111,6 +132,13 @@ export async function saveSolution(
     impact: evidenceRecord.impact,
     quality: evidenceRecord.quality,
   });
+
+  if (evidenceError) {
+    Sentry.captureException(evidenceError, { tags: { op: "saveSolution.evidence_records" } });
+    // Roll back the solution; pilot_offers row cascades on delete.
+    await supabase.from("solutions").delete().eq("id", solution.id);
+    throw evidenceError;
+  }
 }
 
 // ── Save grower profile ───────────────────────────────────────────────────────
@@ -121,7 +149,7 @@ export async function saveGrowerProfile(
 ): Promise<void> {
   if (!supabase) return;
 
-  await supabase.from("grower_profiles").upsert(
+  const { error } = await supabase.from("grower_profiles").upsert(
     {
       id: grower.id,
       user_id: userId,
@@ -147,6 +175,11 @@ export async function saveGrowerProfile(
     },
     { onConflict: "id" }
   );
+
+  if (error) {
+    Sentry.captureException(error, { tags: { op: "saveGrowerProfile" } });
+    throw error;
+  }
 }
 
 // ── Row → TypeScript mappers ──────────────────────────────────────────────────

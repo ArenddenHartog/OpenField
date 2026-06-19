@@ -3,6 +3,7 @@
 import { motion } from "framer-motion";
 import { X, Lightbulb, Sprout, FlaskConical, BookOpen, Cpu, Users } from "lucide-react";
 import type { GrowerRole } from "@/data/types";
+import { useFocusTrap } from "@/lib/useFocusTrap";
 
 type ProfileType = "innovator" | "grower";
 
@@ -71,9 +72,12 @@ interface ProfilePickerModalProps {
 }
 
 export function ProfilePickerModal({ onClose, onSelect }: ProfilePickerModalProps) {
+  const containerRef = useFocusTrap<HTMLDivElement>(onClose);
+
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/40 p-4">
       <motion.div
+        ref={containerRef}
         initial={{ opacity: 0, scale: 0.97 }}
         animate={{ opacity: 1, scale: 1 }}
         className="w-full max-w-lg rounded-3xl bg-white p-6 shadow-2xl"

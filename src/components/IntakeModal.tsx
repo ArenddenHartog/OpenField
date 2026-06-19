@@ -20,6 +20,7 @@ import type {
 } from "@/data/types";
 import { ImageUpload } from "@/components/ImageUpload";
 import { cn, listFromText, makeId } from "@/lib/utils";
+import { useFocusTrap } from "@/lib/useFocusTrap";
 
 const GROWING_ENVIRONMENT_OPTIONS = [
   "Greenhouse",
@@ -57,6 +58,7 @@ export function IntakeModal({
   onCreateGrower,
 }: IntakeModalProps) {
   const isInnovator = role === "innovator";
+  const containerRef = useFocusTrap<HTMLFormElement>(onClose);
   const [form, setForm] = useState<InnovatorFormValues | GrowerFormValues>(
     isInnovator
       ? EMPTY_INNOVATOR_FORM
@@ -149,6 +151,7 @@ export function IntakeModal({
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/40 p-4">
       <motion.form
+        ref={containerRef}
         onSubmit={handleSubmit}
         initial={{ opacity: 0, scale: 0.97 }}
         animate={{ opacity: 1, scale: 1 }}
